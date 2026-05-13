@@ -6,8 +6,7 @@ import {
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { formatDate, formatDateTime } from '../../utils/format.js';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+import { API_V1_URL, API_BASE_URL } from '../../utils/api.js';
 
 const TechnicianDashboardPage = () => {
   const [data, setData] = useState({ repairs: [], bookings: [] });
@@ -27,8 +26,8 @@ const TechnicianDashboardPage = () => {
   const fetchData = async () => {
     try {
       const [tasksRes, statsRes] = await Promise.all([
-        fetch('/api/v1/technician/tasks', { headers }),
-        fetch('/api/v1/technician/stats', { headers })
+        fetch(`${API_V1_URL}/technician/tasks`, { headers }),
+        fetch(`${API_V1_URL}/technician/stats`, { headers })
       ]);
       const tasksResult = await tasksRes.json();
       const statsResult = await statsRes.json();
@@ -49,7 +48,7 @@ const TechnicianDashboardPage = () => {
     }
     setInvLoading(true);
     try {
-      const res = await fetch(`/api/v1/technician/inventory?query=${encodeURIComponent(q)}`, { headers });
+      const res = await fetch(`${API_V1_URL}/technician/inventory?query=${encodeURIComponent(q)}`, { headers });
       const result = await res.json();
       if (result.success) setInventory(result.data);
     } catch (err) {
@@ -122,7 +121,7 @@ const TechnicianDashboardPage = () => {
     setSaving(true);
     try {
       // 1. Cập nhật dữ liệu (Chẩn đoán/Giá)
-      const updateRes = await fetch(`/api/v1/technician/repairs/${repair.id}`, {
+      const updateRes = await fetch(`${API_V1_URL}/technician/repairs/${repair.id}`, {
         method: 'PUT',
         headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify(actionFormData)
@@ -136,7 +135,7 @@ const TechnicianDashboardPage = () => {
       }
 
       // 2. Chuyển bước
-      const nextRes = await fetch(`/api/v1/technician/repairs/${repair.id}/next-step`, {
+      const nextRes = await fetch(`${API_V1_URL}/technician/repairs/${repair.id}/next-step`, {
         method: 'PATCH',
         headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify({ final_cost: actionFormData.final_cost })
@@ -158,7 +157,7 @@ const TechnicianDashboardPage = () => {
 
   const handleUpdateRepair = async (id, payload) => {
     try {
-      const res = await fetch(`/api/v1/technician/repairs/${id}`, {
+      const res = await fetch(`${API_V1_URL}/technician/repairs/${id}`, {
         method: 'PUT',
         headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -201,7 +200,7 @@ const TechnicianDashboardPage = () => {
     }
 
     try {
-      const res = await fetch(`/api/v1/technician/repairs/${id}/next-step`, { 
+      const res = await fetch(`${API_V1_URL}/technician/repairs/${id}/next-step`, { 
         method: 'PATCH', 
         headers 
       });
@@ -225,7 +224,7 @@ const TechnicianDashboardPage = () => {
     formData.append('type', type);
 
     try {
-      const res = await fetch(`/api/v1/technician/repairs/${id}/image`, {
+      const res = await fetch(`${API_V1_URL}/technician/repairs/${id}/image`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData

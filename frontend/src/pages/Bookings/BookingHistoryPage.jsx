@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { CalendarDays, Loader2, Wrench, Clock, Phone, CheckCircle2, AlertCircle, XCircle, CalendarPlus } from 'lucide-react';
 import ProfileSidebar from '../Profile/ProfileSidebar';
 import { formatDate } from '../../utils/format.js';
+import { API_V1_URL } from '../../utils/api.js';
 
 const statusConfig = {
   pending: { label: 'Chờ xác nhận', color: 'bg-amber-100 text-amber-700 border-amber-200', icon: <Clock className="w-3.5 h-3.5" /> },
@@ -27,8 +28,8 @@ const BookingHistoryPage = () => {
         if (userStr) setUser(JSON.parse(userStr));
 
         const [bookingRes, userRes] = await Promise.all([
-          fetch('/api/v1/bookings/my-bookings', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${API_V1_URL}/bookings/my-bookings`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_V1_URL}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         const bookingData = await bookingRes.json();
