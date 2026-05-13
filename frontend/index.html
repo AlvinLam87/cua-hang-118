@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Cửa Hàng 118 - Chuyên sửa chữa máy tính, bảo trì thiết bị văn phòng, kinh doanh linh kiện IT và thi công lắp đặt camera an ninh." />
+    <meta name="keywords" content="sua laptop, sua may tinh, lap camera, linh kien may tinh, bao tri may in, cua hang 118" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Cửa Hàng 118 | Sửa Chữa IT & Camera An Ninh" />
+    <meta property="og:description" content="Sửa chữa nhanh, linh kiện chính hãng, theo dõi tiến độ minh bạch. Đặt lịch online tại Cửa Hàng 118." />
+    <meta property="og:image" content="/vite.svg" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Cửa Hàng 118 | Sửa Chữa IT & Camera An Ninh" />
+    <meta name="twitter:description" content="Sửa chữa nhanh, linh kiện chính hãng, theo dõi tiến độ minh bạch." />
+    <title>Cửa Hàng 118 | Giải Pháp IT & Camera An Ninh Chuyên Nghiệp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+      /* Critical CSS for Preloader */
+      #initial-loader {
+        position: fixed;
+        inset: 0;
+        background: #0f172a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.4s ease-out, visibility 0.4s;
+      }
+      .loader-logo {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #3b82f6, #4f46e5);
+        border-radius: 18px;
+        margin-bottom: 20px;
+        animation: pulse 1.5s ease-in-out infinite;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 900;
+        font-size: 24px;
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+      }
+      .loader-bar {
+        width: 120px;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+        position: relative;
+      }
+      .loader-bar::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; height: 100%; width: 50%;
+        background: #3b82f6;
+        animation: progress 1.2s infinite ease-in-out;
+      }
+      @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } }
+      @keyframes progress { 0% { left: -50%; } 100% { left: 100%; } }
+      body.loaded #initial-loader { opacity: 0; visibility: hidden; }
+    </style>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Cửa Hàng 118",
+        "image": "/vite.svg",
+        "telephone": "0704818118",
+        "email": "support@cuahang118.vn",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "55, Cách Mạng, Phường Bạc Liêu",
+          "addressLocality": "Tỉnh Cà Mau",
+          "addressCountry": "VN"
+        },
+        "areaServed": "Cà Mau",
+        "priceRange": "$$",
+        "url": "/",
+        "description": "Dịch vụ sửa chữa máy tính, lắp đặt camera an ninh, bảo trì thiết bị văn phòng."
+      }
+    </script>
+  </head>
+  <body>
+    <div id="initial-loader">
+      <div class="loader-logo">118</div>
+      <div class="loader-bar"></div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          document.body.classList.add('loaded');
+        }, 300);
+      });
+    </script>
+  </body>
+</html>
