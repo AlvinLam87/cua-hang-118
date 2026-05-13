@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import AdminPagination from '../../components/admin/AdminPagination.jsx';
 import AdminToast from '../../components/admin/AdminToast.jsx';
+import { API_V1_URL } from '../../utils/api.js';
 
 const AdminCustomersPage = () => {
   const [customers, setCustomers] = useState([]);
@@ -34,7 +35,7 @@ const AdminCustomersPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/admin/customers', { headers });
+      const res = await fetch(`${API_V1_URL}/admin/customers`, { headers });
       const data = await res.json();
       if (data.success) setCustomers(data.data);
     } catch (err) {
@@ -54,7 +55,7 @@ const AdminCustomersPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/v1/admin/customers', {
+      const res = await fetch(`${API_V1_URL}/admin/customers`, {
         method: 'POST',
         headers,
         body: JSON.stringify(form)
@@ -76,7 +77,7 @@ const AdminCustomersPage = () => {
   const handleAdjustPoints = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`/api/v1/admin/customers/${editingCustomer.id}/adjust-points`, {
+      const res = await fetch(`${API_V1_URL}/admin/customers/${editingCustomer.id}/adjust-points`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(pointData)
@@ -95,7 +96,7 @@ const AdminCustomersPage = () => {
   const deleteCustomer = async (id) => {
     if (!window.confirm('Xóa thông tin khách hàng này?')) return;
     try {
-      const res = await fetch(`/api/v1/admin/customers/${id}`, { method: 'DELETE', headers });
+      const res = await fetch(`${API_V1_URL}/admin/customers/${id}`, { method: 'DELETE', headers });
       if ((await res.json()).success) {
         showMessage('success', 'Đã xóa.');
         fetchData();

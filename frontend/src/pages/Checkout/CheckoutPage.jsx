@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import ProductImage from '../../components/ProductImage.jsx';
 import { normalizeProductImages } from '../../utils/media.js';
+import { API_V1_URL } from '../../utils/api.js';
 
 const formatPrice = (price) => price.toLocaleString('vi-VN') + 'đ';
 
@@ -77,7 +78,7 @@ const CheckoutPage = () => {
     try {
       const stored = localStorage.getItem('user');
       const user = stored ? JSON.parse(stored) : null;
-      const res = await fetch('/api/v1/public/check-voucher', {
+      const res = await fetch(`${API_V1_URL}/public/check-voucher`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -105,7 +106,7 @@ const CheckoutPage = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch('/api/v1/auth/my-vouchers', {
+      const res = await fetch(`${API_V1_URL}/auth/my-vouchers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -224,7 +225,7 @@ const CheckoutPage = () => {
         items: cart.map(item => ({ id: item.id, qty: item.qty }))
       };
 
-      const res = await fetch('/api/v1/orders', {
+      const res = await fetch(`${API_V1_URL}/orders`, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload)

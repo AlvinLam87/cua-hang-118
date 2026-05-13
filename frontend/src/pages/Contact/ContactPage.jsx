@@ -4,6 +4,7 @@ import {
   Calendar, User, MessageSquare, CheckCircle2, AlertCircle, Loader2, ChevronDown, ArrowRight
 } from 'lucide-react';
 import { formatDate } from '../../utils/format.js';
+import { API_V1_URL } from '../../utils/api.js';
 
 const serviceOptions = [
   'Sửa chữa PC / Laptop',
@@ -55,7 +56,7 @@ const ContactPage = () => {
     }
 
     try {
-      const res = await fetch('/api/v1/bookings', {
+      const res = await fetch(`${API_V1_URL}/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

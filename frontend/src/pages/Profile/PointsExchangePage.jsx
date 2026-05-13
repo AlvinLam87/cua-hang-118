@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProfileSidebar from './ProfileSidebar';
 import { Loader2, CheckCircle2, AlertCircle, CreditCard, Gift, Ticket, Copy, Award, Info } from 'lucide-react';
+import { API_V1_URL } from '../../utils/api.js';
 
 const PointsExchangePage = () => {
   const navigate = useNavigate();
@@ -15,8 +16,8 @@ const PointsExchangePage = () => {
     try {
       const token = localStorage.getItem('token');
       const [myRes, availableRes] = await Promise.all([
-        fetch('/api/v1/auth/my-vouchers', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/v1/auth/available-exchange-vouchers', { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${API_V1_URL}/auth/my-vouchers`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_V1_URL}/auth/available-exchange-vouchers`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       const myData = await myRes.json();
       const availableData = await availableRes.json();
@@ -34,7 +35,7 @@ const PointsExchangePage = () => {
         const token = localStorage.getItem('token');
         if (!token) return navigate('/dang-nhap');
 
-        const res = await fetch('/api/v1/auth/me', {
+        const res = await fetch(`${API_V1_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -66,7 +67,7 @@ const PointsExchangePage = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/auth/exchange-points', {
+      const res = await fetch(`${API_V1_URL}/auth/exchange-points`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

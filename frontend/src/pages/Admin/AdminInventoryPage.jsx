@@ -10,6 +10,7 @@ import AdminToast from '../../components/admin/AdminToast.jsx';
 import AdminPagination from '../../components/admin/AdminPagination.jsx';
 import ProductImage from '../../components/ProductImage.jsx';
 import { normalizeProductImages } from '../../utils/media.js';
+import { API_V1_URL } from '../../utils/api.js';
 
 const AdminInventoryPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -49,9 +50,9 @@ const AdminInventoryPage = () => {
     setLoading(true);
     try {
       const [pRes, cRes, mRes] = await Promise.all([
-        fetch('/api/v1/admin/products', { headers }),
-        fetch('/api/v1/categories'),
-        fetch('/api/v1/admin/inventory/movements', { headers })
+        fetch(`${API_V1_URL}/admin/products`, { headers }),
+        fetch(`${API_V1_URL}/categories`),
+        fetch(`${API_V1_URL}/admin/inventory/movements`, { headers })
       ]);
       
       if (!pRes.ok || !cRes.ok || !mRes.ok) {
@@ -104,7 +105,7 @@ const AdminInventoryPage = () => {
     }
     setSubmittingStock(true);
     try {
-      const res = await fetch('/api/v1/admin/inventory/stock-in', {
+      const res = await fetch(`${API_V1_URL}/admin/inventory/stock-in`, {
         method: 'POST',
         headers,
         body: JSON.stringify(stockInForm)
@@ -140,7 +141,7 @@ const AdminInventoryPage = () => {
         specifications: JSON.stringify((productForm.specifications || []).filter(s => s.label?.trim())),
         variants: JSON.stringify((productForm.variants || []).filter(v => v.label?.trim())),
       };
-      const res = await fetch('/api/v1/admin/products', {
+      const res = await fetch(`${API_V1_URL}/admin/products`, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload)
@@ -148,7 +149,7 @@ const AdminInventoryPage = () => {
       const data = await res.json();
       if (data.success) {
         if (productForm.initial_quantity > 0) {
-           await fetch('/api/v1/admin/inventory/stock-in', {
+           await fetch(`${API_V1_URL}/admin/inventory/stock-in`, {
              method: 'POST',
              headers,
              body: JSON.stringify({
@@ -183,7 +184,7 @@ const AdminInventoryPage = () => {
     const formData = new FormData();
     for (let i = 0; i < files.length; i++) formData.append('images', files[i]);
     try {
-      const res = await fetch('/api/v1/admin/upload-multiple', {
+      const res = await fetch(`${API_V1_URL}/admin/upload-multiple`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData

@@ -7,6 +7,7 @@ import {
 import { resolveMediaUrl } from '../../utils/media.js';
 import { Link } from 'react-router-dom';
 import { formatDate } from '../../utils/format.js';
+import { API_V1_URL } from '../../utils/api.js';
 
 const iconMap = {
   MonitorPlay: <MonitorPlay className="w-6 h-6" />,
@@ -60,7 +61,7 @@ const ServicesPage = () => {
     const fetchServices = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/v1/services?category=${activeTab}`);
+        const res = await fetch(`${API_V1_URL}/services?category=${activeTab}`);
         const data = await res.json();
         if (data.success) {
           setServices(data.data);
@@ -74,7 +75,7 @@ const ServicesPage = () => {
 
     const fetchTechnicians = async () => {
       try {
-        const res = await fetch('/api/v1/services/technicians');
+        const res = await fetch(`${API_V1_URL}/services/technicians`);
         const data = await res.json();
         if (data.success) setTechnicians(data.data);
       } catch (err) {
@@ -111,7 +112,7 @@ const ServicesPage = () => {
     }
 
     try {
-      const res = await fetch('/api/v1/bookings', {
+      const res = await fetch(`${API_V1_URL}/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

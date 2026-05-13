@@ -66,7 +66,7 @@ const HomePageRender = () => {
 
     const fetchPublicReviews = async () => {
       try {
-        const res = await fetch('/api/v1/public/reviews');
+        const res = await fetch(`${API_V1_URL}/public/reviews`);
         const data = await res.json();
         if (data.success) {
           setPublicReviews(data.data);

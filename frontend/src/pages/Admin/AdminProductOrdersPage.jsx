@@ -5,6 +5,7 @@ import AdminPagination from '../../components/admin/AdminPagination.jsx';
 import ProductImage from '../../components/ProductImage.jsx';
 import { normalizeProductImages } from '../../utils/media.js';
 import { formatDate, formatCurrency } from '../../utils/format.js';
+import { API_V1_URL } from '../../utils/api.js';
 
 const statusMap = {
   pending: { label: 'Chờ xác nhận', color: 'bg-amber-100 text-amber-700', icon: Clock },
@@ -36,7 +37,7 @@ const AdminProductOrdersPage = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/v1/admin/product-orders', { headers });
+      const res = await fetch(`${API_V1_URL}/admin/product-orders`, { headers });
       const data = await res.json();
       
       if (data.success) {
@@ -56,7 +57,7 @@ const AdminProductOrdersPage = () => {
   const handleUpdateStatus = async (orderId, field, value) => {
     try {
       setUpdating(true);
-      const res = await fetch(`/api/v1/admin/product-orders/${orderId}`, {
+      const res = await fetch(`${API_V1_URL}/admin/product-orders/${orderId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({ [field]: value })

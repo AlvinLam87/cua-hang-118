@@ -4,6 +4,7 @@ import AdminToast from '../../components/admin/AdminToast.jsx';
 import AdminConfirmDialog from '../../components/admin/AdminConfirmDialog.jsx';
 import AdminPagination from '../../components/admin/AdminPagination.jsx';
 import { formatDate } from '../../utils/format.js';
+import { API_V1_URL } from '../../utils/api.js';
 
 const statusMap = {
   pending: { label: 'Chờ xác nhận', color: 'bg-yellow-100 text-yellow-700', icon: <Clock className="w-3.5 h-3.5" /> },
@@ -14,7 +15,7 @@ const statusMap = {
 
 import { io } from 'socket.io-client';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
 
 const AdminBookingsPage = () => {
   const [bookings, setBookings] = useState([]);
@@ -33,8 +34,8 @@ const AdminBookingsPage = () => {
   const fetchData = async () => {
     try {
       const [bRes, tRes] = await Promise.all([
-        fetch('/api/v1/admin/bookings', { headers }),
-        fetch('/api/v1/admin/technicians', { headers })
+        fetch(`${API_V1_URL}/admin/bookings`, { headers }),
+        fetch(`${API_V1_URL}/admin/technicians`, { headers })
       ]);
       const [bData, tData] = await Promise.all([bRes.json(), tRes.json()]);
       
@@ -70,7 +71,7 @@ const AdminBookingsPage = () => {
       const body = { status };
       if (techId) body.technician_id = techId;
 
-      const res = await fetch(`/api/v1/admin/bookings/${id}`, { 
+      const res = await fetch(`${API_V1_URL}/admin/bookings/${id}`, { 
         method: 'PUT', 
         headers, 
         body: JSON.stringify(body) 
@@ -88,7 +89,7 @@ const AdminBookingsPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`/api/v1/admin/bookings/${id}`, { method: 'DELETE', headers });
+      const res = await fetch(`${API_V1_URL}/admin/bookings/${id}`, { method: 'DELETE', headers });
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Không thể xóa lịch hẹn.');
       showMessage('success', 'Đã xóa lịch hẹn.');

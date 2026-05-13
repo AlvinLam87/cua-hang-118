@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Search, Package, Clock, CheckCircle2, Wrench, AlertCircle, Loader2, Calendar, User, Smartphone, Tag, ShieldCheck, PhoneCall, ArrowRight, ClipboardList, Info } from 'lucide-react';
+import { API_V1_URL } from '../../utils/api.js';
 
 const statusStyles = {
   received: { color: 'text-blue-500 bg-blue-500/10 border-blue-500/20', label: 'Đã tiếp nhận', icon: <Package className="w-5 h-5" /> },
@@ -32,7 +33,7 @@ const TrackingPage = () => {
     setNotFound(false);
 
     try {
-      const res = await fetch(`/api/v1/tracking?q=${encodeURIComponent(trimmed)}`);
+      const res = await fetch(`${API_V1_URL}/tracking?q=${encodeURIComponent(trimmed)}`);
       const data = await res.json();
       if (data.success) {
         setResult(data.data);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Trash2, Search, MessageSquare, AlertCircle } from 'lucide-react';
+import { API_V1_URL } from '../../utils/api.js';
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState([]);
@@ -14,7 +15,7 @@ export default function AdminReviewsPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/admin/reviews', {
+      const res = await fetch(`${API_V1_URL}/admin/reviews`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -34,7 +35,7 @@ export default function AdminReviewsPage() {
     if (!window.confirm('Bạn có chắc chắn muốn xóa đánh giá này?')) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/v1/admin/reviews/${id}`, {
+      const res = await fetch(`${API_V1_URL}/admin/reviews/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

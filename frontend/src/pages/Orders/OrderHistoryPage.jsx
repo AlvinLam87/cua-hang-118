@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Package, Loader2, Eye, Calendar, MapPin, CreditCard, Clock, ChevronRight, ShoppingBag } from 'lucide-react';
 import ProfileSidebar from '../Profile/ProfileSidebar';
+import { API_V1_URL } from '../../utils/api.js';
 
 const statusColors = {
   pending: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -37,8 +38,8 @@ const OrderHistoryPage = () => {
         if (userStr) setUser(JSON.parse(userStr));
 
         const [orderRes, userRes] = await Promise.all([
-          fetch('/api/v1/orders/my-orders', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${API_V1_URL}/orders/my-orders`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_V1_URL}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         const orderData = await orderRes.json();

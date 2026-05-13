@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Loader2, Ticket, Plus, X, Save, Trash2, Search, Calendar, DollarSign, Percent, Info, Award, Pencil } from 'lucide-react';
 import AdminToast from '../../components/admin/AdminToast.jsx';
 import AdminPagination from '../../components/admin/AdminPagination.jsx';
+import { API_V1_URL } from '../../utils/api.js';
 
 const AdminVouchersPage = () => {
   const [vouchers, setVouchers] = useState([]);
@@ -28,7 +29,7 @@ const AdminVouchersPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/v1/admin/vouchers', { headers });
+      const res = await fetch(`${API_V1_URL}/admin/vouchers`, { headers });
       const data = await res.json();
       if (data.success) setVouchers(data.data);
     } catch (err) {
@@ -79,7 +80,7 @@ const AdminVouchersPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = editing ? `/api/v1/admin/vouchers/${editing}` : '/api/v1/admin/vouchers';
+    const url = editing ? `${API_V1_URL}/admin/vouchers/${editing}` : `${API_V1_URL}/admin/vouchers`;
     const method = editing ? 'PUT' : 'POST';
 
     try {
@@ -108,7 +109,7 @@ const AdminVouchersPage = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Bạn có chắc muốn xóa mã này?')) return;
     try {
-      const res = await fetch(`/api/v1/admin/vouchers/${id}`, { method: 'DELETE', headers });
+      const res = await fetch(`${API_V1_URL}/admin/vouchers/${id}`, { method: 'DELETE', headers });
       const data = await res.json();
       if (data.success) {
         showMessage('success', 'Đã xóa mã giảm giá.');

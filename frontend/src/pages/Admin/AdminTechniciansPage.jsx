@@ -4,6 +4,7 @@ import { resolveMediaUrl } from '../../utils/media.js';
 import AdminToast from '../../components/admin/AdminToast.jsx';
 import AdminConfirmDialog from '../../components/admin/AdminConfirmDialog.jsx';
 import AdminPagination from '../../components/admin/AdminPagination.jsx';
+import { API_V1_URL } from '../../utils/api.js';
 
 const AdminTechniciansPage = () => {
   const [technicians, setTechnicians] = useState([]);
@@ -33,7 +34,7 @@ const AdminTechniciansPage = () => {
 
   const fetchTechnicians = async () => {
     try {
-      const res = await fetch('/api/v1/admin/technicians', {
+      const res = await fetch(`${API_V1_URL}/admin/technicians`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await res.json();
@@ -99,8 +100,8 @@ const AdminTechniciansPage = () => {
     setSaving(true);
     try {
       const url = editItem 
-        ? `/api/v1/admin/technicians/${editItem.id}` 
-        : `/api/v1/admin/technicians`;
+        ? `${API_V1_URL}/admin/technicians/${editItem.id}` 
+        : `${API_V1_URL}/admin/technicians`;
       const method = editItem ? 'PUT' : 'POST';
       
       const payload = { ...formData };
@@ -144,7 +145,7 @@ const AdminTechniciansPage = () => {
     body.append('avatar', file);
     setUploadingAvatar(true);
     try {
-      const res = await fetch('/api/v1/admin/technicians/upload-avatar', {
+      const res = await fetch(`${API_V1_URL}/admin/technicians/upload-avatar`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -167,7 +168,7 @@ const AdminTechniciansPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`/api/v1/admin/technicians/${id}`, {
+      const res = await fetch(`${API_V1_URL}/admin/technicians/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });

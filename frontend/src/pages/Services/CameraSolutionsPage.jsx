@@ -4,6 +4,7 @@ import {
   ChevronRight, CheckCircle2, PhoneCall, ListChecks, 
   MapPin, Settings, HelpCircle, Loader2, Send
 } from 'lucide-react';
+import { API_V1_URL } from '../../utils/api.js';
 
 const solutions = [
   {
@@ -60,7 +61,7 @@ const CameraSolutionsPage = () => {
     setLoading(true);
     setSubmitError('');
     try {
-      const res = await fetch('/api/v1/bookings', {
+      const res = await fetch(`${API_V1_URL}/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

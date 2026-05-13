@@ -9,7 +9,8 @@ import {
   RotateCcw, Star, Cpu, HardDrive, Camera,
   Wifi, MonitorPlay, Printer, Wrench, Loader2, CheckCircle2,
   Send, MessageSquare, User, ChevronRight, Minus, Plus,
-  Package, BadgeCheck, Gift, Zap, Heart, Tag, CircleDot
+  Package, BadgeCheck, Gift, Zap, Heart, Tag, CircleDot,
+  CircuitBoard, MemoryStick, Box, Wind
 } from 'lucide-react';
 
 const iconMap = {
@@ -19,7 +20,12 @@ const iconMap = {
   Wifi: <Wifi className="w-full h-full" />,
   Monitor: <MonitorPlay className="w-full h-full" />,
   Printer: <Printer className="w-full h-full" />,
-  Wrench: <Wrench className="w-full h-full" />,
+  VGA: <MonitorPlay className="w-full h-full" />,
+  PSU: <Zap className="w-full h-full" />,
+  Case: <Box className="w-full h-full" />,
+  Cooling: <Wind className="w-full h-full" />,
+  RAM: <MemoryStick className="w-full h-full" />,
+  Mainboard: <CircuitBoard className="w-full h-full" />,
 };
 
 const formatPrice = (price) => Number(price).toLocaleString('vi-VN') + 'đ';

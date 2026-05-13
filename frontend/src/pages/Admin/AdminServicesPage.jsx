@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Loader2, X, Save, Wrench, Wallet, Tag, LayoutGrid
 import AdminToast from '../../components/admin/AdminToast.jsx';
 import AdminConfirmDialog from '../../components/admin/AdminConfirmDialog.jsx';
 import AdminPagination from '../../components/admin/AdminPagination.jsx';
+import { API_V1_URL } from '../../utils/api.js';
 
 const AdminServicesPage = () => {
   const [services, setServices] = useState([]);
@@ -21,8 +22,8 @@ const AdminServicesPage = () => {
   const fetchData = async () => {
     setLoading(true);
     const [sRes, cRes] = await Promise.all([
-      fetch('/api/v1/admin/services', { headers }),
-      fetch('/api/v1/admin/categories?type=service', { headers }),
+      fetch(`${API_V1_URL}/admin/services`, { headers }),
+      fetch(`${API_V1_URL}/admin/categories?type=service`, { headers }),
     ]);
     const [sData, cData] = await Promise.all([sRes.json(), cRes.json()]);
     if (sData.success) setServices(sData.data);
@@ -42,7 +43,7 @@ const AdminServicesPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = editing ? `/api/v1/admin/services/${editing}` : '/api/v1/admin/services';
+    const url = editing ? `${API_V1_URL}/admin/services/${editing}` : `${API_V1_URL}/admin/services`;
     const method = editing ? 'PUT' : 'POST';
     try {
       const res = await fetch(url, { method, headers, body: JSON.stringify({ ...form, price: Number(form.price) }) });
@@ -58,7 +59,7 @@ const AdminServicesPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`/api/v1/admin/services/${id}`, { method: 'DELETE', headers });
+      const res = await fetch(`${API_V1_URL}/admin/services/${id}`, { method: 'DELETE', headers });
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Không thể xóa dịch vụ.');
       showMessage('success', 'Đã xóa dịch vụ.');

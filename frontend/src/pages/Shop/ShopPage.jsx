@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { 
   Search, Filter, ShoppingCart, ChevronDown,
-  Cpu, HardDrive, Camera, Wifi, MonitorPlay, Printer, Wrench, Grid3X3, List, Boxes
+  Cpu, HardDrive, Camera, Wifi, MonitorPlay, Printer, Wrench, Grid3X3, List, Boxes,
+  CircuitBoard, MemoryStick, Zap, Box, Wind
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext.jsx';
 import { useNavigate } from 'react-router-dom';
@@ -19,10 +20,12 @@ const iconMap = {
   Wrench: <Wrench className="w-5 h-5" />,
   Laptop: <MonitorPlay className="w-5 h-5" />,
   PC: <Grid3X3 className="w-5 h-5" />,
-  RAM: <HardDrive className="w-5 h-5" />,
-  Mainboard: <Cpu className="w-5 h-5" />,
+  RAM: <MemoryStick className="w-5 h-5" />,
+  Mainboard: <CircuitBoard className="w-5 h-5" />,
   VGA: <MonitorPlay className="w-5 h-5" />,
-  PSU: <HardDrive className="w-5 h-5" />,
+  PSU: <Zap className="w-5 h-5" />,
+  Case: <Box className="w-5 h-5" />,
+  Cooling: <Wind className="w-5 h-5" />,
 };
 
 const formatPrice = (price) => price.toLocaleString('vi-VN') + 'đ';
