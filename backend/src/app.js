@@ -14,6 +14,10 @@ app.use(cors({
   origin(origin, callback) {
     // Allow server-to-server and same-origin requests without Origin header.
     if (!origin) return callback(null, true);
+    // Allow localhost for development
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
     if (allowedCorsOrigins.length === 0 || allowedCorsOrigins.includes(origin)) {
       return callback(null, true);
     }
