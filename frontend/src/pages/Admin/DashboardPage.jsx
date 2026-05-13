@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, Settings, ClipboardList, Calendar, Users, Loader2, TrendingUp, AlertCircle, ArrowRight, Sparkles, ShieldCheck, Activity, DollarSign, Download } from 'lucide-react';
 import { io } from 'socket.io-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+import { API_V1_URL } from '../../utils/api.js';
 
 const DashboardPage = () => {
   const [stats, setStats] = useState(null);
@@ -14,7 +13,7 @@ const DashboardPage = () => {
     try {
       const token = localStorage.getItem('token');
       const ts = Date.now();
-      const res = await fetch(`/api/v1/admin/stats?t=${ts}`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_V1_URL}/admin/stats?t=${ts}`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (data.success) setStats(data.data);
     } catch (err) {
@@ -59,7 +58,7 @@ const DashboardPage = () => {
   const handleExportRevenue = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/admin/export-revenue', {
+      const res = await fetch(`${API_V1_URL}/admin/export-revenue`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Export failed');

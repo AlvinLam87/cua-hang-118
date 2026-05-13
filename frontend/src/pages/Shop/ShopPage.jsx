@@ -7,6 +7,7 @@ import { useCart } from '../../context/CartContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import ProductImage from '../../components/ProductImage.jsx';
 import { normalizeProductImages } from '../../utils/media.js';
+import { API_V1_URL } from '../../utils/api.js';
 
 const iconMap = {
   Cpu: <Cpu className="w-5 h-5" />,
@@ -118,8 +119,8 @@ const ShopPage = () => {
     const fetchData = async () => {
       try {
         const [catRes, prodRes] = await Promise.all([
-          fetch('/api/v1/categories'),
-          fetch('/api/v1/products')
+          fetch(`${API_V1_URL}/categories`),
+          fetch(`${API_V1_URL}/products`)
         ]);
         const catData = await catRes.json();
         const prodData = await prodRes.json();

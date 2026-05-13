@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext.jsx';
 import ProductImage from '../../components/ProductImage.jsx';
+import ProductImage from '../../components/ProductImage.jsx';
 import { normalizeProductImages } from '../../utils/media.js';
+import { API_V1_URL } from '../../utils/api.js';
 import {
   ArrowLeft, ShoppingCart, ShieldCheck, Truck,
   RotateCcw, Star, Cpu, HardDrive, Camera,
@@ -59,7 +61,7 @@ const ProductDetailPage = () => {
 
   const fetchReviews = async () => {
     try {
-      const res = await fetch(`/api/v1/reviews/${id}`);
+      const res = await fetch(`${API_V1_URL}/reviews/${id}`);
       const data = await res.json();
       if (data.success) {
         setReviews(data.data.reviews);
@@ -74,7 +76,7 @@ const ProductDetailPage = () => {
 
   const fetchRelatedProducts = async (catId) => {
     try {
-      const res = await fetch(`/api/v1/products?category_id=${catId}&limit=6`);
+      const res = await fetch(`${API_V1_URL}/products?category_id=${catId}&limit=6`);
       const data = await res.json();
       if (data.success) {
         setRelatedProducts(data.data.filter(p => p.id !== parseInt(id)));
@@ -87,7 +89,7 @@ const ProductDetailPage = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`/api/v1/products/${id}`);
+        const res = await fetch(`${API_V1_URL}/products/${id}`);
         const data = await res.json();
         if (data.success) {
           setProduct(data.data);
@@ -126,7 +128,7 @@ const ProductDetailPage = () => {
     setReviewMsg({ type: '', text: '' });
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/reviews', {
+      const res = await fetch(`${API_V1_URL}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ product_id: parseInt(id), rating: reviewForm.rating, comment: reviewForm.comment }),

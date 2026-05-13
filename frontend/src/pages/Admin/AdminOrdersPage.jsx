@@ -8,8 +8,7 @@ import { formatDate, formatDateTime } from '../../utils/format.js';
 import AdminToast from '../../components/admin/AdminToast.jsx';
 import AdminPagination from '../../components/admin/AdminPagination.jsx';
 import { io } from 'socket.io-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+import { API_V1_URL } from '../../utils/api.js';
 
 const statusOptions = [
   { value: 'received', label: 'Đã tiếp nhận', color: 'bg-blue-100 text-blue-700' },
@@ -40,8 +39,8 @@ const AdminOrdersPage = () => {
     try {
       const ts = Date.now();
       const [oRes, tRes] = await Promise.all([
-        fetch(`/api/v1/admin/orders?t=${ts}`, { headers }),
-        fetch(`/api/v1/admin/technicians?t=${ts}`, { headers })
+        fetch(`${API_V1_URL}/admin/orders?t=${ts}`, { headers }),
+        fetch(`${API_V1_URL}/admin/technicians?t=${ts}`, { headers })
       ]);
       const [oData, tData] = await Promise.all([oRes.json(), tRes.json()]);
       
@@ -88,7 +87,7 @@ const AdminOrdersPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`/api/v1/admin/orders/${editing}`, { method: 'PUT', headers, body: JSON.stringify({ ...form, estimated_cost: form.estimated_cost ? Number(form.estimated_cost) : null, final_cost: form.final_cost ? Number(form.final_cost) : null }) });
+      const res = await fetch(`${API_V1_URL}/admin/orders/${editing}`, { method: 'PUT', headers, body: JSON.stringify({ ...form, estimated_cost: form.estimated_cost ? Number(form.estimated_cost) : null, final_cost: form.final_cost ? Number(form.final_cost) : null }) });
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Không thể cập nhật đơn sửa chữa.');
       setEditing(null);

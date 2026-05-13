@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Wrench, Mail, Lock, Eye, EyeOff, LogIn, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { API_V1_URL } from '../../utils/api.js';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -20,7 +21,7 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const res = await fetch('/api/v1/auth/login', {
+      const res = await fetch(`${API_V1_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

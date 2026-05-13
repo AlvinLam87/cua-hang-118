@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Wrench, Mail, Lock, Eye, EyeOff, User, Phone, UserPlus, AlertCircle, CheckCircle2, KeyRound } from 'lucide-react';
+import { API_V1_URL } from '../../utils/api.js';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -39,7 +40,7 @@ const RegisterPage = () => {
     setSuccess('');
 
     try {
-      const res = await fetch('/api/v1/auth/register/request-otp', {
+      const res = await fetch(`${API_V1_URL}/auth/register/request-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -72,7 +73,7 @@ const RegisterPage = () => {
     setSuccess('');
 
     try {
-      const res = await fetch('/api/v1/auth/register/verify-otp', {
+      const res = await fetch(`${API_V1_URL}/auth/register/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

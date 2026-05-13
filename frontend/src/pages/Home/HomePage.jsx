@@ -3,6 +3,7 @@ import { ArrowRight, Star, ShieldCheck, CheckCircle2, Clock, Award, Wrench, Moni
 import { Link, useNavigate } from 'react-router-dom';
 import ProductImage from '../../components/ProductImage.jsx';
 import { normalizeProductImages } from '../../utils/media.js';
+import { API_V1_URL } from '../../utils/api.js';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -36,7 +37,7 @@ const HomePageRender = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch('/api/v1/products');
+        const res = await fetch(`${API_V1_URL}/products`);
         const data = await res.json();
         if (data.success) {
           setProducts(data.data.slice(0, 4));
@@ -48,7 +49,7 @@ const HomePageRender = () => {
     
     const fetchStats = async () => {
       try {
-        const res = await fetch('/api/v1/public/stats');
+        const res = await fetch(`${API_V1_URL}/public/stats`);
         const data = await res.json();
         if (data.success) {
           setStats([

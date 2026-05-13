@@ -7,6 +7,7 @@ import { normalizeProductImages } from '../../utils/media.js';
 import AdminToast from '../../components/admin/AdminToast.jsx';
 import AdminConfirmDialog from '../../components/admin/AdminConfirmDialog.jsx';
 import AdminPagination from '../../components/admin/AdminPagination.jsx';
+import { API_V1_URL } from '../../utils/api.js';
 
 const defaultForm = {
   name: '',
@@ -156,9 +157,9 @@ const AdminProductsPage = () => {
     setLoading(true);
     try {
       const [pRes, cRes, mRes] = await Promise.all([
-        fetch('/api/v1/admin/products', { headers }),
-        fetch('/api/v1/categories'),
-        fetch('/api/v1/admin/inventory/movements', { headers })
+        fetch(`${API_V1_URL}/admin/products`, { headers }),
+        fetch(`${API_V1_URL}/categories`),
+        fetch(`${API_V1_URL}/admin/inventory/movements`, { headers })
       ]);
 
       if (!pRes.ok || !cRes.ok || !mRes.ok) {
@@ -244,7 +245,7 @@ const AdminProductsPage = () => {
       delete payload.warehouse_quantity;
     }
 
-    const url = editing ? `/api/v1/admin/products/${editing}` : '/api/v1/admin/products';
+    const url = editing ? `${API_V1_URL}/admin/products/${editing}` : `${API_V1_URL}/admin/products`;
     const method = editing ? 'PUT' : 'POST';
 
     setSubmitting(true);
@@ -275,7 +276,7 @@ const AdminProductsPage = () => {
     };
 
     try {
-      const res = await fetch('/api/v1/admin/inventory/stock-in', {
+      const res = await fetch(`${API_V1_URL}/admin/inventory/stock-in`, {
         method: 'POST',
         headers,
         body: JSON.stringify(body)
@@ -312,7 +313,7 @@ const AdminProductsPage = () => {
         payload.in_stock = false;
       }
 
-      const res = await fetch(`/api/v1/admin/products/${product.id}`, {
+      const res = await fetch(`${API_V1_URL}/admin/products/${product.id}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(payload)
@@ -329,7 +330,7 @@ const AdminProductsPage = () => {
     if (!quantity || quantity <= 0) return;
     setSubmitting(true);
     try {
-      const res = await fetch('/api/v1/admin/inventory/transfer-to-shop', {
+      const res = await fetch(`${API_V1_URL}/admin/inventory/transfer-to-shop`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ product_id: productId, quantity: Number(quantity) })
@@ -353,7 +354,7 @@ const AdminProductsPage = () => {
     try {
       await Promise.all(pickerSelected.map(id => {
         const p = products.find(item => item.id === id);
-        return fetch('/api/v1/admin/inventory/transfer-to-shop', {
+        return fetch(`${API_V1_URL}/admin/inventory/transfer-to-shop`, {
           method: 'POST',
           headers,
           body: JSON.stringify({ product_id: id, quantity: p.warehouse_quantity })
@@ -369,7 +370,7 @@ const AdminProductsPage = () => {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`/api/v1/admin/products/${id}`, { method: 'DELETE', headers });
+      const res = await fetch(`${API_V1_URL}/admin/products/${id}`, { method: 'DELETE', headers });
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Không thể xóa sản phẩm.');
       showMessage('success', 'Đã xóa sản phẩm.');
@@ -390,7 +391,7 @@ const AdminProductsPage = () => {
     setUploadingImages(true);
 
     try {
-      const res = await fetch('/api/v1/admin/products/upload-images', {
+      const res = await fetch(`${API_V1_URL}/admin/products/upload-images`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body,

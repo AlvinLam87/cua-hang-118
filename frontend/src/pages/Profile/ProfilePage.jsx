@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import ProfileSidebar from './ProfileSidebar';
 import { User, Mail, Phone, MapPin, Shield, Save, Loader2, CheckCircle2, AlertCircle, Package, CalendarDays, Settings, ShieldCheck } from 'lucide-react';
+import { API_V1_URL } from '../../utils/api.js';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const ProfilePage = () => {
         const token = localStorage.getItem('token');
         if (!token) return navigate('/dang-nhap');
 
-        const res = await fetch('/api/v1/auth/me', {
+        const res = await fetch(`${API_V1_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -50,7 +51,7 @@ const ProfilePage = () => {
     setMessage({ type: '', text: '' });
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/v1/auth/me', {
+      const res = await fetch(`${API_V1_URL}/auth/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -5,8 +5,7 @@ import {
   Users, LogOut, Menu, X, Wrench, ChevronRight, FolderOpen, Star, Ticket, ShoppingBag
 } from 'lucide-react';
 import { io } from 'socket.io-client';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+import { API_V1_URL, API_BASE_URL } from '../utils/api.js';
 
 const sidebarLinks = [
   { to: '/admin', label: 'Tổng Quan', icon: <LayoutDashboard className="w-5 h-5" />, exact: true },
@@ -51,7 +50,7 @@ const AdminLayout = () => {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('/api/v1/admin/stats', {
+        const res = await fetch(`${API_V1_URL}/admin/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
