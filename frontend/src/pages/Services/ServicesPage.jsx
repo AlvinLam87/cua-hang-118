@@ -22,19 +22,19 @@ const iconMap = {
 };
 
 const tabs = [
-  { id: 'pc', label: 'Máy Tính & Laptop', icon: <MonitorPlay className="w-5 h-5" /> },
-  { id: 'office', label: 'Thiết Bị Văn Phòng', icon: <Printer className="w-5 h-5" /> },
-  { id: 'home_repair', label: 'Sửa Chữa Tận Nhà', icon: <Home className="w-5 h-5" /> },
+  { id: 'svc-pc', label: 'Máy Tính & Laptop', icon: <MonitorPlay className="w-5 h-5" /> },
+  { id: 'svc-office', label: 'Thiết Bị Văn Phòng', icon: <Printer className="w-5 h-5" /> },
+  { id: 'svc-home', label: 'Sửa Chữa Tận Nhà', icon: <Home className="w-5 h-5" /> },
 ];
 
 const tabMeta = {
-  pc: { title: 'Sửa Chữa Máy Tính & Laptop', description: 'Đội ngũ kỹ thuật viên nhiều năm kinh nghiệm, chẩn đoán chính xác, sửa chữa nhanh chóng mọi sự cố phần cứng & phần mềm.' },
-  office: { title: 'Thiết Bị Văn Phòng & Mạng', description: 'Giải pháp toàn diện cho hệ thống IT văn phòng: máy in, đổ mực máy in, mạng nội bộ LAN/WiFi.' },
-  home_repair: { title: 'Dịch Vụ Sửa Chữa Tận Nơi', description: 'Giải quyết các vấn đề thiết bị, mạng internet, máy tính nhanh chóng ngay tại nhà/văn phòng của bạn mà không cần mang máy đến tiệm.' },
+  'svc-pc': { title: 'Sửa Chữa Máy Tính & Laptop', description: 'Đội ngũ kỹ thuật viên nhiều năm kinh nghiệm, chẩn đoán chính xác, sửa chữa nhanh chóng mọi sự cố phần cứng & phần mềm.' },
+  'svc-office': { title: 'Thiết Bị Văn Phòng & Mạng', description: 'Giải pháp toàn diện cho hệ thống IT văn phòng: máy in, đổ mực máy in, mạng nội bộ LAN/WiFi.' },
+  'svc-home': { title: 'Dịch Vụ Sửa Chữa Tận Nơi', description: 'Giải quyết các vấn đề thiết bị, mạng internet, máy tính nhanh chóng ngay tại nhà/văn phòng của bạn mà không cần mang máy đến tiệm.' },
 };
 
 const ServicesPage = () => {
-  const [activeTab, setActiveTab] = useState('pc');
+  const [activeTab, setActiveTab] = useState('svc-pc');
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   
