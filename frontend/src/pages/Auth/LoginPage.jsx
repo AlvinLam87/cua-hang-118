@@ -33,16 +33,15 @@ const LoginPage = () => {
       } else {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('user', JSON.stringify(data.data.user));
-        setSuccess('Đăng nhập thành công! Đang chuyển hướng...');
-        setTimeout(() => {
-          if (data.data.user.role === 'admin') {
-            window.location.href = '/admin';
-          } else if (data.data.user.role === 'technician') {
-            window.location.href = '/ky-thuat-vien';
-          } else {
-            window.location.href = '/';
-          }
-        }, 1000);
+        
+        // Chuyển hướng tức thì dựa trên vai trò
+        if (data.data.user.role === 'admin') {
+          window.location.href = '/admin';
+        } else if (data.data.user.role === 'technician') {
+          window.location.href = '/ky-thuat-vien';
+        } else {
+          window.location.href = '/';
+        }
       }
     } catch (err) {
       setError('Không thể kết nối đến server. Vui lòng thử lại.');

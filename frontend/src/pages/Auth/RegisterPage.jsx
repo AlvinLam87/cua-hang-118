@@ -88,10 +88,7 @@ const RegisterPage = () => {
       } else {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('user', JSON.stringify(data.data.user));
-        setSuccess('Đăng ký thành công! Đang chuyển hướng...');
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1200);
+        window.location.href = '/';
       }
     } catch (err) {
       setError('Không thể kết nối đến server. Vui lòng thử lại.');
