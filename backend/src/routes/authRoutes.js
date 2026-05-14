@@ -105,9 +105,18 @@ router.post('/register/request-otp', async (req, res) => {
     });
 
     if (!delivered) {
+      const isMissingConfig = !process.env.SMTP_USER || !process.env.SMTP_PASS;
+      if (isMissingConfig) {
+        return res.json({
+          success: true,
+          message: 'Hệ thống email chưa được cấu hình. Mã OTP của bạn là: ' + otp,
+          devOtp: otp // Trả về để bạn có thể copy vào ô nhập
+        });
+      }
+      
       return res.status(500).json({ 
         success: false, 
-        message: 'Không thể gửi email xác nhận. Vui lòng kiểm tra cấu hình SMTP hoặc thử lại sau.' 
+        message: 'Không thể gửi email xác nhận. Vui lòng thử lại sau.' 
       });
     }
 

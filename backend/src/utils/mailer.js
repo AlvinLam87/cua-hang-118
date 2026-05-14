@@ -1,21 +1,33 @@
 const nodemailer = require('nodemailer');
 
+let transporterInstance = null;
+
 const createTransporter = () => {
+  if (transporterInstance) return transporterInstance;
+
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
     console.warn('⚠️ SMTP variables missing in .env. Emails will not be sent.');
     return null;
   }
   
-  return nodemailer.createTransport({
+  const port = parseInt(process.env.SMTP_PORT) || 587;
+  const isSecure = port === 465;
+
+  console.log(`🔌 [Mailer] Khởi tạo kết nối: ${process.env.SMTP_HOST || 'smtp.gmail.com'}:${port} (Secure: ${isSecure})`);
+
+  transporterInstance = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 587,
-    secure: process.env.SMTP_PORT == 465, 
+    port: port,
+    secure: isSecure, 
+    pool: true,
     auth: {
       user: process.env.SMTP_USER,
-      // Tự động xóa dấu cách thường gặp khi copy App Password
       pass: process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s/g, '') : '',
     },
+    tls: { rejectUnauthorized: false }
   });
+
+  return transporterInstance;
 };
 
 const sendEmail = async ({ to, subject, html }) => {
@@ -34,7 +46,9 @@ const sendEmail = async ({ to, subject, html }) => {
     console.log('✅ Email sent successfully:', info.messageId);
     return true;
   } catch (error) {
-    console.error('❌ Error sending email:', error.message);
+    console.error('❌ [Mailer Error]:', error.message);
+    if (error.code === 'EAUTH') console.error('👉 Lỗi: Sai Email hoặc App Password.');
+    if (error.code === 'ETIMEDOUT') console.error('👉 Lỗi: Kết nối bị quá hạn (Timeout).');
     return false;
   }
 };
