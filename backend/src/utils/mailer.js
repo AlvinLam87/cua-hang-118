@@ -9,7 +9,7 @@ const sendEmail = async ({ to, subject, html }) => {
   
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Cửa Hàng 118 <onboarding@resend.dev>', // Dùng địa chỉ mặc định của Resend
+      from: 'Cửa Hàng 118 <noreply@cuahang118.online>', // Địa chỉ mail chuyên nghiệp của bạn
       to: [to],
       subject: subject,
       html: html,
