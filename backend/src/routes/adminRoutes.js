@@ -8,6 +8,7 @@ const { Product, Service, Category, Customer, RepairOrder, RepairStep, Booking, 
 const { Op } = require('sequelize');
 const ExcelJS = require('exceljs');
 const socketConfig = require('../config/socket');
+const sharp = require('sharp');
 
 const avatarUploadDir = path.join(__dirname, '..', '..', 'public', 'uploads', 'avatars');
 const productUploadDir = path.join(__dirname, '..', '..', 'public', 'uploads', 'products');
@@ -15,22 +16,6 @@ const productUploadDir = path.join(__dirname, '..', '..', 'public', 'uploads', '
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
-});
-
-const avatarStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, avatarUploadDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname || '').toLowerCase() || '.jpg';
-    cb(null, `avatar-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-  },
-});
-
-const productStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, productUploadDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname || '').toLowerCase() || '.jpg';
-    cb(null, `product-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-  },
 });
 
 const avatarUpload = multer({
@@ -42,9 +27,10 @@ const avatarUpload = multer({
   },
 });
 
+// Sử dụng memoryStorage để xử lý ảnh bằng Sharp trước khi lưu
 const productUpload = multer({
-  storage: productStorage,
-  limits: { fileSize: 8 * 1024 * 1024 },
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 15 * 1024 * 1024 }, // Cho phép upload file lớn để nén sau
   fileFilter: (_req, file, cb) => {
     if (file.mimetype && file.mimetype.startsWith('image/')) return cb(null, true);
     return cb(new Error('Chỉ hỗ trợ upload file ảnh.'));
@@ -232,10 +218,28 @@ router.post('/products/upload-images', requireAdmin, productUpload.array('images
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, message: 'Không tìm thấy file ảnh.' });
     }
-    const imageUrls = req.files.map((file) => `/uploads/products/${file.filename}`);
+
+    const imageUrls = [];
+    
+    // Xử lý nén từng tấm ảnh
+    const processPromises = req.files.map(async (file) => {
+      const filename = `product-${Date.now()}-${Math.round(Math.random() * 1e9)}.jpg`;
+      const filepath = path.join(productUploadDir, filename);
+
+      await sharp(file.buffer)
+        .resize(1200, null, { withoutEnlargement: true }) // Rộng tối đa 1200px, giữ tỷ lệ
+        .jpeg({ quality: 80 }) // Nén JPEG chất lượng 80%
+        .toFile(filepath);
+
+      imageUrls.push(`/uploads/products/${filename}`);
+    });
+
+    await Promise.all(processPromises);
+
     return res.status(201).json({ success: true, data: { image_urls: imageUrls } });
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    console.error('❌ Lỗi xử lý ảnh:', err.message);
+    return res.status(500).json({ success: false, message: 'Lỗi trong quá trình tối ưu hóa hình ảnh.' });
   }
 });
 
