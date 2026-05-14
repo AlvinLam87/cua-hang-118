@@ -87,13 +87,26 @@ const AdminOrdersPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API_V1_URL}/admin/orders/${editing}`, { method: 'PUT', headers, body: JSON.stringify({ ...form, estimated_cost: form.estimated_cost ? Number(form.estimated_cost) : null, final_cost: form.final_cost ? Number(form.final_cost) : null }) });
+      const payload = { 
+        ...form, 
+        estimated_cost: form.estimated_cost !== '' ? Number(form.estimated_cost) : 0, 
+        final_cost: form.final_cost !== '' ? Number(form.final_cost) : 0 
+      };
+      console.log('🚀 [AdminOrders] Updating order:', editing, payload);
+
+      const res = await fetch(`${API_V1_URL}/admin/orders/${editing}`, { 
+        method: 'PUT', 
+        headers, 
+        body: JSON.stringify(payload) 
+      });
       const data = await res.json();
       if (!data.success) throw new Error(data.message || 'Không thể cập nhật đơn sửa chữa.');
+      
       setEditing(null);
       showMessage('success', 'Cập nhật đơn sửa chữa thành công.');
       fetchData();
     } catch (error) {
+      console.error('❌ [AdminOrders] Update failed:', error);
       showMessage('error', error.message);
     }
   };
