@@ -105,18 +105,9 @@ router.post('/register/request-otp', async (req, res) => {
     });
 
     if (!delivered) {
-      const isMissingConfig = !process.env.RESEND_API_KEY;
-      if (isMissingConfig) {
-        return res.json({
-          success: true,
-          message: 'Hệ thống email chưa được cấu hình API Key. Mã OTP của bạn là: ' + otp,
-          devOtp: otp 
-        });
-      }
-      
       return res.status(500).json({ 
         success: false, 
-        message: 'Không thể gửi email xác nhận. Vui lòng thử lại sau.' 
+        message: 'Không thể gửi email xác nhận. Vui lòng kiểm tra lại địa chỉ email hoặc thử lại sau.' 
       });
     }
 
