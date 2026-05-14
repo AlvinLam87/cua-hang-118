@@ -525,8 +525,39 @@ const ServicesPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1"><MapPin className="w-3.5 h-3.5 inline mr-1" /> Địa chỉ (nếu sửa tận nơi)</label>
-                    <input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Số nhà, đường, phường, quận..." className="w-full px-4 py-3 bg-white/80 border border-blue-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
+                    <p className="text-xs font-black tracking-wider uppercase text-gray-400 mb-2">Khu vực hỗ trợ</p>
+                    <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[11px] text-amber-800 mb-4">
+                      <AlertCircle className="w-3.5 h-3.5 inline mr-1" />
+                      Hiện tại chúng tôi chỉ hỗ trợ sửa chữa tận nơi tại: <strong>Cà Mau, Sóc Trăng, Bạc Liêu</strong>.
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1"><MapPin className="w-3.5 h-3.5 inline mr-1 text-rose-500" /> Tỉnh/Thành phố *</label>
+                        <select 
+                          required 
+                          value={formData.province || ''} 
+                          onChange={e => setFormData({...formData, province: e.target.value})} 
+                          className="w-full px-4 py-3 bg-white/80 border border-blue-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option value="">Chọn Tỉnh/Thành</option>
+                          <option value="Cà Mau">Cà Mau</option>
+                          <option value="Sóc Trăng">Sóc Trăng</option>
+                          <option value="Bạc Liêu">Bạc Liêu</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1"><MapPin className="w-3.5 h-3.5 inline mr-1 text-rose-500" /> Địa chỉ chi tiết *</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={formData.address} 
+                          onChange={e => setFormData({...formData, address: e.target.value})} 
+                          placeholder="Số nhà, đường, phường/xã..." 
+                          className="w-full px-4 py-3 bg-white/80 border border-blue-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" 
+                        />
+                      </div>
+                    </div>
                   </div>
                   
                   <div>
