@@ -88,6 +88,7 @@ const RegisterPage = () => {
       } else {
         localStorage.setItem('token', data.data.token);
         localStorage.setItem('user', JSON.stringify(data.data.user));
+        // Chuyển hướng tức thì như bạn yêu cầu
         window.location.href = '/';
       }
     } catch (err) {
@@ -98,72 +99,62 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] py-12 px-4 sm:px-6 bg-transparent relative overflow-hidden flex items-center justify-center">
-      {/* Background Orbs */}
-      <div className="absolute top-20 right-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-float pointer-events-none" />
-      <div className="absolute bottom-20 left-[-10%] w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-float pointer-events-none" style={{ animationDelay: '-3s' }} />
+    <div className="min-h-[calc(100vh-5rem)] py-10 px-4 sm:px-6 bg-transparent relative overflow-hidden">
+      <div className="absolute top-40 right-10 w-72 h-72 bg-teal-200 rounded-full mix-blend-multiply filter blur-[80px] opacity-30 pointer-events-none" />
+      <div className="absolute bottom-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-[80px] opacity-30 pointer-events-none" />
 
-      <div className="max-w-6xl w-full mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-        {/* Left Info Column */}
-        <div className="hidden lg:flex flex-col justify-center space-y-8 animate-fade-in">
+      <div className="max-w-6xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        <div className="hidden lg:flex rounded-[32px] bg-linear-to-br from-[#1e1b4b] via-blue-700 to-[#0f766e] text-white p-9 border border-white/10 shadow-[0_30px_80px_-30px_rgba(30,64,175,0.6)] flex-col justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest mb-6">
-              <UserPlus className="w-3 h-3" /> Join Our Community
-            </div>
-            <h2 className="text-5xl font-black leading-tight text-gray-900 mb-6">
-              Quản lý thiết bị <br />
-              <span className="text-gradient">Thông minh & Chuyên nghiệp</span>
-            </h2>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-md">
-              Tạo tài khoản để theo dõi tiến độ sửa chữa, lưu lịch sử thiết bị và nhận các ưu đãi dành riêng cho thành viên Cửa Hàng 118.
+            <p className="text-xs uppercase tracking-[0.24em] text-indigo-100/90 font-bold mb-4">Create Account</p>
+            <h2 className="text-[34px] font-black leading-tight">Bắt đầu quản lý lịch hẹn và đơn sửa chữa chuyên nghiệp hơn.</h2>
+            <p className="text-indigo-100/85 text-sm mt-4 leading-relaxed">
+              Tạo tài khoản miễn phí để lưu thông tin thiết bị, nhận ưu đãi thành viên và theo dõi toàn bộ tiến độ xử lý.
             </p>
           </div>
-
-          <div className="space-y-4">
-            {[
-              { icon: Wrench, text: "Theo dõi tiến độ sửa chữa thời gian thực" },
-              { icon: Mail, text: "Nhận thông báo qua Email & Hệ thống" },
-              { icon: Lock, text: "Bảo mật thông tin & Lịch sử dịch vụ" }
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center gap-4 p-4 glass rounded-2xl hover:scale-105 transition-transform cursor-default">
-                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                  <item.icon className="w-5 h-5 text-blue-600" />
-                </div>
-                <span className="font-semibold text-gray-700">{item.text}</span>
-              </div>
-            ))}
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm">Đồng bộ lịch hẹn theo tài khoản</div>
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm">Lưu lịch sử sửa chữa rõ ràng theo từng thiết bị</div>
+            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm">Nhận thông báo trạng thái nhanh qua hệ thống</div>
           </div>
         </div>
 
-        {/* Right Form Column */}
-        <div className="w-full max-w-lg mx-auto">
-          <div className="lux-card rounded-[40px] p-8 md:p-10 border border-white/60 relative overflow-hidden">
-            {/* Form Header */}
+        <div className="w-full max-w-md lg:max-w-none mx-auto flex flex-col">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <Link to="/" className="inline-flex items-center gap-3 group">
+              <div className="w-11 h-11 bg-gray-900 rounded-xl flex items-center justify-center shadow-lg shadow-gray-900/20">
+                <Wrench className="text-white w-5 h-5" />
+              </div>
+              <span className="text-xl font-black tracking-tight text-gray-900">Cửa Hàng 118</span>
+            </Link>
+          </div>
+
+          {/* Card */}
+          <div className="w-full lux-card rounded-[30px] p-8 border border-white/50 shadow-[0_24px_60px_-28px_rgba(37,99,235,0.35)]">
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-black text-gray-900 mb-3 tracking-tight">Đăng ký</h1>
-              <p className="text-gray-500 font-medium">Bắt đầu hành trình của bạn ngay hôm nay</p>
+              <h1 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Tạo tài khoản</h1>
+              <p className="text-gray-500 text-sm">Đăng ký nhanh trong vài bước để bắt đầu sử dụng dịch vụ.</p>
             </div>
 
             {error && (
-              <div className="mb-6 flex items-start gap-3 p-4 bg-red-50/80 border border-red-100 rounded-2xl text-red-700 text-sm animate-fade-in">
-                <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" /> 
-                <span className="font-medium">{error}</span>
+              <div className="mb-6 flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm">
+                <AlertCircle className="w-5 h-5 shrink-0" /> <span>{error}</span>
               </div>
             )}
             {success && (
-              <div className="mb-6 flex items-start gap-3 p-4 bg-emerald-50/80 border border-emerald-100 rounded-2xl text-emerald-700 text-sm animate-fade-in">
-                <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" /> 
-                <span className="font-medium">{success}</span>
+              <div className="mb-6 flex items-center gap-3 p-4 bg-green-50 border border-green-100 rounded-xl text-green-700 text-sm">
+                <CheckCircle2 className="w-5 h-5 shrink-0" /> <span>{success}</span>
               </div>
             )}
 
-            <form onSubmit={verifyOtpAndRegister} className="space-y-5">
-              {/* Full Name & Email */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Họ và tên</label>
-                  <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+            <form onSubmit={verifyOtpAndRegister} className="space-y-4">
+              {/* Full Name */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Họ và tên</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
                       type="text"
                       name="fullName"
@@ -171,15 +162,16 @@ const RegisterPage = () => {
                       value={formData.fullName}
                       onChange={handleChange}
                       placeholder="Nguyễn Văn A"
-                      className="w-full pl-12 pr-4 py-3.5 premium-input rounded-2xl outline-none text-gray-800 font-medium"
+                      className="w-full pl-12 pr-4 py-3.5 bg-white/90 border border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-all text-gray-800"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Email</label>
-                  <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
                       type="email"
                       name="email"
@@ -187,65 +179,66 @@ const RegisterPage = () => {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="email@example.com"
-                      className="w-full pl-12 pr-4 py-3.5 premium-input rounded-2xl outline-none text-gray-800 font-medium"
+                      className="w-full pl-12 pr-4 py-3.5 bg-white/90 border border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-all text-gray-800"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Phone */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Số điện thoại</label>
-                <div className="relative group">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Số điện thoại <span className="text-gray-400 font-normal">(tùy chọn)</span></label>
+                <div className="relative">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="0901 234 567"
-                    className="w-full pl-12 pr-4 py-3.5 premium-input rounded-2xl outline-none text-gray-800 font-medium"
+                    className="w-full pl-12 pr-4 py-3.5 bg-white/90 border border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-all text-gray-800"
                   />
                 </div>
               </div>
 
-              {/* Password & Confirm */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Mật khẩu</label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+              {/* Password */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Mật khẩu</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       name="password"
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      placeholder="••••••••"
-                      className="w-full pl-12 pr-12 py-3.5 premium-input rounded-2xl outline-none text-gray-800 font-medium"
+                      placeholder="Tối thiểu 8 ký tự"
+                      className="w-full pl-12 pr-12 py-3.5 bg-white/90 border border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-all text-gray-800"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Xác nhận</label>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                {/* Confirm Password */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Xác nhận mật khẩu</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       name="confirmPassword"
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      placeholder="••••••••"
-                      className="w-full pl-12 pr-4 py-3.5 premium-input rounded-2xl outline-none text-gray-800 font-medium"
+                      placeholder="Nhập lại mật khẩu"
+                      className="w-full pl-12 pr-4 py-3.5 bg-white/90 border border-blue-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-400 outline-none transition-all text-gray-800"
                     />
                   </div>
                 </div>
@@ -256,7 +249,7 @@ const RegisterPage = () => {
                   type="button"
                   onClick={requestOtp}
                   disabled={loading}
-                  className="w-full py-4 mt-4 bg-linear-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed shadow-[0_12px_24px_-8px_rgba(37,99,235,0.5)] active:scale-[0.98]"
+                  className="w-full py-3.5 bg-linear-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed mt-6 shadow-lg shadow-blue-600/25"
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
