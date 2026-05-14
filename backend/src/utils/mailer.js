@@ -1,61 +1,29 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-let transporterInstance = null;
-
-const createTransporter = () => {
-  if (transporterInstance) return transporterInstance;
-
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.warn('⚠️ SMTP variables missing in .env. Emails will not be sent.');
-    return null;
-  }
-  
-  const port = parseInt(process.env.SMTP_PORT) || 587;
-  const isSecure = port === 465;
-
-  console.log(`🔌 [Mailer] Khởi tạo kết nối: ${process.env.SMTP_HOST || 'smtp.gmail.com'}:${port} (Secure: ${isSecure})`);
-
-  transporterInstance = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: port,
-    secure: isSecure, 
-    pool: true,
-    connectionTimeout: 10000, // 10 giây chờ kết nối
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s/g, '') : '',
-    },
-    tls: { 
-      rejectUnauthorized: false,
-      servername: 'smtp.gmail.com' // Quan trọng khi dùng IP hoặc cổng 465
-    },
-    family: 4 // Ép sử dụng IPv4 để tránh lỗi network trên Render
-  });
-
-  return transporterInstance;
-};
+// Khởi tạo Resend với API Key
+// Ưu tiên lấy từ biến môi trường RESEND_API_KEY
+const resend = new Resend(process.env.RESEND_API_KEY || 're_Y4UdLnMJ_3imAtF3fgjzZJZJMabaWZSyx');
 
 const sendEmail = async ({ to, subject, html }) => {
-  const transporter = createTransporter();
-  if (!transporter) return false;
-
-  const mailOptions = {
-    from: `"${process.env.SMTP_FROM_NAME || 'Cửa Hàng 118'}" <${process.env.SMTP_USER}>`,
-    to,
-    subject,
-    html,
-  };
-
+  console.log(`📨 [Resend] Đang gửi mail tới: ${to}...`);
+  
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Email sent successfully:', info.messageId);
+    const { data, error } = await resend.emails.send({
+      from: 'Cửa Hàng 118 <onboarding@resend.dev>', // Dùng địa chỉ mặc định của Resend
+      to: [to],
+      subject: subject,
+      html: html,
+    });
+
+    if (error) {
+      console.error('❌ [Resend Error]:', error.message);
+      return false;
+    }
+
+    console.log('✅ [Resend] Gửi mail thành công! ID:', data.id);
     return true;
-  } catch (error) {
-    console.error('❌ [Mailer Error]:', error.message);
-    if (error.code === 'EAUTH') console.error('👉 Lỗi: Sai Email hoặc App Password.');
-    if (error.code === 'ETIMEDOUT') console.error('👉 Lỗi: Kết nối bị quá hạn (Timeout).');
+  } catch (err) {
+    console.error('❌ [Resend Exception]:', err.message);
     return false;
   }
 };
