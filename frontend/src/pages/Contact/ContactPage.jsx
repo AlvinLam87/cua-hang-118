@@ -15,18 +15,18 @@ const serviceOptions = [
   'Khác',
 ];
 
-// Lấy thời gian địa phương (GMT+7)
-const now = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
-const todayStr = now.toISOString().split('T')[0];
-const nowTimeStr = now.toISOString().split('T')[1].substring(0, 5); // "HH:mm"
-
-const inputClass = "w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-gray-900 text-sm font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all";
-const labelClass = "block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5";
-
 const ContactPage = () => {
+  // Khởi tạo thời gian an toàn bên trong component
+  const getInitialDate = () => new Date().toISOString().split('T')[0];
+  const getInitialTime = () => {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  };
+
   const [formData, setFormData] = useState({
     name: '', phone: '', email: '', service: '', 
-    date: todayStr, time: nowTimeStr, address: '', message: '', preferred_technician_id: '',
+    date: getInitialDate(), time: getInitialTime(), 
+    province: '', address: '', message: '', preferred_technician_id: '',
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -80,6 +80,9 @@ const ContactPage = () => {
     { icon: <Mail className="w-5 h-5" />, label: 'Email', value: 'support@cuahang118.vn', color: 'bg-purple-50 text-purple-600' },
     { icon: <Clock className="w-5 h-5" />, label: 'Giờ làm việc', value: '8:00 - 18:00 (Thứ 2 - Thứ 7)', color: 'bg-amber-50 text-amber-600' },
   ];
+
+  const inputClass = "w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-gray-900 text-sm font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all";
+  const labelClass = "block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5";
 
   return (
     <div className="bg-[#f8f9ff] min-h-screen">
@@ -165,6 +168,15 @@ const ContactPage = () => {
                     <p className="text-sm text-gray-500">Điền thông tin bên dưới — đội kỹ thuật sẽ liên hệ xác nhận ngay.</p>
                   </div>
 
+                  {/* Geographic Limit Alert */}
+                  <div className="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-800 flex gap-3">
+                    <AlertCircle className="w-5 h-5 shrink-0 text-amber-500" />
+                    <div>
+                      <p className="font-bold mb-1">Khu vực hỗ trợ tận nơi:</p>
+                      <p>Hiện tại chúng tôi chỉ hỗ trợ các tỉnh: <strong>Cà Mau, Sóc Trăng, Bạc Liêu</strong>. Các khu vực khác vui lòng liên hệ hotline để được hỗ trợ gửi hàng.</p>
+                    </div>
+                  </div>
+
                   {/* Error */}
                   {error && (
                     <div className="mb-5 flex items-center gap-3 p-3.5 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm font-semibold">
@@ -222,7 +234,7 @@ const ContactPage = () => {
                             type="date" 
                             ref={dateInputRef}
                             name="date"
-                            min={todayStr}
+                            min={getInitialDate()}
                             value={formData.date}
                             onChange={handleChange}
                             className="absolute inset-0 opacity-0 pointer-events-none" 
@@ -235,10 +247,27 @@ const ContactPage = () => {
                       </div>
                     </div>
 
-                    {/* Address */}
-                    <div>
-                      <label className={labelClass}>Địa chỉ <span className="text-gray-400 font-normal normal-case tracking-normal">(nếu sửa tại nhà)</span></label>
-                      <input type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Số nhà, đường, phường, quận / thành phố..." className={inputClass} />
+                    {/* Province + Address */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelClass}>Tỉnh/Thành phố <span className="text-red-500">*</span></label>
+                        <div className="relative">
+                          <select
+                            name="province" required value={formData.province} onChange={handleChange}
+                            className={`${inputClass} appearance-none pr-10 cursor-pointer`}
+                          >
+                            <option value="">-- Chọn Tỉnh/Thành --</option>
+                            <option value="Cà Mau">Cà Mau</option>
+                            <option value="Sóc Trăng">Sóc Trăng</option>
+                            <option value="Bạc Liêu">Bạc Liêu</option>
+                          </select>
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className={labelClass}>Địa chỉ chi tiết <span className="text-red-500">*</span></label>
+                        <input type="text" name="address" required value={formData.address} onChange={handleChange} placeholder="Số nhà, đường, xã/phường..." className={inputClass} />
+                      </div>
                     </div>
 
                     {/* Message */}
