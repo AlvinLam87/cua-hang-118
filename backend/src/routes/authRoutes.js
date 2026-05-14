@@ -49,7 +49,7 @@ router.post('/register/request-otp', async (req, res) => {
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
     const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-    const passwordHash = await bcrypt.hash(password, 12);
+    const passwordHash = await bcrypt.hash(password, 10);
     const key = `email:${normalizedEmail}`;
 
     registerOtpStore.set(key, {
