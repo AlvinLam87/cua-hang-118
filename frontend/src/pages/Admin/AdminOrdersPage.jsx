@@ -241,7 +241,7 @@ const AdminOrdersPage = () => {
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Khách hàng</th>
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Thiết bị</th>
               <th className="text-left px-4 py-3 font-semibold text-gray-600">Lỗi</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-600">Chi phí dự kiến</th>
+              <th className="text-right px-4 py-3 font-semibold text-gray-600">Chi phí</th>
               <th className="text-center px-4 py-3 font-semibold text-gray-600">Trạng thái</th>
               <th className="text-left px-4 py-3 font-semibold text-gray-600">KTV</th>
               <th className="text-center px-4 py-3 font-semibold text-gray-600">Thao tác</th>
@@ -255,7 +255,15 @@ const AdminOrdersPage = () => {
                     <td className="px-4 py-3"><div className="font-semibold text-gray-800">{o.customer?.name || '—'}</div><div className="text-xs text-gray-400">{o.customer?.phone}</div></td>
                     <td className="px-4 py-3 text-gray-700">{o.device_name}</td>
                     <td className="px-4 py-3 text-gray-500 max-w-[200px] truncate">{o.issue}</td>
-                    <td className="px-4 py-3 text-right font-bold text-blue-600">{o.estimated_cost ? `${o.estimated_cost.toLocaleString()}đ` : '—'}</td>
+                    <td className="px-4 py-3 text-right font-bold">
+                      {o.final_cost ? (
+                        <span className="text-emerald-600" title="Chi phí thực tế">{o.final_cost.toLocaleString()}đ</span>
+                      ) : o.estimated_cost ? (
+                        <span className="text-blue-600" title="Chi phí dự kiến">{o.estimated_cost.toLocaleString()}đ</span>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-center"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${st.color || ''}`}>{st.label || o.status}</span></td>
                     <td className="px-4 py-3 text-gray-600">{o.technician_name || '—'}</td>
                     <td className="px-4 py-3 text-center">
