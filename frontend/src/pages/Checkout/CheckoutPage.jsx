@@ -193,6 +193,9 @@ const CheckoutPage = () => {
     setAddressData(prev => ({ ...prev, wardCode: code, wardName: name }));
   };
 
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [tempOrderData, setTempOrderData] = useState(null);
+
   const handleCheckout = async (e) => {
     e.preventDefault();
     if (cart.length === 0) return setError('Giỏ hàng của bạn đang trống.');
@@ -233,14 +236,24 @@ const CheckoutPage = () => {
       const data = await res.json();
 
       if (data.success) {
-        clearCart();
-        navigate('/dat-hang-thanh-cong', { 
-          state: { 
+        if (form.payment_method === 'bank_transfer') {
+          // Nếu chuyển khoản, hiện QR trước
+          setTempOrderData({
             orderId: data.data.order_id,
-            paymentMethod: data.data.payment_method,
             totalAmount: data.data.total_amount
-          } 
-        });
+          });
+          setShowQRCode(true);
+        } else {
+          // Nếu COD, đi thẳng tới trang thành công
+          clearCart();
+          navigate('/dat-hang-thanh-cong', { 
+            state: { 
+              orderId: data.data.order_id,
+              paymentMethod: data.data.payment_method,
+              totalAmount: data.data.total_amount
+            } 
+          });
+        }
       } else {
         setError(data.message || 'Có lỗi xảy ra khi đặt hàng.');
       }
@@ -249,6 +262,18 @@ const CheckoutPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleConfirmPaid = () => {
+    clearCart();
+    setShowQRCode(false);
+    navigate('/dat-hang-thanh-cong', { 
+      state: { 
+        orderId: tempOrderData.orderId,
+        paymentMethod: 'bank_transfer',
+        totalAmount: tempOrderData.totalAmount
+      } 
+    });
   };
 
   if (cart.length === 0) {
@@ -627,6 +652,74 @@ const CheckoutPage = () => {
 
         </div>
       </div>
+      {/* VietQR Payment Modal */}
+      {showQRCode && tempOrderData && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-[0_25px_70px_-15px_rgba(0,0,0,0.4)] relative border border-white/20">
+            {/* Header Decor */}
+            <div className="h-24 bg-linear-to-br from-blue-600 to-indigo-700 relative flex items-center justify-center">
+              <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="px-4 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/30 mb-1">
+                  <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Thanh toán an toàn</span>
+                </div>
+                <h3 className="text-xl font-black text-white">Chuyển Khoản VietQR</h3>
+              </div>
+            </div>
+
+            <div className="p-8 text-center">
+              <div className="mb-6">
+                <p className="text-sm text-gray-500 mb-4">Quét mã dưới đây bằng ứng dụng ngân hàng của bạn</p>
+                
+                {/* QR Frame */}
+                <div className="relative inline-block p-4 bg-white rounded-3xl border-2 border-dashed border-blue-100 shadow-inner group">
+                  <div className="absolute -inset-1 bg-linear-to-r from-blue-600 to-indigo-600 rounded-3xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+                  <div className="relative bg-white rounded-2xl overflow-hidden">
+                    <img 
+                      src={`https://img.vietqr.io/image/VPB-0839280494-compact2.png?amount=${tempOrderData.totalAmount}&addInfo=DH${tempOrderData.orderId}&accountName=LAM DIEN`} 
+                      alt="VietQR" 
+                      className="w-64 h-64 mx-auto object-contain"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Account Info Details */}
+              <div className="bg-slate-50 rounded-2xl p-4 mb-6 text-left border border-slate-100">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">Ngân hàng</span>
+                  <span className="text-sm font-black text-blue-800">VPBANK (Việt Nam Thịnh Vượng)</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">Chủ tài khoản</span>
+                  <span className="text-sm font-black text-slate-900">LAM DIEN</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">Số tiền</span>
+                  <span className="text-sm font-black text-rose-600">{formatPrice(tempOrderData.totalAmount)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">Nội dung</span>
+                  <span className="text-sm font-black text-indigo-600">DH{tempOrderData.orderId}</span>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button 
+                  onClick={handleConfirmPaid}
+                  className="w-full py-4 bg-gray-900 hover:bg-black text-white font-bold rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  Tôi Đã Chuyển Khoản Xong
+                </button>
+                <p className="text-[10px] text-gray-400 italic">
+                  Hệ thống sẽ chuyển bạn đến trang xác nhận sau khi bạn bấm xác nhận.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
