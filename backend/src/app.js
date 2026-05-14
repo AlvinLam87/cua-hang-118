@@ -40,6 +40,7 @@ app.use('/api/v1/products', require('./routes/productRoutes'));
 app.use('/api/v1/tracking', require('./routes/trackingRoutes'));
 app.use('/api/v1/bookings', require('./routes/bookingRoutes'));
 app.use('/api/v1/orders', require('./routes/orderRoutes'));
+app.use('/api/v1/payments', require('./routes/paymentRoutes'));
 app.use('/api/v1/technician', require('./routes/technicianRoutes'));
 app.use('/api/v1/reviews', require('./routes/reviewRoutes'));
 app.use('/api/v1/categories', require('./routes/categoryRoutes'));

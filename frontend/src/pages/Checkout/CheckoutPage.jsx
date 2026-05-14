@@ -294,14 +294,14 @@ const CheckoutPage = () => {
   return (
     <div className="bg-transparent min-h-screen pb-20">
       {/* Header */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white py-12 text-center">
+      <div className="relative overflow-hidden bg-linear-to-r from-slate-900 via-slate-800 to-indigo-950 text-white py-12 text-center">
         <div className="absolute -top-10 right-16 w-44 h-44 bg-blue-400/20 blur-3xl rounded-full" />
         <div className="absolute -bottom-12 left-16 w-52 h-52 bg-indigo-500/20 blur-3xl rounded-full" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left">
           <Link to="/cua-hang" className="inline-flex items-center gap-2 text-sm text-indigo-200 hover:text-white transition mb-5 font-semibold">
             <ArrowLeft className="w-4 h-4" /> Quay lại xem sản phẩm
           </Link>
-          <h1 className="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-indigo-200">
+          <h1 className="text-3xl md:text-4xl font-extrabold mb-3 text-transparent bg-clip-text bg-linear-to-r from-blue-300 to-indigo-200">
             Giỏ Hàng & Thanh Toán
           </h1>
           <p className="text-indigo-100/80">Hoàn tất thông tin để Cửa Hàng 118 giao hàng nhanh và an toàn.</p>
@@ -330,7 +330,7 @@ const CheckoutPage = () => {
                 </div>
               )}
               {!isLoggedIn && (
-                <div className="mb-6 p-4 sm:p-5 rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-900 shadow-[0_12px_30px_-22px_rgba(245,158,11,0.7)]">
+                <div className="mb-6 p-4 sm:p-5 rounded-2xl border border-amber-200/80 bg-linear-to-r from-amber-50 to-orange-50 text-amber-900 shadow-[0_12px_30px_-22px_rgba(245,158,11,0.7)]">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                       <p className="text-sm font-extrabold">Yêu cầu đăng nhập trước khi thanh toán</p>
@@ -615,7 +615,7 @@ const CheckoutPage = () => {
                 )}
               </div>
 
-              <div className="border-t border-gray-100 pt-5 space-y-3 mb-6 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
+              <div className="border-t border-gray-100 pt-5 space-y-3 mb-6 rounded-2xl bg-linear-to-r from-blue-50 to-indigo-50 p-4">
                 <div className="flex justify-between text-sm text-gray-600 font-medium">
                   <span>Tạm tính</span>
                   <span>{formatPrice(cartTotal)}</span>
@@ -634,7 +634,7 @@ const CheckoutPage = () => {
                 )}
                 <div className="flex justify-between items-center pt-3 border-t border-gray-100">
                   <span className="text-gray-900 font-bold text-lg">Tổng cộng</span>
-                  <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700">{formatPrice(finalTotal)}</span>
+                  <span className="text-3xl font-black text-transparent bg-clip-text bg-linear-to-r from-blue-700 to-indigo-700">{formatPrice(finalTotal)}</span>
                 </div>
               </div>
 
@@ -642,7 +642,7 @@ const CheckoutPage = () => {
                 type="submit" 
                 form="checkout-form"
                 disabled={loading || !isLoggedIn}
-                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/25 cursor-pointer"
+                className="w-full py-4 bg-linear-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/25 cursor-pointer"
               >
                 {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <CheckCircle2 className="w-6 h-6" />}
                 {isLoggedIn ? 'Xác Nhận Đặt Hàng' : 'Đăng nhập để thanh toán'}
@@ -657,7 +657,7 @@ const CheckoutPage = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden shadow-[0_25px_70px_-15px_rgba(0,0,0,0.4)] relative border border-white/20">
             {/* Header Decor */}
-            <div className="h-24 bg-gradient-to-br from-blue-600 to-indigo-700 relative flex items-center justify-center">
+            <div className="h-24 bg-linear-to-br from-blue-600 to-indigo-700 relative flex items-center justify-center">
               <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
               <div className="relative z-10 flex flex-col items-center">
                 <div className="px-4 py-1 bg-white/20 backdrop-blur-md rounded-full border border-white/30 mb-1">
@@ -673,7 +673,7 @@ const CheckoutPage = () => {
                 
                 {/* QR Frame */}
                 <div className="relative inline-block p-4 bg-white rounded-3xl border-2 border-dashed border-blue-100 shadow-inner group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+                  <div className="absolute -inset-1 bg-linear-to-r from-blue-600 to-indigo-600 rounded-3xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
                   <div className="relative bg-white rounded-2xl overflow-hidden">
                     <img 
                       src={`https://img.vietqr.io/image/VPB-0839280494-compact2.png?amount=${tempOrderData.totalAmount}&addInfo=DH${tempOrderData.orderId}&accountName=LAM DIEN`} 
