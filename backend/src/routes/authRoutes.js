@@ -104,11 +104,16 @@ router.post('/register/request-otp', async (req, res) => {
       `,
     });
 
+    if (!delivered) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Không thể gửi email xác nhận. Vui lòng kiểm tra cấu hình SMTP hoặc thử lại sau.' 
+      });
+    }
+
     res.json({
       success: true,
-      message: delivered
-        ? 'Da gui ma xac nhan 6 so qua email. Vui long kiem tra hop thu.'
-        : 'He thong email chua san sang. Ban van co the dung ma xac nhan trong moi truong development.',
+      message: 'Mã xác nhận 6 số đã được gửi qua email. Vui lòng kiểm tra hộp thư (cả hòm thư Rác/Spam).',
       ...(process.env.NODE_ENV === 'development' && { devOtp: otp }),
     });
   } catch (err) {
