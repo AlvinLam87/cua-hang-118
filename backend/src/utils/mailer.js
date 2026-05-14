@@ -20,11 +20,18 @@ const createTransporter = () => {
     port: port,
     secure: isSecure, 
     pool: true,
+    connectionTimeout: 10000, // 10 giây chờ kết nối
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s/g, '') : '',
     },
-    tls: { rejectUnauthorized: false }
+    tls: { 
+      rejectUnauthorized: false,
+      servername: 'smtp.gmail.com' // Quan trọng khi dùng IP hoặc cổng 465
+    },
+    family: 4 // Ép sử dụng IPv4 để tránh lỗi network trên Render
   });
 
   return transporterInstance;
