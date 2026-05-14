@@ -306,7 +306,7 @@ const ContactPage = () => {
                     <span className="text-blue-600 font-bold">30 phút</span>.
                   </p>
                   <button
-                    onClick={() => { setSubmitted(false); setFormData({ name: '', phone: '', email: '', service: '', date: todayStr, time: '', address: '', message: '', preferred_technician_id: '' }); }}
+                    onClick={() => { setSubmitted(false); setFormData({ name: '', phone: '', email: '', service: '', date: getInitialDate(), time: getInitialTime(), province: '', address: '', message: '', preferred_technician_id: '' }); }}
                     className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-sm transition-colors"
                   >
                     Đặt lịch khác
