@@ -105,12 +105,12 @@ router.post('/register/request-otp', async (req, res) => {
     });
 
     if (!delivered) {
-      const isMissingConfig = !process.env.SMTP_USER || !process.env.SMTP_PASS;
+      const isMissingConfig = !process.env.RESEND_API_KEY;
       if (isMissingConfig) {
         return res.json({
           success: true,
-          message: 'Hệ thống email chưa được cấu hình. Mã OTP của bạn là: ' + otp,
-          devOtp: otp // Trả về để bạn có thể copy vào ô nhập
+          message: 'Hệ thống email chưa được cấu hình API Key. Mã OTP của bạn là: ' + otp,
+          devOtp: otp 
         });
       }
       
