@@ -5,6 +5,15 @@ const { RepairOrder, Booking, Customer, Product, User, sequelize } = require('..
 const { jwtSecret } = require('../config/env');
 const upload = require('../utils/upload');
 
+const STATUS_LABELS = {
+  received:   'Tiếp nhận thiết bị',
+  diagnosing: 'Đang chẩn đoán',
+  quoted:     'Đã báo giá',
+  in_progress:'Đang sửa chữa',
+  testing:    'Đang kiểm tra',
+  completed:  'Hoàn thành',
+};
+
 // Middleware: Require Technician role
 const requireTechnician = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -265,14 +274,6 @@ router.patch('/repairs/:id/next-step', requireTechnician, async (req, res) => {
       }
     }
 
-    const STATUS_LABELS = {
-      received:   'Tiếp nhận thiết bị',
-      diagnosing: 'Đang chẩn đoán',
-      quoted:     'Đã báo giá',
-      in_progress:'Đang sửa chữa',
-      testing:    'Đang kiểm tra',
-      completed:  'Hoàn thành',
-    };
 
     res.json({
       success: true,
