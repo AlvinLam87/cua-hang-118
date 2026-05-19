@@ -68,7 +68,16 @@ const AdminLayout = () => {
     fetchStats();
 
     // ── Socket.io: Re-fetch stats on any change ──────────────────
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || API_BASE_URL;
+    const getSocketUrl = () => {
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('172.')) {
+          return `http://${hostname}:3001`;
+        }
+      }
+      return import.meta.env.VITE_SOCKET_URL || API_BASE_URL;
+    };
+    const socketUrl = getSocketUrl();
     const socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       reconnection: true,
