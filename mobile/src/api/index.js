@@ -5,7 +5,14 @@ import { Platform } from 'react-native';
 
 import Constants from 'expo-constants';
 
+// ĐỔI THÀNH true để kết nối với server ONLINE (cuahang118.online), ĐỔI THÀNH false để test ở máy tính LOCAL
+const IS_PRODUCTION = true;
+
 const getBaseUrl = () => {
+  if (IS_PRODUCTION) {
+    return 'https://cua-hang-118.onrender.com/api/v1';
+  }
+
   if (Platform.OS === 'web') return 'http://localhost:3001/api/v1';
   
   // Nếu là máy ảo (Emulator), bắt buộc dùng 10.0.2.2 để không bị vướng tường lửa Windows
