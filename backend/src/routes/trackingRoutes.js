@@ -104,6 +104,10 @@ router.get('/', async (req, res) => {
         diagnosis: order.diagnosis,
         estimatedCost: order.estimated_cost,
         finalCost: order.final_cost,
+        completedDate: order.completed_date,
+        warrantyPeriod: order.warranty_period,
+        warrantyExpiry: order.warranty_expiry,
+        warrantyTerms: order.warranty_terms,
         steps: steps,
       },
     });

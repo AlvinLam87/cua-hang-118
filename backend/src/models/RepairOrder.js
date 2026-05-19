@@ -72,6 +72,19 @@ const RepairOrder = sequelize.define('repair_orders', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  warranty_period: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 0,
+  },
+  warranty_expiry: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+  },
+  warranty_terms: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   booking_id: {
     type: DataTypes.INTEGER,
     allowNull: true,

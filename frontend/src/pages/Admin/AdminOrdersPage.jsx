@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Loader2, Pencil, X, Save, Activity, UserRound, Stethoscope, Wallet, Search,
-  Info, Camera, CheckCircle2, Clock, CalendarDays, Phone, DollarSign, TrendingUp, ChevronRight
+  Info, Camera, CheckCircle2, Clock, CalendarDays, Phone, DollarSign, TrendingUp, ChevronRight, ShieldCheck
 } from 'lucide-react';
 import { resolveMediaUrl } from '../../utils/media.js';
 import { formatDate, formatDateTime } from '../../utils/format.js';
@@ -30,7 +30,7 @@ const AdminOrdersPage = () => {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [form, setForm] = useState({ status: '', technician_name: '', estimated_cost: '', final_cost: '', diagnosis: '' });
+  const [form, setForm] = useState({ status: '', technician_name: '', estimated_cost: '', final_cost: '', diagnosis: '', warranty_period: 0, warranty_terms: '' });
   const [feedback, setFeedback] = useState({ type: '', message: '' });
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -79,9 +79,150 @@ const AdminOrdersPage = () => {
     window.setTimeout(() => setFeedback({ type: '', message: '' }), 3000);
   };
 
+  const handlePrint = (order) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Vui lòng cho phép trình duyệt mở popup để in phiếu bảo hành!');
+      return;
+    }
+
+    const startWarranty = order.completed_date ? new Date(order.completed_date).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN');
+    const expiryWarranty = order.warranty_expiry ? new Date(order.warranty_expiry).toLocaleDateString('vi-VN') : 'Không bảo hành';
+
+    const htmlContent = `
+      <html>
+      <head>
+        <title>In Phiếu Bảo Hành #${order.receipt_code}</title>
+        <style>
+          @page { size: 80mm auto; margin: 0; }
+          body {
+            font-family: 'Courier New', Courier, monospace;
+            width: 76mm;
+            margin: 0 auto;
+            padding: 5mm 2mm;
+            font-size: 11px;
+            color: #000;
+            line-height: 1.4;
+          }
+          .text-center { text-align: center; }
+          .header { margin-bottom: 5mm; border-bottom: 1px dashed #000; padding-bottom: 3mm; }
+          .store-name { font-size: 16px; font-weight: bold; }
+          .store-slogan { font-size: 9px; font-style: italic; margin-top: 1mm; }
+          .title { font-size: 13px; font-weight: bold; margin: 4mm 0; }
+          .mono-code { font-weight: bold; font-size: 12px; }
+          .info-table { width: 100%; border-collapse: collapse; margin-top: 3mm; }
+          .info-table td { padding: 1.5mm 0; vertical-align: top; }
+          .info-table td:first-child { width: 35%; font-weight: bold; }
+          .divider { border-top: 1px dashed #000; margin: 4mm 0; }
+          .terms { font-size: 9px; text-align: justify; }
+          .signatures { display: flex; justify-content: space-between; margin-top: 8mm; text-align: center; }
+          .signature-box { width: 45%; }
+          .signature-space { height: 12mm; }
+          .footer { font-size: 8px; margin-top: 6mm; border-top: 1px dashed #000; padding-top: 3mm; font-style: italic; }
+        </style>
+      </head>
+      <body>
+        <div class="text-center header">
+          <div class="store-name">CỬA HÀNG 118</div>
+          <div class="store-slogan">Chuyên Nghiệp - Tận Tâm - Uy Tín</div>
+          <div style="font-size: 9px; margin-top: 1mm;">Đ/C: Cà Mau - Sóc Trăng - Bạc Liêu</div>
+          <div style="font-size: 9px;">Hotline: 0704.818.118</div>
+        </div>
+
+        <div class="text-center">
+          <div class="title">PHIẾU BẢO HÀNH ĐIỆN TỬ</div>
+          <div class="mono-code">[ ${order.receipt_code} ]</div>
+        </div>
+
+        <table class="info-table">
+          <tr>
+            <td>Khách hàng:</td>
+            <td>${order.customer?.name || 'Khách lẻ'}</td>
+          </tr>
+          <tr>
+            <td>Điện thoại:</td>
+            <td>${order.customer?.phone || '—'}</td>
+          </tr>
+          <tr>
+            <td>Thiết bị:</td>
+            <td>${order.device_name}</td>
+          </tr>
+          <tr>
+            <td>Nội dung:</td>
+            <td>${order.issue || 'Sửa chữa thiết bị'}</td>
+          </tr>
+          <tr>
+            <td>KTV xử lý:</td>
+            <td>${order.technician_name || 'Cửa hàng 118'}</td>
+          </tr>
+          <tr>
+            <td>Thành tiền:</td>
+            <td>${order.final_cost ? order.final_cost.toLocaleString('vi-VN') + 'đ' : '—'}</td>
+          </tr>
+          <tr>
+            <td>Bảo hành:</td>
+            <td><strong>${order.warranty_period ? order.warranty_period + ' tháng' : 'Không bảo hành'}</strong></td>
+          </tr>
+          <tr>
+            <td>Bắt đầu:</td>
+            <td>${startWarranty}</td>
+          </tr>
+          <tr>
+            <td>Hết hạn:</td>
+            <td><strong>${expiryWarranty}</strong></td>
+          </tr>
+        </table>
+
+        <div class="divider"></div>
+
+        <div class="terms">
+          <strong>ĐIỀU KHOẢN BẢO HÀNH:</strong><br/>
+          ${order.warranty_terms || 'Bảo hành linh kiện thay thế trong thời hạn quy định. Không bảo hành rơi vỡ, cấn móp, ngập nước, cháy nổ, hoặc rách tem bảo hành.'}
+        </div>
+
+        <div class="signatures">
+          <div class="signature-box">
+            <strong>Khách Hàng</strong>
+            <div class="signature-space"></div>
+            <i>(Ký, ghi rõ họ tên)</i>
+          </div>
+          <div class="signature-box">
+            <strong>Kỹ Thuật Viên</strong>
+            <div class="signature-space"></div>
+            <i>${order.technician_name || 'Cửa Hàng 118'}</i>
+          </div>
+        </div>
+
+        <div class="text-center footer">
+          Cảm ơn quý khách đã tin tưởng Cửa Hàng 118!<br/>
+          Quét QR trên thẻ hoặc vào trang web để tra cứu online.
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+            setTimeout(function() { window.close(); }, 500);
+          }
+        <\/script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
+
   const openEdit = (o) => {
     setEditing(o.id);
-    setForm({ status: o.status, technician_name: o.technician_name || '', estimated_cost: o.estimated_cost || '', final_cost: o.final_cost || '', diagnosis: o.diagnosis || '' });
+    setForm({ 
+      status: o.status, 
+      technician_name: o.technician_name || '', 
+      estimated_cost: o.estimated_cost || '', 
+      final_cost: o.final_cost || '', 
+      diagnosis: o.diagnosis || '',
+      warranty_period: o.warranty_period || 0,
+      warranty_terms: o.warranty_terms || 'Bảo hành linh kiện thay thế trong thời hạn bảo hành. Không bảo hành trong trường hợp: Thiết bị có dấu hiệu rơi vỡ, cấn móp, ngập nước, cháy nổ hoặc tem bảo hành của cửa hàng bị rách/tác động.'
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -227,7 +368,41 @@ const AdminOrdersPage = () => {
                   <div className="relative">
                   <Wallet className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input type="number" value={form.final_cost} onChange={e => setForm({...form, final_cost: e.target.value})} className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" /></div></div>
-              <button type="submit" className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 md:col-span-2 shadow-lg shadow-blue-600/20"><Save className="w-4 h-4" /> Cập Nhật</button>
+              
+              {['completed', 'returned'].includes(form.status) && (
+                <>
+                  <div className="md:col-span-2 border-t border-dashed border-gray-200 pt-3.5 mt-2">
+                    <span className="text-xs font-black text-blue-600 uppercase tracking-widest">Thông tin Bảo hành điện tử</span>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Thời hạn bảo hành</label>
+                    <select
+                      value={form.warranty_period}
+                      onChange={e => setForm({...form, warranty_period: Number(e.target.value)})}
+                      className="w-full px-3.5 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      <option value={0}>Không bảo hành</option>
+                      <option value={1}>1 tháng</option>
+                      <option value={3}>3 tháng</option>
+                      <option value={6}>6 tháng</option>
+                      <option value={12}>12 tháng</option>
+                      <option value={24}>24 tháng</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Điều khoản bảo hành</label>
+                    <textarea
+                      value={form.warranty_terms}
+                      onChange={e => setForm({...form, warranty_terms: e.target.value})}
+                      rows="2"
+                      className="w-full px-3.5 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none text-xs"
+                      placeholder="Nhập điều khoản bảo hành..."
+                    />
+                  </div>
+                </>
+              )}
+
+              <button type="submit" className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 md:col-span-2 shadow-lg shadow-blue-600/20 mt-2"><Save className="w-4 h-4" /> Cập Nhật</button>
             </form>
           </div>
         </div>
@@ -355,6 +530,28 @@ const AdminOrdersPage = () => {
                         <p className="text-sm font-bold text-gray-900">{selectedDetail.estimated_cost?.toLocaleString()}đ</p>
                       </div>
                     </div>
+
+                    {['completed', 'returned'].includes(selectedDetail.status) && (
+                      <div className="flex items-start gap-3 p-3 bg-blue-50/50 border border-blue-100/50 rounded-2xl">
+                        <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center shadow-sm shrink-0"><ShieldCheck className="w-5 h-5" /></div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Bảo hành điện tử</p>
+                          <p className="text-sm font-bold text-gray-900 mt-1">
+                            Thời hạn: {selectedDetail.warranty_period ? `${selectedDetail.warranty_period} tháng` : 'Không bảo hành'}
+                          </p>
+                          {selectedDetail.warranty_expiry && (
+                            <p className="text-[10px] text-gray-500 mt-0.5">
+                              Hết hạn: {formatDate(selectedDetail.warranty_expiry)}
+                            </p>
+                          )}
+                          {selectedDetail.warranty_terms && (
+                            <p className="text-[10px] text-gray-500 leading-relaxed mt-2 border-t border-blue-100/50 pt-1.5 font-medium italic">
+                              {selectedDetail.warranty_terms}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -393,7 +590,15 @@ const AdminOrdersPage = () => {
                 </div>
               </div>
             </div>
-            <div className="p-6 bg-gray-50 flex justify-end border-t border-gray-100">
+            <div className="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
+              {['completed', 'returned'].includes(selectedDetail.status) && (
+                <button
+                  onClick={() => handlePrint(selectedDetail)}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-2xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center gap-2"
+                >
+                  In Phiếu Bảo Hành
+                </button>
+              )}
               <button onClick={() => setSelectedDetail(null)} className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-2xl text-sm font-bold hover:bg-gray-50 transition-all shadow-sm">Đóng</button>
             </div>
           </div>

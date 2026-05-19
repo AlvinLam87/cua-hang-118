@@ -325,10 +325,25 @@ router.put('/orders/:id', requireAdmin, async (req, res) => {
     if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy.' });
 
     const prevStatus = order.status;
-    const newStatus = req.body.status;
+    const newStatus = req.body.status || prevStatus;
 
-    if (newStatus === 'completed' && prevStatus !== 'completed') {
-      req.body.completed_date = new Date().toISOString();
+    if (['completed', 'returned'].includes(newStatus) && !['completed', 'returned'].includes(prevStatus)) {
+      if (!order.completed_date) {
+        req.body.completed_date = new Date().toISOString();
+      }
+    }
+
+    // Tự động tính ngày hết hạn bảo hành
+    if (['completed', 'returned'].includes(newStatus)) {
+      const period = req.body.warranty_period !== undefined ? parseInt(req.body.warranty_period, 10) : parseInt(order.warranty_period, 10);
+      if (period > 0) {
+        const startDateStr = req.body.completed_date || order.completed_date || new Date().toISOString();
+        const startDate = new Date(startDateStr);
+        startDate.setMonth(startDate.getMonth() + period);
+        req.body.warranty_expiry = startDate.toISOString().slice(0, 10);
+      } else if (req.body.warranty_period !== undefined && period === 0) {
+        req.body.warranty_expiry = null;
+      }
     }
 
     await order.update(req.body);

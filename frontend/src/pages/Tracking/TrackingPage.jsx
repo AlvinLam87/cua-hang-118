@@ -21,6 +21,21 @@ const TrackingPage = () => {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const getWarrantyStatus = useCallback(() => {
+    if (!result || !result.warrantyExpiry) return { active: false, text: 'Không bảo hành', daysLeft: 0 };
+    const expiry = new Date(result.warrantyExpiry);
+    const today = new Date();
+    expiry.setHours(0,0,0,0);
+    today.setHours(0,0,0,0);
+    const diffTime = expiry.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays >= 0) {
+      return { active: true, text: 'Đang hoạt động', daysLeft: diffDays };
+    } else {
+      return { active: false, text: 'Đã hết hạn', daysLeft: diffDays };
+    }
+  }, [result]);
+
   const handleSearch = useCallback(async (e) => {
     if (e) e.preventDefault();
     // Use either the current query state or a forced value
@@ -70,6 +85,7 @@ const TrackingPage = () => {
   }, [query, location.search, searched, loading, handleSearch]);
 
   const statusInfo = result ? (statusStyles[result.status] || { color: 'text-gray-400 bg-gray-400/10 border-gray-400/20', label: result.statusLabel, icon: <Package className="w-5 h-5" /> }) : null;
+  const wStatus = getWarrantyStatus();
 
   return (
     <div className="bg-[#0f172a] min-h-screen pb-24 text-slate-200 selection:bg-blue-500/30 font-sans">
@@ -223,6 +239,80 @@ const TrackingPage = () => {
                             <p className="text-3xl font-black text-emerald-400">{result.finalCost.toLocaleString('vi-VN')}đ</p>
                           </div>
                         )}
+                      </div>
+                    )}
+
+                    {/* Thẻ Bảo Hành Điện Tử Bento Style */}
+                    {['completed', 'returned'].includes(result.status) && (
+                      <div className="relative overflow-hidden bg-gradient-to-br from-[#161f35] to-[#0e1526] border border-blue-500/20 rounded-[36px] p-8 sm:p-10 shadow-2xl group transition-all duration-700 mt-10">
+                        {/* Glow backdrops */}
+                        <div className="absolute -top-12 -right-12 w-48 h-48 bg-blue-500/15 rounded-full blur-[50px] group-hover:bg-blue-500/25 transition-all duration-500" />
+                        <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-indigo-500/10 rounded-full blur-[40px]" />
+                        
+                        <div className="relative z-10">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 pb-6 border-b border-white/5">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 text-blue-400 rounded-2xl flex items-center justify-center border border-blue-500/30 shadow-lg shadow-blue-900/20 relative">
+                                <span className="absolute inset-0 bg-blue-400/20 blur-md rounded-2xl animate-pulse" />
+                                <ShieldCheck className="w-7 h-7 relative z-10" />
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Cửa Hàng 118</span>
+                                <h4 className="text-2xl font-black text-white tracking-tight mt-0.5">BẢO HÀNH ĐIỆN TỬ</h4>
+                              </div>
+                            </div>
+
+                            {/* Badge */}
+                            <div className={`px-4.5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider border flex items-center gap-2 transition-all ${
+                              wStatus.active 
+                                ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 shadow-lg shadow-emerald-950/20' 
+                                : 'bg-rose-500/10 border-rose-500/25 text-rose-400'
+                            }`}>
+                              <span className={`w-2 h-2 rounded-full ${wStatus.active ? 'bg-emerald-400 animate-ping' : 'bg-rose-400'}`} />
+                              {wStatus.text}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
+                            <div className="space-y-1">
+                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Thời hạn bảo hành</p>
+                              <p className="text-lg font-black text-white">
+                                {result.warrantyPeriod ? `${result.warrantyPeriod} tháng` : 'Không bảo hành'}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Ngày hết hạn</p>
+                              <p className="text-lg font-black text-white">
+                                {result.warrantyExpiry ? new Date(result.warrantyExpiry).toLocaleDateString('vi-VN') : '—'}
+                              </p>
+                            </div>
+                            
+                            {wStatus.active && result.warrantyExpiry && (
+                              <div className="sm:col-span-2 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-5 flex items-center gap-4.5">
+                                <div className="w-10 h-10 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center shrink-0">
+                                  <Clock className="w-5 h-5" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-bold text-slate-400">Thời gian bảo hành còn lại</p>
+                                  <p className="text-lg font-black text-emerald-400 mt-0.5">
+                                    Còn <span className="text-2xl font-black">{wStatus.daysLeft}</span> ngày bảo hành
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {result.warrantyTerms && (
+                            <div className="bg-black/20 rounded-2xl p-6 border border-white/5">
+                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Info className="w-3.5 h-3.5 text-blue-400" /> Điều khoản áp dụng
+                              </p>
+                              <p className="text-slate-300 text-sm font-medium leading-relaxed italic">
+                                {result.warrantyTerms}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
