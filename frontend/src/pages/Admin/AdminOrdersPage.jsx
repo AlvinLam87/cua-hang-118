@@ -125,7 +125,7 @@ const AdminOrdersPage = () => {
         <div class="text-center header">
           <div class="store-name">CỬA HÀNG 118</div>
           <div class="store-slogan">Chuyên Nghiệp - Tận Tâm - Uy Tín</div>
-          <div style="font-size: 9px; margin-top: 1mm;">Đ/C: Cà Mau - Sóc Trăng - Bạc Liêu</div>
+          <div style="font-size: 9px; margin-top: 1mm;">Đ/C: Tỉnh Bạc Liêu</div>
           <div style="font-size: 9px;">Hotline: 0704.818.118</div>
         </div>
 

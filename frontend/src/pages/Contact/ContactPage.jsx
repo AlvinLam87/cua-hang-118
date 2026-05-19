@@ -26,7 +26,7 @@ const ContactPage = () => {
   const [formData, setFormData] = useState({
     name: '', phone: '', email: '', service: '', 
     date: getInitialDate(), time: getInitialTime(), 
-    province: '', address: '', message: '', preferred_technician_id: '',
+    province: 'Bạc Liêu', address: '', message: '', preferred_technician_id: '',
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -173,7 +173,7 @@ const ContactPage = () => {
                     <AlertCircle className="w-5 h-5 shrink-0 text-amber-500" />
                     <div>
                       <p className="font-bold mb-1">Khu vực hỗ trợ tận nơi:</p>
-                      <p>Hiện tại chúng tôi chỉ hỗ trợ các tỉnh: <strong>Cà Mau, Sóc Trăng, Bạc Liêu</strong>. Các khu vực khác vui lòng liên hệ hotline để được hỗ trợ gửi hàng.</p>
+                      <p>Hiện tại chúng tôi chỉ hỗ trợ tại tỉnh: <strong>Bạc Liêu</strong>. Các khu vực khác vui lòng liên hệ hotline để được hỗ trợ gửi hàng.</p>
                     </div>
                   </div>
 
@@ -257,8 +257,6 @@ const ContactPage = () => {
                             className={`${inputClass} appearance-none pr-10 cursor-pointer`}
                           >
                             <option value="">-- Chọn Tỉnh/Thành --</option>
-                            <option value="Cà Mau">Cà Mau</option>
-                            <option value="Sóc Trăng">Sóc Trăng</option>
                             <option value="Bạc Liêu">Bạc Liêu</option>
                           </select>
                           <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />

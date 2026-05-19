@@ -48,7 +48,7 @@ const ServicesPage = () => {
   const nowTimeStr = now.toISOString().split('T')[1].substring(0, 5); // "HH:mm"
 
   const [formData, setFormData] = useState({
-    name: '', phone: '', email: '', service: '', date: todayStr, time: nowTimeStr, address: '', message: '', preferred_technician_id: ''
+    name: '', phone: '', email: '', service: '', date: todayStr, time: nowTimeStr, province: 'Bạc Liêu', address: '', message: '', preferred_technician_id: ''
   });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -528,7 +528,7 @@ const ServicesPage = () => {
                     <p className="text-xs font-black tracking-wider uppercase text-gray-400 mb-2">Khu vực hỗ trợ</p>
                     <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[11px] text-amber-800 mb-4">
                       <AlertCircle className="w-3.5 h-3.5 inline mr-1" />
-                      Hiện tại chúng tôi chỉ hỗ trợ sửa chữa tận nơi tại: <strong>Cà Mau, Sóc Trăng, Bạc Liêu</strong>.
+                      Hiện tại chúng tôi chỉ hỗ trợ sửa chữa tận nơi tại: <strong>Bạc Liêu</strong>.
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -541,8 +541,6 @@ const ServicesPage = () => {
                           className="w-full px-4 py-3 bg-white/80 border border-blue-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           <option value="">Chọn Tỉnh/Thành</option>
-                          <option value="Cà Mau">Cà Mau</option>
-                          <option value="Sóc Trăng">Sóc Trăng</option>
                           <option value="Bạc Liêu">Bạc Liêu</option>
                         </select>
                       </div>
