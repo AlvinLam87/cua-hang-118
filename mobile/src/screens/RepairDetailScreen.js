@@ -401,6 +401,39 @@ const RepairDetailScreen = ({ route, navigation }) => {
           )}
         </View>
 
+        {/* Warranty Info Card (If Completed & has warranty) */}
+        {['completed', 'returned'].includes(data.status) && (
+          <View style={[styles.card, styles.warrantyCard]}>
+            <View style={styles.deviceHeader}>
+              <CheckCircle2 color="#10B981" size={20} />
+              <Text style={[styles.sectionTitle, { color: '#059669' }]}>Thông tin bảo hành điện tử</Text>
+            </View>
+            <View style={styles.divider} />
+            
+            <View style={styles.deviceRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>Thời hạn bảo hành</Text>
+                <Text style={[styles.value, { fontWeight: '700', color: data.warranty_period > 0 ? '#10B981' : '#64748B' }]}>
+                  {data.warranty_period > 0 ? `${data.warranty_period} tháng` : 'Không bảo hành'}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>Ngày hết hạn</Text>
+                <Text style={[styles.value, { fontWeight: '700', color: data.warranty_expiry ? '#2563EB' : '#64748B' }]}>
+                  {data.warranty_expiry ? new Date(data.warranty_expiry).toLocaleDateString('vi-VN') : '—'}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.label}>Điều khoản bảo hành</Text>
+            <View style={[styles.issueBox, { backgroundColor: '#F0FDF4', borderColor: '#DCFCE7', borderWidth: 1 }]}>
+              <Text style={[styles.issueText, { color: '#065F46', fontSize: 13, fontStyle: 'italic' }]}>
+                {data.warranty_terms || 'Không có điều khoản riêng (áp dụng điều khoản chung của cửa hàng).'}
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Progress Card */}
         <View style={styles.card}>
           <View style={styles.deviceHeader}>
@@ -887,6 +920,10 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontStyle: 'italic',
     marginTop: 10,
+  },
+  warrantyCard: {
+    borderColor: '#A7F3D0',
+    backgroundColor: '#FAFDFB',
   },
 });
 
