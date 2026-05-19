@@ -402,6 +402,99 @@ router.put('/orders/:id', requireAdmin, async (req, res) => {
       }
     }
 
+    // ── Gửi email thông báo bảo hành điện tử nếu hoàn tất ────────────
+    if (['completed', 'returned'].includes(newStatus) && !['completed', 'returned'].includes(prevStatus)) {
+      try {
+        const customer = await Customer.findByPk(order.customer_id);
+        if (customer && customer.email) {
+          const { sendEmail } = require('../utils/mailer');
+          
+          const warrantyPeriodText = order.warranty_period > 0 ? `${order.warranty_period} tháng` : 'Không bảo hành';
+          const warrantyExpiryText = order.warranty_expiry ? new Date(order.warranty_expiry).toLocaleDateString('vi-VN') : '—';
+          const finalCostText = order.final_cost ? `${Number(order.final_cost).toLocaleString('vi-VN')}đ` : '—';
+
+          const emailSubject = `[Cửa Hàng 118] Xác nhận Hoàn tất & Kích hoạt Bảo hành Điện tử #${order.receipt_code}`;
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff; color: #1e293b;">
+              <div style="text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 20px; margin-bottom: 25px;">
+                <h2 style="color: #1d4ed8; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">CỬA HÀNG 118</h2>
+                <p style="color: #64748b; margin: 5px 0 0 0; font-size: 12px; text-transform: uppercase; font-weight: bold; letter-spacing: 1.5px;">Bảo Hành Điện Tử Thông Minh</p>
+              </div>
+
+              <h3 style="color: #0f172a; font-size: 18px; font-weight: 700; margin-top: 0;">Xin chào ${customer.name || 'Quý khách'},</h3>
+              <p style="line-height: 1.6; color: #334155; font-size: 14px;">
+                Chúng tôi xin trân trọng thông báo thiết bị của bạn đã được sửa chữa hoàn tất và bàn giao thành công. **Hệ thống bảo hành điện tử** của thiết bị đã được tự động kích hoạt trên website!
+              </p>
+
+              <!-- Thẻ Bảo Hành Điện Tử Bento Style -->
+              <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #ffffff; border-radius: 16px; padding: 25px; margin: 25px 0; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
+                <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 12px; font-weight: bold; color: #38bdf8; letter-spacing: 1px;">THẺ BẢO HÀNH ĐIỆN TỬ</span>
+                  <span style="font-size: 11px; font-weight: bold; padding: 4px 10px; background-color: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.3); color: #34d399; border-radius: 9999px;">ĐANG HOẠT ĐỘNG</span>
+                </div>
+                
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 8px 0; font-size: 13px; color: #94a3b8; width: 40%;">Mã biên nhận:</td>
+                    <td style="padding: 8px 0; font-size: 13px; font-weight: bold; color: #ffffff;">${order.receipt_code}</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 8px 0; font-size: 13px; color: #94a3b8;">Tên thiết bị:</td>
+                    <td style="padding: 8px 0; font-size: 13px; font-weight: bold; color: #ffffff;">${order.device_name}</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 8px 0; font-size: 13px; color: #94a3b8;">Thời hạn bảo hành:</td>
+                    <td style="padding: 8px 0; font-size: 13px; font-weight: bold; color: #34d399;">${warrantyPeriodText}</td>
+                  </tr>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 8px 0; font-size: 13px; color: #94a3b8;">Ngày hết hạn:</td>
+                    <td style="padding: 8px 0; font-size: 13px; font-weight: bold; color: #38bdf8;">${warrantyExpiryText}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-size: 13px; color: #94a3b8;">Chi phí dịch vụ:</td>
+                    <td style="padding: 8px 0; font-size: 13px; font-weight: bold; color: #f59e0b;">${finalCostText}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Điều khoản -->
+              <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+                <h4 style="margin: 0 0 5px 0; color: #1e293b; font-size: 12px; font-weight: 800; text-transform: uppercase;">Điều khoản bảo hành:</h4>
+                <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.5; font-style: italic;">
+                  ${order.warranty_terms || 'Bảo hành linh kiện thay thế trong thời hạn bảo hành. Không bảo hành trong trường hợp: Thiết bị có dấu hiệu rơi vỡ, cấn móp, ngập nước, cháy nổ hoặc tem bảo hành của cửa hàng bị rách/tác động.'}
+                </p>
+              </div>
+
+              <!-- Claim Instructions -->
+              <h4 style="color: #0f172a; font-size: 14px; font-weight: bold; margin-bottom: 10px;">Khi cần bảo hành, bạn cần làm gì?</h4>
+              <p style="line-height: 1.6; color: #475569; font-size: 13px; margin: 0 0 20px 0;">
+                Quý khách không cần mang theo bất kỳ giấy tờ hay hóa đơn nào! Bạn chỉ cần mang thiết bị trực tiếp đến cửa hàng và đọc **Số điện thoại** hoặc **Mã biên nhận** (${order.receipt_code}) để kỹ thuật viên tra cứu trên hệ thống và tiến hành xử lý bảo hành ngay lập tức.
+              </p>
+
+              <div style="text-align: center; margin: 30px 0 15px 0;">
+                <a href="https://cua-hang-118.onrender.com/tra-cuu?q=${order.receipt_code}" style="background-color: #2563eb; color: #ffffff; padding: 12px 25px; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">Xem Thẻ Bảo Hành Online</a>
+              </div>
+
+              <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px; text-align: center; color: #94a3b8; font-size: 11px; line-height: 1.5;">
+                <strong>CỬA HÀNG 118</strong><br/>
+                Địa chỉ: Tỉnh Bạc Liêu<br/>
+                Hotline: 0704.818.118 | Email: support@cuahang118.vn
+              </div>
+            </div>
+          `;
+
+          await sendEmail({
+            to: customer.email,
+            subject: emailSubject,
+            html: emailHtml,
+          });
+          console.log(`✉️ [Email] Đã gửi thông báo kích hoạt bảo hành điện tử thành công tới khách hàng: ${customer.email}`);
+        }
+      } catch (emailErr) {
+        console.error('⚠️ [Email] Lỗi gửi mail thông báo bảo hành điện tử:', emailErr.message);
+      }
+    }
+
     res.json({ success: true, data: order });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });
