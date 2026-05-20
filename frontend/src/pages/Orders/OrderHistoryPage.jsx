@@ -122,9 +122,19 @@ const OrderHistoryPage = () => {
                       </div>
                       
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-gray-50/80 border border-gray-100/50">
-                        <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                          <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
-                          <span className="line-clamp-1">{order.shipping_address || 'Không có địa chỉ'}</span>
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+                            <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+                            <span className="line-clamp-1">{order.shipping_address || 'Không có địa chỉ'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 sm:pl-6">
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold border ${order.payment_status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                              {order.payment_status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                            </span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold border ${order.payment_method === 'cod' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+                              {order.payment_method === 'cod' ? 'COD' : 'Chuyển khoản'}
+                            </span>
+                          </div>
                         </div>
                         <div className="flex items-center justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-200">
                           <span className="text-xl font-black text-blue-600">

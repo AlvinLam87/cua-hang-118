@@ -69,13 +69,18 @@ const AdminLayout = () => {
 
     // ── Socket.io: Re-fetch stats on any change ──────────────────
     const getSocketUrl = () => {
+      const envUrl = import.meta.env.VITE_SOCKET_URL;
+      // If envUrl is set and is a production/external URL, respect it first
+      if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+        return envUrl;
+      }
       if (typeof window !== 'undefined') {
         const hostname = window.location.hostname;
         if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('172.')) {
           return `http://${hostname}:3001`;
         }
       }
-      return import.meta.env.VITE_SOCKET_URL || API_BASE_URL;
+      return envUrl || API_BASE_URL;
     };
     const socketUrl = getSocketUrl();
     const socket = io(socketUrl, {

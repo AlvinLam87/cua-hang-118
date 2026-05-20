@@ -1,5 +1,9 @@
 const getDynamicApiBaseUrl = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
+  // If envUrl is set and is a production/external URL, respect it first
+  if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+    return envUrl;
+  }
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('172.')) {

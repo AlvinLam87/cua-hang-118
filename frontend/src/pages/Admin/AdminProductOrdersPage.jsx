@@ -84,11 +84,13 @@ const AdminProductOrdersPage = () => {
     const guestName = o.guest_name || '';
     const guestPhone = o.guest_phone || '';
     const orderId = o.id ? o.id.toString() : '';
+    const paymentMethod = o.payment_method || '';
     
     const matchSearch = !keyword || 
       guestName.toLowerCase().includes(keyword) || 
       guestPhone.includes(keyword) || 
-      orderId.includes(keyword);
+      orderId.includes(keyword) ||
+      paymentMethod.toLowerCase().includes(keyword);
     const matchStatus = statusFilter === 'all' || o.status === statusFilter;
     return matchSearch && matchStatus;
   }), [orders, query, statusFilter]);
@@ -164,9 +166,16 @@ const AdminProductOrdersPage = () => {
                     {formatCurrency(order.total_amount)}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${paymentStatusMap[order.payment_status]?.color}`}>
-                      {paymentStatusMap[order.payment_status]?.label}
-                    </span>
+                    <div>
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${paymentStatusMap[order.payment_status]?.color}`}>
+                        {paymentStatusMap[order.payment_status]?.label}
+                      </span>
+                    </div>
+                    <div className="mt-1.5 pl-0.5">
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${order.payment_method === 'cod' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+                        {order.payment_method === 'cod' ? 'COD' : 'Bank Transfer'}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusMap[order.status]?.color}`}>
