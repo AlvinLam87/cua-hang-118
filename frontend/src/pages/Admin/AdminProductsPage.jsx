@@ -885,27 +885,8 @@ const AdminProductsPage = () => {
                     </td>
                     <td className="px-8 py-5 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => openEdit(p)} className="p-2.5 bg-white border border-gray-100 text-blue-600 hover:bg-blue-50 rounded-xl transition-all shadow-sm">
+                        <button onClick={() => openEdit(p)} className="p-2.5 bg-white border border-slate-100 text-blue-600 hover:bg-blue-50 rounded-xl transition-all shadow-sm">
                           <Pencil className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => {
-                            setEditing(null);
-                            setForm({
-                              ...defaultForm,
-                              name: p.name,
-                              category_id: p.category_id,
-                              warehouse_quantity: p.warehouse_quantity,
-                              stock_quantity: 0,
-                              price: p.price || 0,
-                              image_url: p.image_url || ''
-                            });
-                            setEditing(p.id); // Sửa chính item này để bổ sung thông tin lên web
-                            setShowForm(true);
-                          }} 
-                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-100 transition-all active:scale-95"
-                        >
-                          ĐĂNG WEB
                         </button>
                       </div>
                     </td>
