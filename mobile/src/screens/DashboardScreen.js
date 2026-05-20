@@ -4,7 +4,7 @@ import {
   ActivityIndicator, Alert, RefreshControl, Dimensions, SafeAreaView, Platform
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Wrench, Calendar, CheckCircle, User, CalendarDays, LogOut, ChevronRight, Bell } from 'lucide-react-native';
+import { Wrench, Calendar, CheckCircle, User, CalendarDays, LogOut, ChevronRight, Bell, Search } from 'lucide-react-native';
 import { technicianAPI } from '../api';
 import { initSocket, disconnectSocket } from '../api/socket';
 import ToastNotification from '../components/ToastNotification';
@@ -197,6 +197,14 @@ const DashboardScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.headerActions}>
+          {/* Search Button */}
+          <TouchableOpacity
+            style={styles.bellBtn}
+            onPress={() => navigation.navigate('SearchRepair')}
+          >
+            <Search color="#1E293B" size={20} />
+          </TouchableOpacity>
+
           {/* Notification Bell */}
           <TouchableOpacity
             style={styles.bellBtn}

@@ -62,14 +62,15 @@ export const authAPI = {
 export const API_URL_BASE = getBaseUrl().replace('/api/v1', ''); // Used for image prefixes
 
 export const technicianAPI = {
-  getTasks:     ()          => api.get('/technician/tasks'),
-  updateRepair: (id, data)  => api.put(`/technician/repairs/${id}`, data),
-  nextStep:     (id)        => api.patch(`/technician/repairs/${id}/next-step`),
-  uploadImage:  (id, formData) => api.post(`/technician/repairs/${id}/image`, formData, {
+  getTasks:      ()             => api.get('/technician/tasks'),
+  updateRepair:  (id, data)     => api.put(`/technician/repairs/${id}`, data),
+  nextStep:      (id)           => api.patch(`/technician/repairs/${id}/next-step`),
+  uploadImage:   (id, formData) => api.post(`/technician/repairs/${id}/image`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   }),
+  searchByPhone: (phone)        => api.get(`/technician/search?phone=${encodeURIComponent(phone)}`),
 };
 
 export default api;

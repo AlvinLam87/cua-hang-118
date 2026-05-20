@@ -361,4 +361,47 @@ router.get('/inventory', requireTechnician, async (req, res) => {
   }
 });
 
+// GET /api/v1/technician/search?phone=xxx — Tìm đơn sửa chữa theo SĐT khách hàng (dùng tra cứu bảo hành)
+router.get('/search', requireTechnician, async (req, res) => {
+  try {
+    const { phone } = req.query;
+    if (!phone || phone.trim().length < 6) {
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập ít nhất 6 số điện thoại.' });
+    }
+
+    const { Op } = require('sequelize');
+
+    // Tìm khách hàng theo SĐT (tìm kiếm một phần)
+    const customers = await Customer.findAll({
+      where: {
+        phone: { [Op.like]: `%${phone.trim()}%` }
+      },
+      attributes: ['id', 'name', 'phone']
+    });
+
+    if (customers.length === 0) {
+      return res.json({ success: true, data: [], message: 'Không tìm thấy khách hàng nào với số điện thoại này.' });
+    }
+
+    const customerIds = customers.map(c => c.id);
+
+    // Lấy tất cả đơn sửa chữa của khách hàng đó (bao gồm đơn đã hoàn thành để tra bảo hành)
+    const repairs = await RepairOrder.findAll({
+      where: {
+        customer_id: { [Op.in]: customerIds }
+      },
+      include: [
+        { model: Customer, as: 'customer', attributes: ['id', 'name', 'phone'] }
+      ],
+      order: [['id', 'DESC']],
+      limit: 20
+    });
+
+    res.json({ success: true, data: repairs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;
+

@@ -12,6 +12,7 @@ import RepairDetailScreen from './src/screens/RepairDetailScreen';
 import BookingsScreen from './src/screens/BookingsScreen';
 import NotificationsScreen from './src/screens/NotificationsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import SearchRepairScreen from './src/screens/SearchRepairScreen';
 
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import NotificationSettingsScreen from './src/screens/NotificationSettingsScreen';
@@ -111,6 +112,7 @@ export default function App() {
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="RepairDetail" component={RepairDetailScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="SearchRepair" component={SearchRepairScreen} />
         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
         <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
         <Stack.Screen name="AppInfo" component={AppInfoScreen} />
