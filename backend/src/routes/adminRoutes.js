@@ -908,7 +908,7 @@ router.post('/inventory/stock-in', requireAdmin, async (req, res) => {
   const t = await sequelize.transaction();
   try {
     const { StockMovement, Product } = require('../models');
-    let { product_id, product_name, category_id, supplier_id, quantity, price, reason, notes } = req.body;
+    let { product_id, product_name, category_id, supplier_id, quantity, price, reason, notes, type } = req.body;
 
     if ((!product_id && !product_name) || !quantity || quantity <= 0) {
       return res.status(400).json({ success: false, message: 'Thông tin nhập kho không hợp lệ.' });
@@ -952,6 +952,9 @@ router.post('/inventory/stock-in', requireAdmin, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy hoặc không thể tạo sản phẩm.' });
     }
 
+    const isWebType = type === 'WEB';
+    const defaultReason = isWebType ? 'Nhập thẳng bán Web' : 'Nhập hàng từ NCC';
+
     // 1. Create movement log
     const movement = await StockMovement.create({
       product_id,
@@ -959,18 +962,21 @@ router.post('/inventory/stock-in', requireAdmin, async (req, res) => {
       type: 'IN',
       quantity,
       price,
-      reason: reason || 'Nhập hàng từ NCC',
+      reason: reason || defaultReason,
       notes
     }, { transaction: t });
 
     // 2. Update product stock
-    const newWarehouseStock = (product.warehouse_quantity || 0) + Number(quantity);
-    await product.update({
-      warehouse_quantity: newWarehouseStock,
-      // Khi nhập kho, chúng ta giữ nguyên stock_quantity (hàng đang bán)
-      // chỉ cập nhật in_stock dựa trên cả 2 nguồn nếu cần, 
-      // nhưng ở đây in_stock thường đại diện cho việc có hàng trên web hay không.
-    }, { transaction: t });
+    const updatePayload = {};
+    if (isWebType) {
+      updatePayload.stock_quantity = (product.stock_quantity || 0) + quantity;
+      updatePayload.is_active = true;
+      updatePayload.in_stock = true;
+    } else {
+      updatePayload.warehouse_quantity = (product.warehouse_quantity || 0) + quantity;
+    }
+
+    await product.update(updatePayload, { transaction: t });
 
     await t.commit();
     res.status(201).json({ success: true, data: movement });

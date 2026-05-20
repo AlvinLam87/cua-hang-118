@@ -111,8 +111,8 @@ const AdminProductsPage = () => {
     category_id: '',
     quantity: '',
     price: '',
-    type: 'WAREHOUSE',
-    reason: 'Nhập hàng vào kho',
+    type: 'WEB',
+    reason: 'Nhập thẳng bán Web',
     notes: ''
   });
   const [submittingStock, setSubmittingStock] = useState(false);
@@ -286,8 +286,8 @@ const AdminProductsPage = () => {
         showMessage('success', 'Đã nhập kho thành công.');
         setStockInForm({ 
           product_id: '', product_name: '', category_id: '', 
-          quantity: '', price: '', type: 'WAREHOUSE', 
-          reason: 'Nhập hàng vào kho', notes: '' 
+          quantity: '', price: '', type: 'WEB', 
+          reason: 'Nhập thẳng bán Web', notes: '' 
         });
         setShowStockIn(false);
         fetchData();
@@ -1251,6 +1251,41 @@ const AdminProductsPage = () => {
                     {products.map(p => <option key={p.id} value={p.name} />)}
                   </datalist>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Phân phối hàng nhập *</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setStockInForm({...stockInForm, type: 'WEB', reason: 'Nhập thẳng bán Web'})}
+                    className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all font-black text-sm uppercase ${
+                      stockInForm.type === 'WEB'
+                        ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md scale-102'
+                        : 'border-slate-100 bg-slate-50 text-slate-500 hover:bg-slate-100'
+                    }`}
+                  >
+                    <Boxes className="w-5 h-5 text-blue-500" />
+                    <span>🌐 Đăng bán Web ngay</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStockInForm({...stockInForm, type: 'WAREHOUSE', reason: 'Nhập hàng vào kho'})}
+                    className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all font-black text-sm uppercase ${
+                      stockInForm.type === 'WAREHOUSE'
+                        ? 'border-indigo-950 bg-indigo-50 text-indigo-950 shadow-md scale-102'
+                        : 'border-slate-100 bg-slate-50 text-slate-500 hover:bg-slate-100'
+                    }`}
+                  >
+                    <Package className="w-5 h-5 text-indigo-500" />
+                    <span>📦 Lưu kho vật lý</span>
+                  </button>
+                </div>
+                <p className="text-[11px] font-bold text-slate-400 mt-2 italic">
+                  {stockInForm.type === 'WEB' 
+                    ? '👉 Hàng nhập sẽ được cộng thẳng vào số lượng Đang bán Web để bán trực tiếp online.'
+                    : '👉 Hàng nhập sẽ lưu tại Kho vật lý nội bộ trước, chưa hiển thị để bán lẻ trên Web.'}
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
