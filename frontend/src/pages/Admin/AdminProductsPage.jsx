@@ -1207,28 +1207,30 @@ const AdminProductsPage = () => {
 
 
       {showStockIn && (
-        <div className="fixed inset-0 bg-slate-900/55 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setShowStockIn(false)}>
-          <div className="bg-white rounded-[32px] p-0 w-full max-w-lg overflow-hidden shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-            <div className="p-8 border-b border-gray-50 bg-linear-to-br from-slate-50 to-white">
+        <div className="fixed inset-0 bg-slate-950/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs transition-all duration-300" onClick={() => setShowStockIn(false)}>
+          <div className="bg-white rounded-[32px] p-0 w-full max-w-lg overflow-hidden shadow-[0_25px_60px_-15px_rgba(15,23,42,0.2)] border border-slate-100/80 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="p-8 border-b border-slate-50 bg-linear-to-br from-slate-50/50 to-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-slate-200">
+                  <div className="w-12 h-12 bg-linear-to-tr from-slate-900 to-slate-800 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-slate-200 border border-slate-700/10">
                     <Boxes className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-slate-900 tracking-tight">PHIẾU NHẬP KHO</h3>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Nhập hàng nhanh vào kho</p>
+                    <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">PHIẾU NHẬP KHO</h3>
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Nhập hàng nhanh vào hệ thống</p>
                   </div>
                 </div>
-                <button onClick={() => setShowStockIn(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400"><X className="w-6 h-6" /></button>
+                <button onClick={() => setShowStockIn(false)} className="p-2.5 hover:bg-slate-100 hover:text-slate-900 rounded-2xl transition-all duration-200 text-slate-400">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
             </div>
 
             <form onSubmit={handleStockIn} className="p-8 space-y-6">
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Tên món hàng / Linh kiện *</label>
+                <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Tên món hàng / Linh kiện *</label>
                 <div className="relative">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 transition-colors" />
                   <input
                     type="text"
                     required
@@ -1245,7 +1247,7 @@ const AdminProductsPage = () => {
                         category_id: existing ? existing.category_id : (stockInForm.category_id || categories[0]?.id)
                       });
                     }}
-                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-slate-900 outline-none transition-all font-bold text-slate-800 placeholder:text-slate-300"
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100/60 rounded-2xl focus:bg-white focus:border-blue-600 outline-none transition-all duration-200 font-bold text-slate-800 placeholder:text-slate-300 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)]"
                   />
                   <datalist id="product-suggestions">
                     {products.map(p => <option key={p.id} value={p.name} />)}
@@ -1254,48 +1256,55 @@ const AdminProductsPage = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Phân phối hàng nhập *</label>
+                <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Phân phối hàng nhập *</label>
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     onClick={() => setStockInForm({...stockInForm, type: 'WEB', reason: 'Nhập thẳng bán Web'})}
-                    className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all font-black text-sm uppercase ${
+                    className={`flex items-center justify-center gap-2.5 py-4 px-3 rounded-2xl border-2 transition-all duration-200 font-bold text-sm tracking-wide uppercase cursor-pointer ${
                       stockInForm.type === 'WEB'
-                        ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md scale-102'
-                        : 'border-slate-100 bg-slate-50 text-slate-500 hover:bg-slate-100'
+                        ? 'border-blue-600 bg-linear-to-b from-blue-50/50 to-blue-50 text-blue-600 shadow-[0_4px_12px_rgba(59,130,246,0.12)] scale-[1.01]'
+                        : 'border-slate-100/80 bg-slate-50/60 text-slate-400 hover:bg-slate-50 hover:text-slate-600'
                     }`}
                   >
-                    <Boxes className="w-5 h-5 text-blue-500" />
-                    <span>🌐 Đăng bán Web ngay</span>
+                    <Boxes className={`w-5 h-5 ${stockInForm.type === 'WEB' ? 'text-blue-500' : 'text-slate-400'}`} />
+                    <span>Đăng bán Web</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setStockInForm({...stockInForm, type: 'WAREHOUSE', reason: 'Nhập hàng vào kho'})}
-                    className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all font-black text-sm uppercase ${
+                    className={`flex items-center justify-center gap-2.5 py-4 px-3 rounded-2xl border-2 transition-all duration-200 font-bold text-sm tracking-wide uppercase cursor-pointer ${
                       stockInForm.type === 'WAREHOUSE'
-                        ? 'border-indigo-950 bg-indigo-50 text-indigo-950 shadow-md scale-102'
-                        : 'border-slate-100 bg-slate-50 text-slate-500 hover:bg-slate-100'
+                        ? 'border-slate-900 bg-linear-to-b from-slate-50 to-slate-100/50 text-slate-900 shadow-[0_4px_12px_rgba(15,23,42,0.08)] scale-[1.01]'
+                        : 'border-slate-100/80 bg-slate-50/60 text-slate-400 hover:bg-slate-50 hover:text-slate-600'
                     }`}
                   >
-                    <Package className="w-5 h-5 text-indigo-500" />
-                    <span>📦 Lưu kho vật lý</span>
+                    <Package className={`w-5 h-5 ${stockInForm.type === 'WAREHOUSE' ? 'text-indigo-500' : 'text-slate-400'}`} />
+                    <span>Lưu kho vật lý</span>
                   </button>
                 </div>
-                <p className="text-[11px] font-bold text-slate-400 mt-2 italic">
-                  {stockInForm.type === 'WEB' 
-                    ? '👉 Hàng nhập sẽ được cộng thẳng vào số lượng Đang bán Web để bán trực tiếp online.'
-                    : '👉 Hàng nhập sẽ lưu tại Kho vật lý nội bộ trước, chưa hiển thị để bán lẻ trên Web.'}
-                </p>
+                <div className={`mt-3.5 p-4 rounded-2xl border flex gap-3 items-start transition-all duration-300 ${
+                  stockInForm.type === 'WEB' 
+                    ? 'bg-linear-to-r from-blue-50/50 to-blue-50/10 border-blue-100/40 text-blue-800' 
+                    : 'bg-linear-to-r from-slate-50/50 to-slate-50/10 border-slate-100/60 text-slate-600'
+                }`}>
+                  <CornerDownRight className={`w-4 h-4 shrink-0 ${stockInForm.type === 'WEB' ? 'text-blue-500' : 'text-slate-400'} mt-0.5`} />
+                  <p className="text-[11px] font-semibold leading-relaxed">
+                    {stockInForm.type === 'WEB' 
+                      ? 'Hàng nhập sẽ được cộng thẳng vào số lượng Đang bán Web để bán trực tiếp online.'
+                      : 'Hàng nhập sẽ lưu tại Kho vật lý nội bộ trước, chưa hiển thị để bán lẻ trên Web.'}
+                  </p>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Danh mục *</label>
+                  <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Danh mục *</label>
                   <select
                     required
                     value={stockInForm.category_id}
                     onChange={(e) => setStockInForm({ ...stockInForm, category_id: e.target.value })}
-                    className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-slate-900 outline-none transition-all font-bold text-slate-800"
+                    className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-100/60 rounded-2xl focus:bg-white focus:border-blue-600 outline-none transition-all duration-200 font-bold text-slate-800 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)] appearance-none"
                   >
                     {categoriesSorted.map(c => (
                       <option key={c.id} value={c.id}>
@@ -1305,7 +1314,7 @@ const AdminProductsPage = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Số lượng *</label>
+                  <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Số lượng *</label>
                   <input
                     type="number"
                     required
@@ -1313,7 +1322,7 @@ const AdminProductsPage = () => {
                     placeholder="0"
                     value={stockInForm.quantity}
                     onChange={(e) => setStockInForm({ ...stockInForm, quantity: e.target.value })}
-                    className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl focus:bg-white focus:border-slate-900 outline-none transition-all font-black text-slate-800"
+                    className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-100/60 rounded-2xl focus:bg-white focus:border-blue-600 outline-none transition-all duration-200 font-bold text-slate-800 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.1)]"
                   />
                 </div>
               </div>
@@ -1321,7 +1330,7 @@ const AdminProductsPage = () => {
               <button
                 type="submit"
                 disabled={submittingStock}
-                className="w-full py-5 bg-slate-900 hover:bg-black text-white rounded-2xl font-black text-sm tracking-widest uppercase shadow-xl shadow-slate-200 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+                className="w-full py-4.5 bg-slate-900 hover:bg-black active:scale-[0.99] text-white rounded-2xl font-bold text-sm tracking-wider uppercase shadow-xl shadow-slate-900/10 transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 {submittingStock ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                 XÁC NHẬN NHẬP KHO

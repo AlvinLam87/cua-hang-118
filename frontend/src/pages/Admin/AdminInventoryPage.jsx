@@ -3,7 +3,7 @@ import {
   Package, Truck, History, LayoutDashboard, Search, Plus, 
   ArrowUpRight, ArrowDownLeft, AlertTriangle, Loader2, 
   User, Phone, MapPin, Edit, Trash2, Save, X, Calendar, DollarSign,
-  TrendingUp, Boxes, Filter, MoreVertical, ExternalLink, ShieldCheck,
+  TrendingUp, Boxes, Filter, MoreVertical, ExternalLink, ShieldCheck, CornerDownRight,
   RefreshCw, Image as ImageIcon, Wallet, Layers, Star, Gift, Palette
 } from 'lucide-react';
 import AdminToast from '../../components/admin/AdminToast.jsx';
@@ -721,38 +721,45 @@ const AdminInventoryPage = () => {
                     </div>
 
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3">Phân phối hàng nhập *</label>
+                      <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Phân phối hàng nhập *</label>
                       <div className="grid grid-cols-2 gap-4">
                         <button
                           type="button"
                           onClick={() => setStockInForm({...stockInForm, type: 'WEB'})}
-                          className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all font-black text-sm uppercase ${
+                          className={`flex items-center justify-center gap-2.5 py-4 px-3 rounded-2xl border-2 transition-all duration-200 font-bold text-sm tracking-wide uppercase cursor-pointer ${
                             stockInForm.type === 'WEB'
-                              ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md scale-102'
-                              : 'border-slate-100 bg-slate-50 text-slate-500 hover:bg-slate-100'
+                              ? 'border-blue-600 bg-linear-to-b from-blue-50/50 to-blue-50 text-blue-600 shadow-[0_4px_12px_rgba(59,130,246,0.12)] scale-[1.01]'
+                              : 'border-slate-100/80 bg-slate-50/60 text-slate-400 hover:bg-slate-50 hover:text-slate-600'
                           }`}
                         >
-                          <Boxes className="w-5 h-5 text-blue-500" />
-                          <span>🌐 Đăng bán Web ngay</span>
+                          <Boxes className={`w-5 h-5 ${stockInForm.type === 'WEB' ? 'text-blue-500' : 'text-slate-400'}`} />
+                          <span>Đăng bán Web</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setStockInForm({...stockInForm, type: 'WAREHOUSE'})}
-                          className={`flex items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all font-black text-sm uppercase ${
+                          className={`flex items-center justify-center gap-2.5 py-4 px-3 rounded-2xl border-2 transition-all duration-200 font-bold text-sm tracking-wide uppercase cursor-pointer ${
                             stockInForm.type === 'WAREHOUSE'
-                              ? 'border-indigo-950 bg-indigo-50 text-indigo-950 shadow-md scale-102'
-                              : 'border-slate-100 bg-slate-50 text-slate-500 hover:bg-slate-100'
+                              ? 'border-slate-900 bg-linear-to-b from-slate-50 to-slate-100/50 text-slate-900 shadow-[0_4px_12px_rgba(15,23,42,0.08)] scale-[1.01]'
+                              : 'border-slate-100/80 bg-slate-50/60 text-slate-400 hover:bg-slate-50 hover:text-slate-600'
                           }`}
                         >
-                          <Package className="w-5 h-5 text-indigo-500" />
-                          <span>📦 Lưu kho vật lý</span>
+                          <Package className={`w-5 h-5 ${stockInForm.type === 'WAREHOUSE' ? 'text-indigo-500' : 'text-slate-400'}`} />
+                          <span>Lưu kho vật lý</span>
                         </button>
                       </div>
-                      <p className="text-[11px] font-bold text-slate-400 mt-2 italic">
-                        {stockInForm.type === 'WEB' 
-                          ? '👉 Hàng nhập sẽ được cộng thẳng vào số lượng Đang bán Web để bán trực tiếp online.'
-                          : '👉 Hàng nhập sẽ lưu tại Kho vật lý nội bộ trước, chưa hiển thị để bán lẻ trên Web.'}
-                      </p>
+                      <div className={`mt-3.5 p-4 rounded-2xl border flex gap-3 items-start transition-all duration-300 ${
+                        stockInForm.type === 'WEB' 
+                          ? 'bg-linear-to-r from-blue-50/50 to-blue-50/10 border-blue-100/40 text-blue-800' 
+                          : 'bg-linear-to-r from-slate-50/50 to-slate-50/10 border-slate-100/60 text-slate-600'
+                      }`}>
+                        <CornerDownRight className={`w-4 h-4 shrink-0 ${stockInForm.type === 'WEB' ? 'text-blue-500' : 'text-slate-400'} mt-0.5`} />
+                        <p className="text-[11px] font-semibold leading-relaxed">
+                          {stockInForm.type === 'WEB' 
+                            ? 'Hàng nhập sẽ được cộng thẳng vào số lượng Đang bán Web để bán trực tiếp online.'
+                            : 'Hàng nhập sẽ lưu tại Kho vật lý nội bộ trước, chưa hiển thị để bán lẻ trên Web.'}
+                        </p>
+                      </div>
                     </div>
 
                     <div>
