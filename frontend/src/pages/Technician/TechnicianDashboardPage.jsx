@@ -540,8 +540,8 @@ const TechnicianDashboardPage = () => {
 
                           <div className="text-right">
                             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Chi phí dự kiến</p>
-                            <p className="text-lg font-black text-blue-600 mt-0.5">
-                              {rp.estimated_cost ? `${rp.estimated_cost.toLocaleString()}đ` : 'Chưa báo giá'}
+                            <p className={`text-lg font-black mt-0.5 ${isWarrantyOrder ? 'text-emerald-600' : 'text-blue-600'}`}>
+                              {isWarrantyOrder ? 'Miễn phí (Bảo hành)' : (rp.estimated_cost ? `${rp.estimated_cost.toLocaleString()}đ` : 'Chưa báo giá')}
                             </p>
                           </div>
                         </div>
@@ -843,8 +843,8 @@ const TechnicianDashboardPage = () => {
                       </p>
                       <div className="mt-4 pt-4 border-t border-blue-100/30 flex items-center justify-between">
                         <span className="text-xs font-bold text-gray-500">Chi phí dự kiến:</span>
-                        <span className="text-lg font-black text-blue-600">
-                          {selectedRepair.estimated_cost ? `${selectedRepair.estimated_cost.toLocaleString()}đ` : 'Chưa báo giá'}
+                        <span className={`text-lg font-black ${selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'text-emerald-600' : 'text-blue-600'}`}>
+                          {selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'Miễn phí (Bảo hành)' : (selectedRepair.estimated_cost ? `${selectedRepair.estimated_cost.toLocaleString()}đ` : 'Chưa báo giá')}
                         </span>
                       </div>
                     </div>
@@ -858,14 +858,21 @@ const TechnicianDashboardPage = () => {
                       
                       {/* Huy hiệu bảo hành dịch vụ của KTV */}
                       <div className="mt-3.5 flex flex-wrap gap-2 pt-3 border-t border-gray-200/50">
-                        <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border ${
-                          selectedRepair.warranty_period > 0
-                            ? 'text-emerald-700 bg-emerald-50 border-emerald-100 shadow-xs'
-                            : 'text-gray-500 bg-gray-50 border-gray-200'
-                        }`}>
-                          <ShieldCheck className="w-4 h-4 shrink-0" />
-                          Bảo hành dịch vụ: {selectedRepair.warranty_period > 0 ? `${selectedRepair.warranty_period} tháng` : 'Không bảo hành'}
-                        </span>
+                        {selectedRepair.device_name.startsWith('[Bảo Hành]') ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border text-rose-700 bg-rose-50 border-rose-100 shadow-xs">
+                            <ShieldCheck className="w-4 h-4 shrink-0" />
+                            Loại đơn: Tiếp nhận bảo hành (Miễn phí)
+                          </span>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border ${
+                            selectedRepair.warranty_period > 0
+                              ? 'text-emerald-700 bg-emerald-50 border-emerald-100 shadow-xs'
+                              : 'text-gray-500 bg-gray-50 border-gray-200'
+                          }`}>
+                            <ShieldCheck className="w-4 h-4 shrink-0" />
+                            Bảo hành dịch vụ: {selectedRepair.warranty_period > 0 ? `${selectedRepair.warranty_period} tháng` : 'Không bảo hành'}
+                          </span>
+                        )}
                         {selectedRepair.warranty_expiry && (
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl shadow-xs">
                             <Clock className="w-4 h-4 shrink-0" />
@@ -892,11 +899,11 @@ const TechnicianDashboardPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-2xl">
-                      <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shadow-sm"><DollarSign className="w-5 h-5" /></div>
+                      <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shadow-sm"><User className="w-5 h-5" /></div>
                       <div>
                         <p className="text-[10px] font-bold text-gray-400 uppercase">Chi phí dự kiến</p>
-                        <p className="text-sm font-bold text-gray-900">
-                          {selectedRepair.estimated_cost ? `${selectedRepair.estimated_cost.toLocaleString()}đ` : 'Chưa có'}
+                        <p className={`text-sm font-bold ${selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'text-emerald-600' : 'text-gray-900'}`}>
+                          {selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'Miễn phí (Bảo hành)' : (selectedRepair.estimated_cost ? `${selectedRepair.estimated_cost.toLocaleString()}đ` : 'Chưa có')}
                         </p>
                       </div>
                     </div>

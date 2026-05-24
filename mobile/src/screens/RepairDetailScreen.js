@@ -380,8 +380,8 @@ const RepairDetailScreen = ({ route, navigation }) => {
                 <Text style={styles.inputCostUnit}> VNĐ</Text>
               </View>
             ) : (
-              <Text style={styles.costValue}>
-                {Number(data.estimated_cost || 0).toLocaleString()} VNĐ
+              <Text style={[styles.costValue, data.device_name?.startsWith('[Bảo Hành]') && { color: '#059669', fontWeight: '700' }]}>
+                {data.device_name?.startsWith('[Bảo Hành]') ? 'Miễn phí (Bảo hành)' : `${Number(data.estimated_cost || 0).toLocaleString()} VNĐ`}
               </Text>
             )}
           </View>
@@ -390,10 +390,10 @@ const RepairDetailScreen = ({ route, navigation }) => {
 
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Tổng chi phí dự kiến</Text>
-            <Text style={styles.totalValue}>
+            <Text style={[styles.totalValue, data.device_name?.startsWith('[Bảo Hành]') && { color: '#059669' }]}>
               {isEditing
                 ? `${Number(parseFloat(editCost.replace(/[^0-9.]/g, '')) || 0).toLocaleString()} VNĐ`
-                : `${Number(data.estimated_cost || 0).toLocaleString()} VNĐ`
+                : (data.device_name?.startsWith('[Bảo Hành]') ? 'Miễn phí (Bảo hành)' : `${Number(data.estimated_cost || 0).toLocaleString()} VNĐ`)
               }
             </Text>
           </View>
@@ -429,8 +429,8 @@ const RepairDetailScreen = ({ route, navigation }) => {
             <View style={styles.deviceRow}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.label}>Thời hạn bảo hành</Text>
-                <Text style={[styles.value, { fontWeight: '700', color: data.warranty_period > 0 ? '#10B981' : '#64748B' }]}>
-                  {data.warranty_period > 0 ? `${data.warranty_period} tháng` : 'Không bảo hành'}
+                <Text style={[styles.value, { fontWeight: '700', color: (data.device_name?.startsWith('[Bảo Hành]') || data.warranty_period > 0) ? '#10B981' : '#64748B' }]}>
+                  {data.device_name?.startsWith('[Bảo Hành]') ? 'Tiếp nhận bảo hành' : (data.warranty_period > 0 ? `${data.warranty_period} tháng` : 'Không bảo hành')}
                 </Text>
               </View>
               <View style={{ flex: 1 }}>
