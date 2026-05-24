@@ -99,17 +99,39 @@ const SearchRepairScreen = ({ navigation }) => {
     );
   };
 
+  const parseDate = (dateStr) => {
+    if (!dateStr) return null;
+    if (dateStr instanceof Date) return dateStr;
+    const cleanStr = typeof dateStr === 'string' ? dateStr.trim() : String(dateStr);
+    const match = cleanStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1;
+      const day = parseInt(match[3], 10);
+      return new Date(year, month, day);
+    }
+    const d = new Date(cleanStr);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
   const getStatusInfo = (status) => STATUS_MAP[status] || STATUS_MAP.received;
 
   const isWarrantyActive = (item) => {
     if (item.status !== 'completed' && item.status !== 'returned') return false;
     if (!item.warranty_expiry) return false;
-    return new Date(item.warranty_expiry) > new Date();
+    const expiryDate = parseDate(item.warranty_expiry);
+    if (!expiryDate) return false;
+    return expiryDate > new Date();
   };
 
   const renderCard = ({ item }) => {
     const statusInfo  = getStatusInfo(item.status);
     const underWarranty = isWarrantyActive(item);
+
+    const formatDisplayDate = (dateVal) => {
+      const parsed = parseDate(dateVal);
+      return parsed ? parsed.toLocaleDateString('vi-VN') : (dateVal || '—');
+    };
 
     return (
       <TouchableOpacity
@@ -154,7 +176,7 @@ const SearchRepairScreen = ({ navigation }) => {
           <CalendarDays color="#64748B" size={15} />
           <Text style={styles.infoText}>Nhận: {item.received_date || '—'}</Text>
           {item.completed_date && (
-            <Text style={styles.completedDate}>  Xong: {new Date(item.completed_date).toLocaleDateString('vi-VN')}</Text>
+            <Text style={styles.completedDate}>  Xong: {formatDisplayDate(item.completed_date)}</Text>
           )}
         </View>
 
@@ -163,7 +185,7 @@ const SearchRepairScreen = ({ navigation }) => {
           <View style={styles.warrantyBanner}>
             <ShieldCheck color="#059669" size={16} />
             <Text style={styles.warrantyText}>
-              Còn bảo hành đến {new Date(item.warranty_expiry).toLocaleDateString('vi-VN')}
+              Còn bảo hành đến {formatDisplayDate(item.warranty_expiry)}
             </Text>
             <TouchableOpacity
               style={styles.warrantyActionBtn}
@@ -179,7 +201,7 @@ const SearchRepairScreen = ({ navigation }) => {
           <View style={[styles.warrantyBanner, styles.warrantyExpired]}>
             <Clock color="#DC2626" size={16} />
             <Text style={[styles.warrantyText, { color: '#DC2626' }]}>
-              Bảo hành đã hết hạn ({new Date(item.warranty_expiry).toLocaleDateString('vi-VN')})
+              Bảo hành đã hết hạn ({formatDisplayDate(item.warranty_expiry)})
             </Text>
           </View>
         )}

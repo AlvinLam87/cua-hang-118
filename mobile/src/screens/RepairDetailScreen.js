@@ -29,6 +29,21 @@ const STATUS_LABELS = {
 };
 
 const RepairDetailScreen = ({ route, navigation }) => {
+  const parseDate = (dateStr) => {
+    if (!dateStr) return null;
+    if (dateStr instanceof Date) return dateStr;
+    const cleanStr = typeof dateStr === 'string' ? dateStr.trim() : String(dateStr);
+    const match = cleanStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1;
+      const day = parseInt(match[3], 10);
+      return new Date(year, month, day);
+    }
+    const d = new Date(cleanStr);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
   const { repairId, repair } = route.params;
   const [loading, setLoading]     = useState(false);
   const [saving, setSaving]       = useState(false);
@@ -421,7 +436,7 @@ const RepairDetailScreen = ({ route, navigation }) => {
               <View style={{ flex: 1 }}>
                 <Text style={styles.label}>Ngày hết hạn</Text>
                 <Text style={[styles.value, { fontWeight: '700', color: data.warranty_expiry ? '#2563EB' : '#64748B' }]}>
-                  {data.warranty_expiry ? new Date(data.warranty_expiry).toLocaleDateString('vi-VN') : '—'}
+                  {data.warranty_expiry && parseDate(data.warranty_expiry) ? parseDate(data.warranty_expiry).toLocaleDateString('vi-VN') : (data.warranty_expiry || '—')}
                 </Text>
               </View>
             </View>
