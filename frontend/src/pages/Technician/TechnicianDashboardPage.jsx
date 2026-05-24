@@ -20,6 +20,11 @@ const TechnicianDashboardPage = () => {
   const [actionModal, setActionModal] = useState({ show: false, repair: null, type: '' });
   const [actionFormData, setActionFormData] = useState({ diagnosis: '', estimated_cost: '' });
 
+  // Customer warranty lookup states
+  const [customerQuery, setCustomerQuery] = useState('');
+  const [customerSearchLoading, setCustomerSearchLoading] = useState(false);
+  const [customerSearchResults, setCustomerSearchResults] = useState([]);
+
   const token = localStorage.getItem('token');
   const headers = { 'Authorization': `Bearer ${token}` };
 
@@ -55,6 +60,25 @@ const TechnicianDashboardPage = () => {
       console.error(err);
     } finally {
       setInvLoading(false);
+    }
+  }, [token]);
+
+  const searchCustomerRepairs = useCallback(async (q) => {
+    if (!q || q.trim().length < 6) {
+      setCustomerSearchResults([]);
+      return;
+    }
+    setCustomerSearchLoading(true);
+    try {
+      const res = await fetch(`${API_V1_URL}/technician/search?phone=${encodeURIComponent(q.trim())}`, { headers });
+      const result = await res.json();
+      if (result.success) {
+        setCustomerSearchResults(result.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCustomerSearchLoading(false);
     }
   }, [token]);
 
@@ -103,6 +127,13 @@ const TechnicianDashboardPage = () => {
     }, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [invQuery, searchInventory]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      searchCustomerRepairs(customerQuery);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [customerQuery, searchCustomerRepairs]);
 
   // Sync selectedRepair when data changes
   useEffect(() => {
@@ -492,9 +523,107 @@ const TechnicianDashboardPage = () => {
           )}
         </div>
 
-        {/* SIDEBAR: INVENTORY LOOKUP */}
-        <div className="lg:col-span-4">
-          <div className="bg-slate-900 rounded-[2.5rem] p-6 text-white shadow-xl sticky top-24 border border-slate-800">
+        {/* SIDEBAR */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* TRA CỨU KHÁCH HÀNG & BẢO HÀNH */}
+          <div className="bg-white rounded-[2.5rem] p-6 text-gray-900 shadow-xl border border-gray-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2.5 bg-blue-50 text-blue-600 rounded-2xl">
+                <Search className="w-5 h-5" />
+              </div>
+              <h2 className="text-xl font-black tracking-tight text-gray-900">Tra Cứu Bảo Hành</h2>
+            </div>
+
+            <div className="relative mb-6">
+              <Phone className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <input 
+                type="text" 
+                value={customerQuery}
+                onChange={(e) => setCustomerQuery(e.target.value)}
+                placeholder="Nhập SĐT khách hàng (ít nhất 6 số)..."
+                className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-gray-400 text-gray-900 font-medium"
+              />
+              {customerSearchLoading && <Loader2 className="w-4 h-4 text-blue-600 animate-spin absolute right-4 top-1/2 -translate-y-1/2" />}
+            </div>
+
+            <div className="space-y-3 max-h-[300px] overflow-auto pr-1 custom-scrollbar">
+              {customerQuery.trim().length < 6 ? (
+                <div className="text-center py-6 text-gray-400">
+                  <p className="text-xs font-bold uppercase tracking-wider">Nhập ít nhất 6 số</p>
+                </div>
+              ) : customerSearchResults.length === 0 ? (
+                <div className="text-center py-6 text-gray-400">
+                  <p className="text-xs font-bold uppercase tracking-wider">Không tìm thấy kết quả</p>
+                </div>
+              ) : (
+                customerSearchResults.map((rp) => {
+                  // Determine warranty status
+                  let warrantyLabel = 'Không bảo hành';
+                  let isWarrantyActive = false;
+                  if (rp.warranty_expiry) {
+                    const expiry = new Date(rp.warranty_expiry);
+                    const now = new Date();
+                    isWarrantyActive = expiry > now;
+                    warrantyLabel = isWarrantyActive 
+                      ? `Còn BH: ${new Date(rp.warranty_expiry).toLocaleDateString('vi-VN')}`
+                      : `Hết BH: ${new Date(rp.warranty_expiry).toLocaleDateString('vi-VN')}`;
+                  } else if (rp.status === 'completed' && rp.warranty_period > 0) {
+                    warrantyLabel = `${rp.warranty_period} tháng`;
+                  } else if (rp.status !== 'completed' && rp.status !== 'returned') {
+                    warrantyLabel = 'Chờ hoàn thành';
+                  }
+
+                  const statusMap = {
+                    received: { label: 'Đã nhận máy', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+                    diagnosing: { label: 'Đang chẩn đoán', color: 'bg-orange-50 text-orange-600 border-orange-100' },
+                    quoted: { label: 'Đã báo giá', color: 'bg-purple-50 text-purple-600 border-purple-100' },
+                    in_progress: { label: 'Đang sửa chữa', color: 'bg-yellow-50 text-yellow-600 border-yellow-100' },
+                    testing: { label: 'Đang kiểm tra', color: 'bg-cyan-50 text-cyan-600 border-cyan-100' },
+                    completed: { label: 'Đã xong', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+                    returned: { label: 'Đã bàn giao', color: 'bg-green-50 text-green-600 border-green-100' },
+                    cancelled: { label: 'Đã hủy', color: 'bg-red-50 text-red-600 border-red-100' },
+                  };
+                  const st = statusMap[rp.status] || { label: rp.status, color: 'bg-gray-50 text-gray-600 border-gray-100' };
+
+                  return (
+                    <div key={rp.id} className="bg-gray-50/50 hover:bg-blue-50/30 border border-gray-100 hover:border-blue-100/50 rounded-2xl p-3.5 flex items-center justify-between gap-3 transition-all group">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                          <span className="font-mono text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-100/50 px-1.5 py-0.5 rounded">#{rp.receipt_code}</span>
+                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border uppercase tracking-tight ${st.color}`}>
+                            {st.label}
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold text-gray-800 truncate" title={rp.device_name}>{rp.device_name}</p>
+                        <p className="text-[10px] font-medium text-gray-400 mt-0.5">Khách: <span className="text-gray-700 font-bold">{rp.customer?.name}</span></p>
+                        <div className="mt-1">
+                          <span className={`inline-flex items-center text-[9px] font-black px-1.5 py-0.5 rounded-full ${
+                            isWarrantyActive 
+                              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                              : rp.status === 'completed' || rp.status === 'returned'
+                                ? 'bg-red-50 text-red-600 border border-red-100'
+                                : 'bg-gray-100 text-gray-500 border border-gray-200'
+                          }`}>
+                            {warrantyLabel}
+                          </span>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setSelectedRepair(rp)}
+                        className="p-2 bg-white hover:bg-blue-600 text-gray-400 hover:text-white rounded-xl border border-gray-100 hover:border-blue-500 shadow-sm transition-all shrink-0 active:scale-95"
+                        title="Xem chi tiết đơn này"
+                      >
+                        <Info className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* SIDEBAR: INVENTORY LOOKUP */}
+          <div className="bg-slate-900 rounded-[2.5rem] p-6 text-white shadow-xl border border-slate-800">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2.5 bg-blue-500/20 text-blue-400 rounded-2xl">
                 <Package className="w-5 h-5" />
