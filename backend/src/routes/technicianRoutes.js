@@ -427,9 +427,10 @@ router.post('/repairs/warranty', requireTechnician, async (req, res) => {
     const user = await User.findByPk(userId);
     const currentTechName = user ? user.full_name : parentOrder.technician_name;
 
-    // Tạo mã nhận đơn mới
-    const count = await RepairOrder.count();
-    const receiptCode = `RCV-118${String(count + 1).padStart(3, '0')}`;
+    // Tạo mã nhận đơn mới bằng cách lấy ID lớn nhất
+    const maxOrder = await RepairOrder.findOne({ order: [['id', 'DESC']] });
+    const nextId = maxOrder ? maxOrder.id + 1 : 1;
+    const receiptCode = `RCV-118${String(nextId).padStart(3, '0')}`;
 
     // Tạo đơn bảo hành mới
     const newOrder = await RepairOrder.create({

@@ -594,9 +594,10 @@ router.put('/bookings/:id', requireAdmin, async (req, res) => {
           });
         }
 
-        // 2. Tạo mã đơn hàng tự động: RCV-118xxx
-        const count = await RepairOrder.count();
-        const receiptCode = `RCV-118${String(count + 1).padStart(3, '0')}`;
+        // 2. Tạo mã đơn hàng tự động bằng cách lấy ID lớn nhất
+        const maxOrder = await RepairOrder.findOne({ order: [['id', 'DESC']] });
+        const nextId = maxOrder ? maxOrder.id + 1 : 1;
+        const receiptCode = `RCV-118${String(nextId).padStart(3, '0')}`;
 
         // 3. Lấy tên KTV từ request body hoặc từ booking cũ
         let technicianName = null;
