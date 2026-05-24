@@ -258,10 +258,22 @@ const DashboardScreen = ({ navigation }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2563EB']} tintColor={'#2563EB'} />
         }
         ListHeaderComponent={() => (
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Danh Sách Đơn Hàng</Text>
-            <View style={styles.badgeCount}>
-              <Text style={styles.badgeCountText}>{data.repairs.length}</Text>
+          <View>
+            {/* Quick Search Bar */}
+            <TouchableOpacity 
+              style={styles.quickSearchBox} 
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('SearchRepair')}
+            >
+              <Search color="#64748B" size={18} />
+              <Text style={styles.quickSearchPlaceholder}>Tìm khách hàng bằng SĐT để tra cứu bảo hành...</Text>
+            </TouchableOpacity>
+
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Danh Sách Đơn Hàng</Text>
+              <View style={styles.badgeCount}>
+                <Text style={styles.badgeCountText}>{data.repairs.length}</Text>
+              </View>
             </View>
           </View>
         )}
@@ -423,6 +435,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 30,
     paddingTop: 10,
+  },
+  quickSearchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    height: 50,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  quickSearchPlaceholder: {
+    fontFamily: 'Inter',
+    fontSize: 14,
+    color: '#94A3B8',
+    flex: 1,
   },
   sectionHeader: {
     flexDirection: 'row',
