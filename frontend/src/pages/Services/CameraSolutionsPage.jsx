@@ -243,13 +243,13 @@ const CameraSolutionsPage = () => {
                       Khảo sát tận nơi, <span className="text-blue-300">tư vấn miễn phí.</span>
                     </h2>
                     <p className="text-blue-100/70 leading-relaxed text-sm mb-10">
-                      Nhân viên kỹ thuật dày dạn kinh nghiệm của 118 sẽ đến trực tiếp, đánh giá thực tế và đưa ra giải pháp Camera tối ưu cho không gian của bạn.
+                      Nhân viên kỹ thuật dày dạn kinh nghiệm của 118 sẽ đến trực tiếp, đánh giá thực tế và đưa ra giải pháp Camera tối ưu cho không gian của bạn (chỉ áp dụng tại khu vực Bạc Liêu, Cà Mau, Sóc Trăng).
                     </p>
 
                     <div className="space-y-4">
                       {[
                         { icon: <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />, text: 'Gọi lại xác nhận trong 15–30 phút' },
-                        { icon: <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />, text: 'Khảo sát tận nơi, báo giá minh bạch' },
+                        { icon: <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />, text: 'Khảo sát tận nơi (Bạc Liêu, Cà Mau, Sóc Trăng)' },
                         { icon: <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />, text: 'Bảo hành 12 tháng, 1 đổi 1 tận nơi' },
                         { icon: <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />, text: 'Không phát sinh chi phí ngoài dự toán' },
                       ].map((item, i) => (
@@ -329,7 +329,7 @@ const CameraSolutionsPage = () => {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Địa chỉ khảo sát</label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Địa chỉ khảo sát <span className="text-blue-600 font-black text-[10px] normal-case ml-2">(Chỉ hỗ trợ Bạc Liêu, Cà Mau, Sóc Trăng)</span></label>
                       <input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Số nhà, tên đường, phường, quận..." className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium text-gray-900" />
                     </div>
 
