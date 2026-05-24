@@ -606,6 +606,13 @@ router.put('/bookings/:id', requireAdmin, async (req, res) => {
           if (tech) technicianName = tech.full_name;
         }
 
+        // Lấy thời hạn bảo hành từ dịch vụ tương ứng
+        const serviceObj = await Service.findOne({ where: { name: booking.service } });
+        const warrantyPeriod = serviceObj ? serviceObj.warranty_period : 0;
+        const warrantyTerms = serviceObj && serviceObj.has_warranty 
+          ? `Bảo hành dịch vụ ${booking.service} trong thời hạn ${warrantyPeriod} tháng.`
+          : null;
+
         // 4. Tạo đơn sửa chữa (Độc lập với lịch hẹn)
         await RepairOrder.create({
           receipt_code:   receiptCode,
@@ -617,6 +624,8 @@ router.put('/bookings/:id', requireAdmin, async (req, res) => {
           status:         'received',
           received_date:  booking.booking_date || new Date().toISOString().slice(0, 10),
           notes:          `Tạo tự động từ Lịch Hẹn #${booking.id}. Khách hàng: ${booking.name}`.trim(),
+          warranty_period: warrantyPeriod,
+          warranty_terms:  warrantyTerms,
         });
 
         console.log(`✅ [Hệ thống] Đã chuyển đổi Lịch hẹn #${booking.id} thành Đơn sửa chữa ${receiptCode}`);

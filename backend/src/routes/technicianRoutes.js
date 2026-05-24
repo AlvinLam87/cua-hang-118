@@ -209,6 +209,14 @@ router.patch('/repairs/:id/next-step', requireTechnician, async (req, res) => {
       updateData.completed_date = new Date().toISOString();
       // Nếu KTV không nhập giá cuối thì lấy giá dự kiến ban đầu
       updateData.final_cost = req.body.final_cost || repair.final_cost || repair.estimated_cost || 0;
+
+      // Tự động tính ngày hết hạn bảo hành nếu có thời gian bảo hành
+      const period = repair.warranty_period || 0;
+      if (period > 0) {
+        const startDate = new Date(updateData.completed_date);
+        startDate.setMonth(startDate.getMonth() + period);
+        updateData.warranty_expiry = startDate.toISOString().slice(0, 10);
+      }
     }
 
     await repair.update(updateData);
