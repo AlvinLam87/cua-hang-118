@@ -68,6 +68,37 @@ const SearchRepairScreen = ({ navigation }) => {
     if (phoneNum) Linking.openURL(`tel:${phoneNum}`);
   };
 
+  const handleCreateWarranty = async (parentOrder) => {
+    Alert.alert(
+      'Tạo đơn bảo hành',
+      `Bạn có chắc chắn muốn tạo đơn tiếp nhận bảo hành mới liên kết với đơn gốc #${parentOrder.receipt_code}?`,
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Đồng ý',
+          style: 'default',
+          onPress: async () => {
+            setLoading(true);
+            try {
+              const res = await technicianAPI.createWarrantyOrder(parentOrder.id);
+              if (res.data.success) {
+                Alert.alert('Thành công', res.data.message || 'Đã tạo đơn bảo hành thành công.');
+                handleSearch(); // Reload search results
+              } else {
+                Alert.alert('Thất bại', res.data.message || 'Không thể tạo đơn bảo hành.');
+              }
+            } catch (err) {
+              console.log(err);
+              Alert.alert('Lỗi', 'Đã xảy ra lỗi khi tạo đơn bảo hành.');
+            } finally {
+              setLoading(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const getStatusInfo = (status) => STATUS_MAP[status] || STATUS_MAP.received;
 
   const isWarrantyActive = (item) => {
@@ -134,6 +165,13 @@ const SearchRepairScreen = ({ navigation }) => {
             <Text style={styles.warrantyText}>
               Còn bảo hành đến {new Date(item.warranty_expiry).toLocaleDateString('vi-VN')}
             </Text>
+            <TouchableOpacity
+              style={styles.warrantyActionBtn}
+              onPress={() => handleCreateWarranty(item)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.warrantyActionText}>Tiếp nhận BH</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -558,6 +596,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#059669',
     flex: 1,
+  },
+  warrantyActionBtn: {
+    backgroundColor: '#059669',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    marginLeft: 6,
+  },
+  warrantyActionText: {
+    fontFamily: 'Inter',
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
   // Arrow
   arrowRow: {

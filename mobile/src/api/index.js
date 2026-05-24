@@ -71,6 +71,7 @@ export const technicianAPI = {
     },
   }),
   searchByPhone: (phone)        => api.get(`/technician/search?phone=${encodeURIComponent(phone)}`),
+  createWarrantyOrder: (parentId) => api.post('/technician/repairs/warranty', { parent_id: parentId }),
 };
 
 export default api;
