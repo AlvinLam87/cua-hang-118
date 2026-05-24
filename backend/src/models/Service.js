@@ -37,6 +37,11 @@ const Service = sequelize.define('services', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  warranty_period: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 3, // Mặc định bảo hành 3 tháng
+  },
   is_active: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,

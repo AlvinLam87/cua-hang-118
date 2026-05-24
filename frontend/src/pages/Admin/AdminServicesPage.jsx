@@ -15,7 +15,7 @@ const AdminServicesPage = () => {
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState('');
   const [feedback, setFeedback] = useState({ type: '', message: '' });
-  const [form, setForm] = useState({ name: '', price: '', price_label: '', category_id: '', icon: 'Wrench', has_warranty: true });
+  const [form, setForm] = useState({ name: '', price: '', price_label: '', category_id: '', icon: 'Wrench', has_warranty: true, warranty_period: 3 });
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
@@ -38,8 +38,8 @@ const AdminServicesPage = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  const openAdd = () => { setEditing(null); setForm({ name: '', price: '', price_label: '', category_id: categories[0]?.id || '', icon: 'Wrench', has_warranty: true }); setShowForm(true); };
-  const openEdit = (s) => { setEditing(s.id); setForm({ name: s.name, price: s.price, price_label: s.price_label || '', category_id: s.category_id, icon: s.icon || 'Wrench', has_warranty: s.has_warranty }); setShowForm(true); };
+  const openAdd = () => { setEditing(null); setForm({ name: '', price: '', price_label: '', category_id: categories[0]?.id || '', icon: 'Wrench', has_warranty: true, warranty_period: 3 }); setShowForm(true); };
+  const openEdit = (s) => { setEditing(s.id); setForm({ name: s.name, price: s.price, price_label: s.price_label || '', category_id: s.category_id, icon: s.icon || 'Wrench', has_warranty: s.has_warranty, warranty_period: s.warranty_period || 3 }); setShowForm(true); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -183,10 +183,25 @@ const AdminServicesPage = () => {
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select></div>
               </div>
-              <label className="flex items-center gap-2.5 text-sm self-end pb-2 font-medium text-gray-700">
-                <input type="checkbox" checked={form.has_warranty} onChange={e => setForm({...form, has_warranty: e.target.checked})} className="rounded text-blue-600" />
-                Có bảo hành
-              </label>
+              <div className="flex items-center gap-4 self-end pb-1.5">
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                  <input type="checkbox" checked={form.has_warranty} onChange={e => setForm({...form, has_warranty: e.target.checked})} className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4" />
+                  Có bảo hành
+                </label>
+                {form.has_warranty && (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="60"
+                      value={form.warranty_period || 3} 
+                      onChange={e => setForm({...form, warranty_period: parseInt(e.target.value) || 0})} 
+                      className="w-16 px-2 py-1.5 border border-gray-200 rounded-lg text-center font-bold text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none text-gray-900" 
+                    />
+                    <span className="text-xs font-semibold text-gray-500">tháng</span>
+                  </div>
+                )}
+              </div>
               <button type="submit" className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 md:col-span-2 shadow-lg shadow-blue-600/20"><Save className="w-4 h-4" /> {editing ? 'Cập Nhật' : 'Thêm Mới'}</button>
             </form>
           </div>
@@ -211,7 +226,15 @@ const AdminServicesPage = () => {
                   <td className="px-4 py-3 font-semibold text-gray-800">{s.name}</td>
                   <td className="px-4 py-3 text-gray-500">{s.category?.name || '—'}</td>
                   <td className="px-4 py-3 text-right font-bold text-blue-700">{s.price_label || (s.price ? s.price.toLocaleString('vi-VN') + 'đ' : 'Liên hệ')}</td>
-                  <td className="px-4 py-3 text-center">{s.has_warranty ? <span className="text-green-600 font-bold">✓</span> : <span className="text-gray-300">—</span>}</td>
+                  <td className="px-4 py-3 text-center">
+                    {s.has_warranty ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+                        ✓ {s.warranty_period || 3} tháng
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 font-medium text-xs">Không bảo hành</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center gap-1">
                       <button onClick={() => openEdit(s)} className="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center"><Pencil className="w-3.5 h-3.5" /></button>
