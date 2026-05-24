@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
   FlatList, ActivityIndicator, Linking, SafeAreaView,
-  Platform, KeyboardAvoidingView, Keyboard
+  Platform, KeyboardAvoidingView, Keyboard, Alert
 } from 'react-native';
 import {
   ArrowLeft, Search, Phone, Smartphone, CalendarDays,
