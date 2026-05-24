@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>2.4 - Lược đồ Use Case chi tiết - Cửa Hàng 118</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      margin:0; 
+      padding:30px 50px; 
+      background:#f8fafc; 
+      font-family:'Times New Roman', Times, serif; 
+      color: #0f172a; 
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    
+    .page-container { 
+      background: #fff; 
+      padding: 40px; 
+      border-radius: 12px; 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); 
+      max-width: 1000px; 
+      margin: auto; 
+    }
+    
+    .btn-bar { text-align:center; margin-bottom:26px; }
+    .btn-bar button { 
+      background:#2563EB; 
+      color:#fff; 
+      border:none; 
+      padding:10px 28px; 
+      border-radius:8px; 
+      font-size:14px; 
+      cursor:pointer; 
+      font-weight: 600; 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      transition: all 0.2s; 
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    }
+    .btn-bar button:hover { background: #1d4ed8; }
+    
+    h2.section { font-size:22px; font-weight:bold; color:#0f172a; margin:0 0 10px 0; text-transform: uppercase; text-align: center; }
+    p.desc { text-align: center; color:#475569; font-size: 15px; margin-bottom: 30px; font-family:'Plus Jakarta Sans',sans-serif; }
+    
+    .sub { 
+      font-size:18px; 
+      font-weight:bold; 
+      color:#1e293b; 
+      margin:45px 0 12px 0; 
+      border-left: 4px solid #2563EB; 
+      padding-left: 12px; 
+      font-family:'Plus Jakarta Sans',sans-serif;
+    }
+    
+    .description { 
+      font-size: 16px; 
+      color: #1e293b; 
+      line-height: 1.7; 
+      text-align: justify; 
+      margin-bottom: 20px; 
+      text-indent: 30px; 
+    }
+    
+    .diagram-wrapper { 
+      text-align: center; 
+      margin-top: 15px; 
+      background: #f8fafc; 
+      padding: 25px; 
+      border-radius: 10px; 
+      border: 1px dashed #cbd5e1; 
+      overflow-x: auto; 
+    }
+    
+    .caption { 
+      text-align:center; 
+      font-size:14px; 
+      font-style:italic; 
+      font-weight:700; 
+      color:#374151; 
+      margin:16px 0 35px 0; 
+    }
+    
+    svg { display:block; margin:auto; }
+    
+    @media print { 
+      body { background: #fff; padding: 0; }
+      .page-container { box-shadow: none; padding: 10px; max-width: 100%; }
+      .btn-bar { display:none; } 
+      .sub { page-break-before: always; }
+      .sub:first-of-type { page-break-before: avoid; }
+      .diagram-wrapper { background: #fff; border: none; padding: 0; }
+      .caption { page-break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="btn-bar">
+  💡 Nhấn <strong>Ctrl+P</strong> → <strong>"Save as PDF"</strong> để xuất báo cáo chất lượng cao →
+  <button onclick="window.print()">🖨️ Xuất PDF / In ấn</button>
+</div>
+
+<div class="page-container">
+  <h2 class="section">2.4. Xây dựng lược đồ chức năng chi tiết (Use Case Detail Diagrams)</h2>
+  <p class="desc">Bản vẽ thiết kế lược đồ chức năng chi tiết cho từng phân hệ nghiệp vụ - Cửa Hàng 118</p>
+
+  <p class="description">
+    Dưới đây là thiết kế chi tiết cho từng phân hệ chức năng cốt lõi của Cửa Hàng 118. Mỗi phân hệ được mô hình hóa rõ nét thông qua cơ chế mối quan hệ mở rộng <strong>«extend»</strong> và mối quan hệ bắt buộc <strong>«include»</strong>, phân định rạch ròi các kịch bản thành công chính cùng luồng nghiệp vụ rẽ nhánh của từng tác nhân cụ thể.
+  </p>
+
+  <!-- ================================================================ -->
+  <!-- UC 1: XÁC THỰC (User - Gray)                                      -->
+  <!-- ================================================================ -->
+  <div class="sub">2.4.1. Phân hệ Xác thực hệ thống (uc Authentication)</div>
+  <p class="description">
+    Mô tả chi tiết nhóm chức năng bảo mật và định danh cho toàn bộ đối tượng người dùng. Tác nhân User thực thi hành vi cốt lõi "Xác thực" hệ thống, từ đó mở rộng («extend») ra các kịch bản cụ thể: Đăng ký thành viên mới, Đăng nhập hệ thống để khởi tạo phiên làm việc, Đăng xuất tài khoản an toàn và Lấy lại mật khẩu qua mã bảo mật OTP.
+  </p>
+  <div class="diagram-wrapper">
+    <svg width="700" height="310" viewBox="0 0 700 310" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
+          <feDropShadow dx="1" dy="2" stdDeviation="3" flood-opacity="0.08" flood-color="#0f172a"/>
+        </filter>
+        <marker id="e1" markerWidth="12" markerHeight="9" refX="11" refY="4.5" orient="auto"><polygon points="0 0,11 4.5,0 9" fill="white" stroke="#64748b" stroke-width="1.2"/></marker>
+        <marker id="a1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#64748b"/></marker>
+      </defs>
+      <rect width="700" height="310" fill="white" rx="8"/>
+      <rect x="2" y="2" width="696" height="306" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="8"/>
+      <rect x="2" y="2" width="110" height="20" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+      <text x="8" y="15" font-size="10.5" fill="#64748b" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700">uc Authentication</text>
+      
+      <!-- Actor: User (Gray) -->
+      <circle cx="68" cy="143" r="14" fill="#f1f5f9" stroke="#64748b" stroke-width="2" />
+      <line x1="68" y1="157" x2="68" y2="181" stroke="#64748b" stroke-width="2" />
+      <line x1="48" y1="167" x2="88" y2="167" stroke="#64748b" stroke-width="2" />
+      <line x1="68" y1="181" x2="50" y2="197" stroke="#64748b" stroke-width="2" />
+      <line x1="68" y1="181" x2="86" y2="197" stroke="#64748b" stroke-width="2" />
+      <text x="68" y="215" text-anchor="middle" font-size="12" font-weight="800" fill="#475569" font-family="'Plus Jakarta Sans', sans-serif">User</text>
+      
+      <!-- Center UC: Xác thực -->
+      <ellipse cx="340" cy="158" rx="108" ry="30" fill="#f8fafc" stroke="#64748b" stroke-width="1.8" filter="url(#shadow)" />
+      <text x="340" y="154" text-anchor="middle" font-size="13" font-weight="800" fill="#334155" font-family="'Plus Jakarta Sans', sans-serif">Xác thực</text>
+      <text x="340" y="170" text-anchor="middle" font-size="11" fill="#64748b" font-family="'Plus Jakarta Sans', sans-serif">(Authentication)</text>
+      
+      <!-- UC Register -->
+      <ellipse cx="220" cy="52" rx="88" ry="24" fill="#f8fafc" stroke="#64748b" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="220" y="47" text-anchor="middle" font-size="12" font-weight="700" fill="#334155" font-family="'Plus Jakarta Sans', sans-serif">Đăng ký</text>
+      <text x="220" y="61" text-anchor="middle" font-size="11" fill="#64748b" font-family="'Plus Jakarta Sans', sans-serif">(Register)</text>
+      
+      <!-- UC Login -->
+      <ellipse cx="552" cy="90" rx="108" ry="24" fill="#f8fafc" stroke="#64748b" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="552" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#334155" font-family="'Plus Jakarta Sans', sans-serif">Đăng nhập</text>
+      <text x="552" y="99" text-anchor="middle" font-size="11" fill="#64748b" font-family="'Plus Jakarta Sans', sans-serif">(Login)</text>
+      
+      <!-- UC Logout -->
+      <ellipse cx="552" cy="220" rx="108" ry="24" fill="#f8fafc" stroke="#64748b" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="552" y="215" text-anchor="middle" font-size="12" font-weight="700" fill="#334155" font-family="'Plus Jakarta Sans', sans-serif">Đăng xuất</text>
+      <text x="552" y="229" text-anchor="middle" font-size="11" fill="#64748b" font-family="'Plus Jakarta Sans', sans-serif">(Log out)</text>
+      
+      <!-- UC ForgotPW -->
+      <ellipse cx="340" cy="272" rx="110" ry="24" fill="#f8fafc" stroke="#64748b" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="340" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#334155" font-family="'Plus Jakarta Sans', sans-serif">Lấy lại mật khẩu</text>
+      <text x="340" y="281" text-anchor="middle" font-size="11" fill="#64748b" font-family="'Plus Jakarta Sans', sans-serif">(Forgot password)</text>
+      
+      <!-- Connective Lines -->
+      <line x1="112" y1="155" x2="232" y2="155" stroke="#64748b" stroke-width="1.5" marker-end="url(#a1)"/>
+      
+      <line x1="226" y1="75" x2="296" y2="133" stroke="#64748b" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e1)"/>
+      <text x="232" y="103" text-anchor="middle" font-size="10.5" fill="#64748b" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="447" y1="99" x2="442" y2="135" stroke="#64748b" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e1)"/>
+      <text x="474" y="116" text-anchor="middle" font-size="10.5" fill="#64748b" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="447" y1="210" x2="440" y2="187" stroke="#64748b" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e1)"/>
+      <text x="474" y="204" text-anchor="middle" font-size="10.5" fill="#64748b" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="340" y1="248" x2="340" y2="189" stroke="#64748b" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e1)"/>
+      <text x="358" y="222" text-anchor="start" font-size="10.5" fill="#64748b" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+    </svg>
+  </div>
+  <div class="caption">Hình 9. Lược đồ Use Case chi tiết - Phân hệ Xác thực hệ thống</div>
+
+  <!-- ================================================================ -->
+  <!-- UC 2: MUA SẮM (Customer - Blue)                                  -->
+  <!-- ================================================================ -->
+  <div class="sub">2.4.2. Phân hệ Mua sắm trực tuyến (uc Shopping)</div>
+  <p class="description">
+    Hệ thống cung cấp dịch vụ thương mại điện tử mua sắm linh kiện cho khách hàng. Tác nhân Khách hàng thực thi chức năng "Mua sắm", mở rộng sang việc tra cứu xem sản phẩm, tiến hành đặt mua trực tuyến kết hợp chọn cổng thanh toán an toàn, áp dụng điểm tích lũy đổi Voucher ưu đãi và gửi nhận xét đánh giá chất lượng linh kiện đã mua.
+  </p>
+  <div class="diagram-wrapper">
+    <svg width="700" height="310" viewBox="0 0 700 310" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="e2" markerWidth="12" markerHeight="9" refX="11" refY="4.5" orient="auto"><polygon points="0 0,11 4.5,0 9" fill="white" stroke="#2563EB" stroke-width="1.2"/></marker>
+        <marker id="a2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#2563EB"/></marker>
+      </defs>
+      <rect width="700" height="310" fill="white" rx="8"/>
+      <rect x="2" y="2" width="696" height="306" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="8"/>
+      <rect x="2" y="2" width="90" height="20" fill="#eff6ff" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+      <text x="8" y="15" font-size="10.5" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700">uc Shopping</text>
+      
+      <!-- Actor: Khách hàng (Blue) -->
+      <circle cx="64" cy="143" r="14" fill="#eff6ff" stroke="#2563EB" stroke-width="2" />
+      <line x1="64" y1="157" x2="64" y2="181" stroke="#2563EB" stroke-width="2" />
+      <line x1="44" y1="167" x2="84" y2="167" stroke="#2563EB" stroke-width="2" />
+      <line x1="64" y1="181" x2="46" y2="197" stroke="#2563EB" stroke-width="2" />
+      <line x1="64" y1="181" x2="82" y2="197" stroke="#2563EB" stroke-width="2" />
+      <text x="64" y="215" text-anchor="middle" font-size="12" font-weight="800" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Khách hàng</text>
+      
+      <!-- Center UC: Mua sắm -->
+      <ellipse cx="340" cy="158" rx="110" ry="30" fill="#eff6ff" stroke="#2563EB" stroke-width="1.8" filter="url(#shadow)" />
+      <text x="340" y="154" text-anchor="middle" font-size="13" font-weight="800" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Mua sắm</text>
+      <text x="340" y="170" text-anchor="middle" font-size="11" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif">(Shopping)</text>
+      
+      <!-- UC Xem SP -->
+      <ellipse cx="230" cy="52" rx="105" ry="24" fill="#eff6ff" stroke="#2563EB" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="230" y="47" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Xem sản phẩm</text>
+      <text x="230" y="61" text-anchor="middle" font-size="11" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif">(View product)</text>
+      
+      <!-- UC Đặt mua -->
+      <ellipse cx="556" cy="90" rx="108" ry="24" fill="#eff6ff" stroke="#2563EB" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="556" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Đặt mua &amp; Thanh toán</text>
+      <text x="556" y="99" text-anchor="middle" font-size="11" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif">(Order online)</text>
+      
+      <!-- UC Voucher -->
+      <ellipse cx="556" cy="220" rx="108" ry="24" fill="#eff6ff" stroke="#2563EB" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="556" y="215" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Áp dụng Voucher</text>
+      <text x="556" y="229" text-anchor="middle" font-size="11" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif">(Apply voucher)</text>
+      
+      <!-- UC Đánh giá -->
+      <ellipse cx="340" cy="272" rx="112" ry="24" fill="#eff6ff" stroke="#2563EB" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="340" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Đánh giá sản phẩm</text>
+      <text x="340" y="281" text-anchor="middle" font-size="11" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif">(Review product)</text>
+      
+      <!-- Connective Lines -->
+      <line x1="108" y1="155" x2="230" y2="155" stroke="#2563EB" stroke-width="1.5" marker-end="url(#a2)"/>
+      
+      <line x1="250" y1="75" x2="302" y2="133" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e2)"/>
+      <text x="248" y="104" text-anchor="middle" font-size="10.5" fill="#2563EB" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="451" y1="99" x2="445" y2="135" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e2)"/>
+      <text x="474" y="116" text-anchor="middle" font-size="10.5" fill="#2563EB" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="451" y1="210" x2="442" y2="187" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e2)"/>
+      <text x="474" y="204" text-anchor="middle" font-size="10.5" fill="#2563EB" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="340" y1="248" x2="340" y2="189" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e2)"/>
+      <text x="358" y="222" text-anchor="start" font-size="10.5" fill="#2563EB" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+    </svg>
+  </div>
+  <div class="caption">Hình 10. Lược đồ Use Case chi tiết - Phân hệ Mua sắm trực tuyến</div>
+
+  <!-- ================================================================ -->
+  <!-- UC 3: ĐẶT LỊCH HẸN (Customer - Blue)                              -->
+  <!-- ================================================================ -->
+  <div class="sub">2.4.3. Phân hệ Đặt lịch hẹn dịch vụ (uc Booking)</div>
+  <p class="description">
+    Giúp khách hàng chủ động đặt lịch hẹn mang laptop/điện thoại qua sửa chữa. Tác nhân Khách hàng yêu cầu "Đặt lịch hẹn", mở rộng sang các chức năng: tham khảo danh mục dịch vụ chi tiết của cửa hàng, yêu cầu đích danh một kỹ thuật viên có chuyên môn tốt, theo dõi dòng tiến độ sửa máy và tra cứu thời hạn bảo hành trực tuyến.
+  </p>
+  <div class="diagram-wrapper">
+    <svg width="700" height="310" viewBox="0 0 700 310" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="e3" markerWidth="12" markerHeight="9" refX="11" refY="4.5" orient="auto"><polygon points="0 0,11 4.5,0 9" fill="white" stroke="#2563EB" stroke-width="1.2"/></marker>
+        <marker id="a3" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#2563EB"/></marker>
+      </defs>
+      <rect width="700" height="310" fill="white" rx="8"/>
+      <rect x="2" y="2" width="696" height="306" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="8"/>
+      <rect x="2" y="2" width="85" height="20" fill="#eff6ff" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+      <text x="8" y="15" font-size="10.5" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700">uc Booking</text>
+      
+      <!-- Actor: Khách hàng (Blue) -->
+      <circle cx="64" cy="143" r="14" fill="#eff6ff" stroke="#2563EB" stroke-width="2" />
+      <line x1="64" y1="157" x2="64" y2="181" stroke="#2563EB" stroke-width="2" />
+      <line x1="44" y1="167" x2="84" y2="167" stroke="#2563EB" stroke-width="2" />
+      <line x1="64" y1="181" x2="46" y2="197" stroke="#2563EB" stroke-width="2" />
+      <line x1="64" y1="181" x2="82" y2="197" stroke="#2563EB" stroke-width="2" />
+      <text x="64" y="215" text-anchor="middle" font-size="12" font-weight="800" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Khách hàng</text>
+      
+      <!-- Center UC: Đặt lịch hẹn -->
+      <ellipse cx="340" cy="158" rx="108" ry="30" fill="#eff6ff" stroke="#2563EB" stroke-width="1.8" filter="url(#shadow)" />
+      <text x="340" y="154" text-anchor="middle" font-size="13" font-weight="800" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Đặt lịch hẹn</text>
+      <text x="340" y="170" text-anchor="middle" font-size="11" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif">(Booking)</text>
+      
+      <!-- UC Xem dịch vụ -->
+      <ellipse cx="225" cy="52" rx="105" ry="24" fill="#eff6ff" stroke="#2563EB" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="225" y="47" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Xem dịch vụ &amp; KTV</text>
+      <text x="225" y="61" text-anchor="middle" font-size="11" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif">(View services)</text>
+      
+      <!-- UC Chọn KTV -->
+      <ellipse cx="554" cy="90" rx="108" ry="24" fill="#eff6ff" stroke="#2563EB" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="554" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Chọn KTV mong muốn</text>
+      <text x="554" y="99" text-anchor="middle" font-size="11" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif">(Choose technician)</text>
+      
+      <!-- UC Theo dõi tiến độ -->
+      <ellipse cx="554" cy="220" rx="108" ry="24" fill="#eff6ff" stroke="#2563EB" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="554" y="215" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Theo dõi tiến độ</text>
+      <text x="554" y="229" text-anchor="middle" font-size="11" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif">(Track progress)</text>
+      
+      <!-- UC Tra cứu bảo hành -->
+      <ellipse cx="340" cy="272" rx="112" ry="24" fill="#eff6ff" stroke="#2563EB" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="340" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" font-family="'Plus Jakarta Sans', sans-serif">Tra cứu bảo hành</text>
+      <text x="340" y="281" text-anchor="middle" font-size="11" fill="#2563EB" font-family="'Plus Jakarta Sans', sans-serif">(Warranty lookup)</text>
+      
+      <!-- Connective Lines -->
+      <line x1="108" y1="155" x2="232" y2="155" stroke="#2563EB" stroke-width="1.5" marker-end="url(#a3)"/>
+      
+      <line x1="244" y1="75" x2="297" y2="133" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e3)"/>
+      <text x="245" y="104" text-anchor="middle" font-size="10.5" fill="#2563EB" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="449" y1="99" x2="443" y2="135" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e3)"/>
+      <text x="472" y="116" text-anchor="middle" font-size="10.5" fill="#2563EB" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="449" y1="210" x2="441" y2="187" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e3)"/>
+      <text x="472" y="204" text-anchor="middle" font-size="10.5" fill="#2563EB" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="340" y1="248" x2="340" y2="189" stroke="#2563EB" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e3)"/>
+      <text x="358" y="222" text-anchor="start" font-size="10.5" fill="#2563EB" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+    </svg>
+  </div>
+  <div class="caption">Hình 11. Lược đồ Use Case chi tiết - Phân hệ Đặt lịch hẹn dịch vụ</div>
+
+  <!-- ================================================================ -->
+  <!-- UC 4: SỬA CHỮA (Technician - Green)                              -->
+  <!-- ================================================================ -->
+  <div class="sub">2.4.4. Phân hệ Xử lý sửa chữa (uc Repair)</div>
+  <p class="description">
+    Dành riêng cho Kỹ thuật viên tác nghiệp sửa máy trực tiếp trên ứng dụng di động. Tác nhân Kỹ thuật viên yêu cầu "Sửa chữa" thiết bị, mở rộng sang việc: cập nhật thông tin lỗi phần cứng và chẩn đoán chi tiết, chụp hình ảnh máy trước/sau khi sửa để làm bằng chứng bảo hành, thay đổi trạng thái tiến độ đơn sửa chữa và tra cứu nhanh lịch sử bảo hành qua SĐT.
+  </p>
+  <div class="diagram-wrapper">
+    <svg width="700" height="310" viewBox="0 0 700 310" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="e4" markerWidth="12" markerHeight="9" refX="11" refY="4.5" orient="auto"><polygon points="0 0,11 4.5,0 9" fill="white" stroke="#059669" stroke-width="1.2"/></marker>
+        <marker id="a4" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#059669"/></marker>
+      </defs>
+      <rect width="700" height="310" fill="white" rx="8"/>
+      <rect x="2" y="2" width="696" height="306" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="8"/>
+      <rect x="2" y="2" width="80" height="20" fill="#f0fdf4" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+      <text x="8" y="15" font-size="10.5" fill="#059669" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700">uc Repair</text>
+      
+      <!-- Actor: Kỹ thuật viên (Green) -->
+      <circle cx="62" cy="140" r="14" fill="#f0fdf4" stroke="#059669" stroke-width="2" />
+      <line x1="62" y1="154" x2="62" y2="178" stroke="#059669" stroke-width="2" />
+      <line x1="42" y1="164" x2="82" y2="164" stroke="#059669" stroke-width="2" />
+      <line x1="62" y1="178" x2="44" y2="194" stroke="#059669" stroke-width="2" />
+      <line x1="62" y1="178" x2="80" y2="194" stroke="#059669" stroke-width="2" />
+      <text x="62" y="212" text-anchor="middle" font-size="11.5" font-weight="800" fill="#065f46" font-family="'Plus Jakarta Sans', sans-serif">Kỹ thuật viên</text>
+      
+      <!-- Center UC: Sửa chữa -->
+      <ellipse cx="340" cy="158" rx="100" ry="30" fill="#f0fdf4" stroke="#059669" stroke-width="1.8" filter="url(#shadow)" />
+      <text x="340" y="154" text-anchor="middle" font-size="13" font-weight="800" fill="#065f46" font-family="'Plus Jakarta Sans', sans-serif">Sửa chữa</text>
+      <text x="340" y="170" text-anchor="middle" font-size="11" fill="#059669" font-family="'Plus Jakarta Sans', sans-serif">(Repair order)</text>
+      
+      <!-- UC Cập nhật chẩn đoán -->
+      <ellipse cx="224" cy="52" rx="108" ry="24" fill="#f0fdf4" stroke="#059669" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="224" y="47" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46" font-family="'Plus Jakarta Sans', sans-serif">Cập nhật chẩn đoán</text>
+      <text x="224" y="61" text-anchor="middle" font-size="11" fill="#059669" font-family="'Plus Jakarta Sans', sans-serif">(Update diagnosis)</text>
+      
+      <!-- UC Chụp ảnh -->
+      <ellipse cx="553" cy="90" rx="108" ry="24" fill="#f0fdf4" stroke="#059669" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="553" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46" font-family="'Plus Jakarta Sans', sans-serif">Chụp ảnh trước/sau sửa</text>
+      <text x="553" y="99" text-anchor="middle" font-size="11" fill="#059669" font-family="'Plus Jakarta Sans', sans-serif">(Upload photo)</text>
+      
+      <!-- UC Chuyển trạng thái -->
+      <ellipse cx="553" cy="220" rx="108" ry="24" fill="#f0fdf4" stroke="#059669" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="553" y="215" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46" font-family="'Plus Jakarta Sans', sans-serif">Chuyển trạng thái đơn</text>
+      <text x="553" y="229" text-anchor="middle" font-size="11" fill="#059669" font-family="'Plus Jakarta Sans', sans-serif">(Next step)</text>
+      
+      <!-- UC Tra cứu bảo hành SĐT -->
+      <ellipse cx="340" cy="272" rx="115" ry="24" fill="#f0fdf4" stroke="#059669" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="340" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#065f46" font-family="'Plus Jakarta Sans', sans-serif">Tra cứu bảo hành (SĐT)</text>
+      <text x="340" y="281" text-anchor="middle" font-size="11" fill="#059669" font-family="'Plus Jakarta Sans', sans-serif">(Search by phone)</text>
+      
+      <!-- Connective Lines -->
+      <line x1="106" y1="153" x2="240" y2="153" stroke="#059669" stroke-width="1.5" marker-end="url(#a4)"/>
+      
+      <line x1="248" y1="75" x2="300" y2="133" stroke="#059669" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e4)"/>
+      <text x="245" y="104" text-anchor="middle" font-size="10.5" fill="#059669" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="448" y1="99" x2="436" y2="135" stroke="#059669" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e4)"/>
+      <text x="472" y="116" text-anchor="middle" font-size="10.5" fill="#059669" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="448" y1="210" x2="438" y2="188" stroke="#059669" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e4)"/>
+      <text x="472" y="204" text-anchor="middle" font-size="10.5" fill="#059669" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="340" y1="248" x2="340" y2="189" stroke="#059669" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e4)"/>
+      <text x="358" y="222" text-anchor="start" font-size="10.5" fill="#059669" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+    </svg>
+  </div>
+  <div class="caption">Hình 12. Lược đồ Use Case chi tiết - Phân hệ Xử lý sửa chữa (Kỹ thuật viên)</div>
+
+  <!-- ================================================================ -->
+  <!-- UC 5: QUẢN LÝ LỊCH HẸN (Admin - Orange)                          -->
+  <!-- ================================================================ -->
+  <div class="sub">2.4.5. Phân hệ Quản lý lịch hẹn (uc Booking Mgmt)</div>
+  <p class="description">
+    Giúp ban quản lý/lễ tân điều phối công việc hiệu quả. Tác nhân Admin thực thi chức năng "Quản lý lịch hẹn", mở rộng sang các tác vụ: tiếp nhận lịch hẹn mới do khách đặt online, phân công lịch hẹn cho kỹ thuật viên phù hợp, xác nhận hoặc hủy lịch hẹn, và tự động tạo mới đơn sửa chữa &amp; in ấn biên lai khi khách mang thiết bị đến cửa hàng.
+  </p>
+  <div class="diagram-wrapper">
+    <svg width="700" height="310" viewBox="0 0 700 310" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="e5" markerWidth="12" markerHeight="9" refX="11" refY="4.5" orient="auto"><polygon points="0 0,11 4.5,0 9" fill="white" stroke="#d97706" stroke-width="1.2"/></marker>
+        <marker id="a5" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#d97706"/></marker>
+      </defs>
+      <rect width="700" height="310" fill="white" rx="8"/>
+      <rect x="2" y="2" width="696" height="306" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="8"/>
+      <rect x="2" y="2" width="105" height="20" fill="#fffbeb" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+      <text x="8" y="15" font-size="10.5" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700">uc Booking Mgmt</text>
+      
+      <!-- Actor: Admin (Orange) -->
+      <circle cx="62" cy="143" r="14" fill="#fffbeb" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="157" x2="62" y2="181" stroke="#d97706" stroke-width="2" />
+      <line x1="42" y1="167" x2="82" y2="167" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="181" x2="44" y2="197" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="181" x2="80" y2="197" stroke="#d97706" stroke-width="2" />
+      <text x="62" y="215" text-anchor="middle" font-size="12" font-weight="800" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Admin</text>
+      
+      <!-- Center UC: Quản lý lịch hẹn -->
+      <ellipse cx="340" cy="158" rx="110" ry="30" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" filter="url(#shadow)" />
+      <text x="340" y="154" text-anchor="middle" font-size="13" font-weight="800" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Quản lý lịch hẹn</text>
+      <text x="340" y="170" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Manage bookings)</text>
+      
+      <!-- UC Tiếp nhận -->
+      <ellipse cx="225" cy="52" rx="105" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="225" y="47" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Tiếp nhận lịch hẹn</text>
+      <text x="225" y="61" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Receive booking)</text>
+      
+      <!-- UC Phân công KTV -->
+      <ellipse cx="554" cy="90" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="554" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Phân công KTV</text>
+      <text x="554" y="99" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Assign technician)</text>
+      
+      <!-- UC Huỷ lịch hẹn -->
+      <ellipse cx="554" cy="220" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="554" y="215" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Huỷ / Xác nhận lịch hẹn</text>
+      <text x="554" y="229" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Cancel / Confirm)</text>
+      
+      <!-- UC Tạo đơn sửa chữa -->
+      <ellipse cx="340" cy="272" rx="115" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="340" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Tạo đơn sửa chữa &amp; In biên nhận</text>
+      <text x="340" y="281" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Create repair order)</text>
+      
+      <!-- Connective Lines -->
+      <line x1="106" y1="155" x2="230" y2="155" stroke="#d97706" stroke-width="1.5" marker-end="url(#a5)"/>
+      
+      <line x1="244" y1="75" x2="296" y2="133" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e5)"/>
+      <text x="244" y="104" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="449" y1="99" x2="444" y2="135" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e5)"/>
+      <text x="472" y="116" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="449" y1="210" x2="442" y2="188" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e5)"/>
+      <text x="472" y="204" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="340" y1="248" x2="340" y2="189" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e5)"/>
+      <text x="358" y="222" text-anchor="start" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+    </svg>
+  </div>
+  <div class="caption">Hình 13. Lược đồ Use Case chi tiết - Phân hệ Quản lý lịch hẹn (Admin)</div>
+
+  <!-- ================================================================ -->
+  <!-- UC 6: QUẢN LÝ SẢN PHẨM & KHO (Admin - Orange)                      -->
+  <!-- ================================================================ -->
+  <div class="sub">2.4.6. Phân hệ Quản lý sản phẩm &amp; kho hàng (uc Inventory)</div>
+  <p class="description">
+    Giúp quản trị viên kiểm soát kho hàng linh kiện chặt chẽ, loại bỏ thất thoát. Tác nhân Admin yêu cầu "Quản lý sản phẩm &amp; kho", mở rộng sang: thực hiện CRUD (thêm, sửa, xóa) cấu hình linh kiện, lập phiếu nhập kho linh kiện từ nhà cung cấp, thực hiện kiểm kê kho định kỳ và thiết lập cây danh mục sản phẩm/dịch vụ sửa chữa.
+  </p>
+  <div class="diagram-wrapper">
+    <svg width="700" height="310" viewBox="0 0 700 310" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="e6" markerWidth="12" markerHeight="9" refX="11" refY="4.5" orient="auto"><polygon points="0 0,11 4.5,0 9" fill="white" stroke="#d97706" stroke-width="1.2"/></marker>
+        <marker id="a6" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#d97706"/></marker>
+      </defs>
+      <rect width="700" height="310" fill="white" rx="8"/>
+      <rect x="2" y="2" width="696" height="306" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="8"/>
+      <rect x="2" y="2" width="100" height="20" fill="#fffbeb" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+      <text x="8" y="15" font-size="10.5" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700">uc Inventory</text>
+      
+      <!-- Actor: Admin (Orange) -->
+      <circle cx="62" cy="143" r="14" fill="#fffbeb" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="157" x2="62" y2="181" stroke="#d97706" stroke-width="2" />
+      <line x1="42" y1="167" x2="82" y2="167" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="181" x2="44" y2="197" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="181" x2="80" y2="197" stroke="#d97706" stroke-width="2" />
+      <text x="62" y="215" text-anchor="middle" font-size="12" font-weight="800" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Admin</text>
+      
+      <!-- Center UC: Quản lý sản phẩm & kho -->
+      <ellipse cx="340" cy="158" rx="114" ry="30" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" filter="url(#shadow)" />
+      <text x="340" y="154" text-anchor="middle" font-size="13" font-weight="800" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Quản lý sản phẩm &amp; kho</text>
+      <text x="340" y="170" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Product &amp; Inventory)</text>
+      
+      <!-- UC Thêm/Sửa SP -->
+      <ellipse cx="220" cy="52" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="220" y="47" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Thêm / Sửa / Xóa SP</text>
+      <text x="220" y="61" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(CRUD product)</text>
+      
+      <!-- UC Nhập kho -->
+      <ellipse cx="555" cy="90" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="555" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Nhập kho linh kiện</text>
+      <text x="555" y="99" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Stock in)</text>
+      
+      <!-- UC Kiểm kê kho -->
+      <ellipse cx="555" cy="220" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="555" y="215" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Kiểm kê kho hàng</text>
+      <text x="555" y="229" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Inventory check)</text>
+      
+      <!-- UC Quản lý danh mục -->
+      <ellipse cx="340" cy="272" rx="112" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="340" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Quản lý danh mục sản phẩm</text>
+      <text x="340" y="281" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Manage category)</text>
+      
+      <!-- Connective Lines -->
+      <line x1="106" y1="155" x2="226" y2="155" stroke="#d97706" stroke-width="1.5" marker-end="url(#a6)"/>
+      
+      <line x1="242" y1="75" x2="298" y2="133" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e6)"/>
+      <text x="242" y="104" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="450" y1="99" x2="447" y2="135" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e6)"/>
+      <text x="474" y="116" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="450" y1="210" x2="444" y2="188" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e6)"/>
+      <text x="474" y="204" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="340" y1="248" x2="340" y2="189" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e6)"/>
+      <text x="358" y="222" text-anchor="start" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+    </svg>
+  </div>
+  <div class="caption">Hình 14. Lược đồ Use Case chi tiết - Phân hệ Quản lý sản phẩm &amp; kho hàng</div>
+
+  <!-- ================================================================ -->
+  <!-- UC 7: BÁO CÁO THỐNG KÊ (Admin - Orange)                          -->
+  <!-- ================================================================ -->
+  <div class="sub">2.4.7. Phân hệ Báo cáo &amp; Thống kê (uc Report)</div>
+  <p class="description">
+    Giúp chủ cửa hàng nắm bắt kịp thời tình hình kinh doanh và hiệu năng làm việc. Tác nhân Admin yêu cầu "Báo cáo &amp; Thống kê", mở rộng sang: xem biểu đồ doanh số bán lẻ linh kiện và doanh thu sửa chữa phần cứng, lọc và xuất dữ liệu báo cáo sang file Excel, chấm điểm thống kê hiệu năng làm việc của Kỹ thuật viên, và thống kê biểu đồ trạng thái đơn sửa chữa.
+  </p>
+  <div class="diagram-wrapper">
+    <svg width="700" height="310" viewBox="0 0 700 310" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="e7" markerWidth="12" markerHeight="9" refX="11" refY="4.5" orient="auto"><polygon points="0 0,11 4.5,0 9" fill="white" stroke="#d97706" stroke-width="1.2"/></marker>
+        <marker id="a7" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#d97706"/></marker>
+      </defs>
+      <rect width="700" height="310" fill="white" rx="8"/>
+      <rect x="2" y="2" width="696" height="306" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="8"/>
+      <rect x="2" y="2" width="90" height="20" fill="#fffbeb" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+      <text x="8" y="15" font-size="10.5" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700">uc Report</text>
+      
+      <!-- Actor: Admin (Orange) -->
+      <circle cx="62" cy="143" r="14" fill="#fffbeb" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="157" x2="62" y2="181" stroke="#d97706" stroke-width="2" />
+      <line x1="42" y1="167" x2="82" y2="167" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="181" x2="44" y2="197" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="181" x2="80" y2="197" stroke="#d97706" stroke-width="2" />
+      <text x="62" y="215" text-anchor="middle" font-size="12" font-weight="800" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Admin</text>
+      
+      <!-- Center UC: Báo cáo & Thống kê -->
+      <ellipse cx="340" cy="158" rx="110" ry="30" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" filter="url(#shadow)" />
+      <text x="340" y="154" text-anchor="middle" font-size="13" font-weight="800" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Báo cáo &amp; Thống kê</text>
+      <text x="340" y="170" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Reports &amp; Statistics)</text>
+      
+      <!-- UC Xem doanh thu -->
+      <ellipse cx="225" cy="52" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="225" y="47" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Xem doanh thu</text>
+      <text x="225" y="61" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(View revenue)</text>
+      
+      <!-- UC Xuất Excel -->
+      <ellipse cx="554" cy="90" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="554" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Xuất báo cáo Excel</text>
+      <text x="554" y="99" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Export Excel)</text>
+      
+      <!-- UC Thống kê KTV -->
+      <ellipse cx="554" cy="220" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="554" y="215" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Thống kê hiệu suất KTV</text>
+      <text x="554" y="229" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Technician stats)</text>
+      
+      <!-- UC Thống kê đơn hàng -->
+      <ellipse cx="340" cy="272" rx="112" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="340" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Thống kê đơn sửa chữa</text>
+      <text x="340" y="281" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Repair order stats)</text>
+      
+      <!-- Connective Lines -->
+      <line x1="106" y1="155" x2="230" y2="155" stroke="#d97706" stroke-width="1.5" marker-end="url(#a7)"/>
+      
+      <line x1="246" y1="75" x2="298" y2="133" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e7)"/>
+      <text x="245" y="104" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="449" y1="99" x2="444" y2="135" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e7)"/>
+      <text x="472" y="116" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="449" y1="210" x2="443" y2="188" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e7)"/>
+      <text x="472" y="204" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="340" y1="248" x2="340" y2="189" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e7)"/>
+      <text x="358" y="222" text-anchor="start" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+    </svg>
+  </div>
+  <div class="caption">Hình 15. Lược đồ Use Case chi tiết - Phân hệ Báo cáo &amp; Thống kê</div>
+
+  <!-- ================================================================ -->
+  <!-- UC 8: QUẢN LÝ TÀI KHOẢN (Admin - Orange)                         -->
+  <!-- ================================================================ -->
+  <div class="sub">2.4.8. Phân hệ Quản lý tài khoản &amp; Phân quyền (uc Account Mgmt)</div>
+  <p class="description">
+    Giúp duy trì tính bảo mật và cấp quyền truy cập hợp lý cho từng cấp bậc nhân sự. Tác nhân Admin thực thi quyền "Quản lý tài khoản &amp; Phân quyền", mở rộng sang: tra cứu tìm kiếm tài khoản người dùng và lịch sử hoạt động, khóa hoặc mở khóa tài khoản vi phạm Blacklist, thiết lập phân quyền vai trò (Admin, Kỹ thuật viên, Khách hàng) và khởi tạo tài khoản nhân viên nội bộ mới.
+  </p>
+  <div class="diagram-wrapper">
+    <svg width="700" height="310" viewBox="0 0 700 310" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="e8" markerWidth="12" markerHeight="9" refX="11" refY="4.5" orient="auto"><polygon points="0 0,11 4.5,0 9" fill="white" stroke="#d97706" stroke-width="1.2"/></marker>
+        <marker id="a8" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#d97706"/></marker>
+      </defs>
+      <rect width="700" height="310" fill="white" rx="8"/>
+      <rect x="2" y="2" width="696" height="306" fill="none" stroke="#cbd5e1" stroke-width="1.5" rx="8"/>
+      <rect x="2" y="2" width="115" height="20" fill="#fffbeb" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+      <text x="8" y="15" font-size="10.5" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700">uc Account Mgmt</text>
+      
+      <!-- Actor: Admin (Orange) -->
+      <circle cx="62" cy="143" r="14" fill="#fffbeb" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="157" x2="62" y2="181" stroke="#d97706" stroke-width="2" />
+      <line x1="42" y1="167" x2="82" y2="167" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="181" x2="44" y2="197" stroke="#d97706" stroke-width="2" />
+      <line x1="62" y1="181" x2="80" y2="197" stroke="#d97706" stroke-width="2" />
+      <text x="62" y="215" text-anchor="middle" font-size="12" font-weight="800" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Admin</text>
+      
+      <!-- Center UC: Quản lý tài khoản -->
+      <ellipse cx="340" cy="158" rx="122" ry="30" fill="#fffbeb" stroke="#d97706" stroke-width="1.8" filter="url(#shadow)" />
+      <text x="340" y="154" text-anchor="middle" font-size="13" font-weight="800" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Quản lý tài khoản</text>
+      <text x="340" y="170" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">&amp; Phân quyền</text>
+      
+      <!-- UC Xem / Tìm kiếm tài khoản -->
+      <ellipse cx="220" cy="52" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="220" y="47" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Xem / Tìm kiếm</text>
+      <text x="220" y="61" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">tài khoản (Search user)</text>
+      
+      <!-- UC Khóa / Mở tài khoản -->
+      <ellipse cx="554" cy="90" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="554" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Khóa / Mở tài khoản</text>
+      <text x="554" y="99" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Block / Unblock user)</text>
+      
+      <!-- UC Phân quyền vai trò -->
+      <ellipse cx="554" cy="220" rx="108" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="554" y="215" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Phân quyền vai trò</text>
+      <text x="554" y="229" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Assign role)</text>
+      
+      <!-- UC Thêm tài khoản nhân viên -->
+      <ellipse cx="340" cy="272" rx="115" ry="24" fill="#fffbeb" stroke="#d97706" stroke-width="1.3" filter="url(#shadow)" />
+      <text x="340" y="267" text-anchor="middle" font-size="12" font-weight="700" fill="#9a3412" font-family="'Plus Jakarta Sans', sans-serif">Thêm tài khoản nhân viên</text>
+      <text x="340" y="281" text-anchor="middle" font-size="11" fill="#d97706" font-family="'Plus Jakarta Sans', sans-serif">(Create staff account)</text>
+      
+      <!-- Connective Lines -->
+      <line x1="106" y1="155" x2="218" y2="155" stroke="#d97706" stroke-width="1.5" marker-end="url(#a8)"/>
+      
+      <line x1="242" y1="75" x2="292" y2="133" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e8)"/>
+      <text x="242" y="104" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="449" y1="99" x2="456" y2="133" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e8)"/>
+      <text x="474" y="116" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="449" y1="210" x2="453" y2="187" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e8)"/>
+      <text x="474" y="204" text-anchor="middle" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+      
+      <line x1="340" y1="248" x2="340" y2="189" stroke="#d97706" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#e8)"/>
+      <text x="358" y="222" text-anchor="start" font-size="10.5" fill="#d97706" font-style="italic" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600">«extend»</text>
+    </svg>
+  </div>
+  <div class="caption">Hình 16. Lược đồ Use Case chi tiết - Phân hệ Quản lý tài khoản &amp; Phân quyền</div>
+
+</div>
+</body>
+</html>

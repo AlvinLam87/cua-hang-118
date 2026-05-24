@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<title>2.7 - Lược đồ Quan hệ Thực thể (ERD Diagram) - Cửa Hàng 118</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; padding:30px 50px; background:#fff; font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.7; }
+  .btn-bar { text-align:center; margin-bottom:26px; }
+  .btn-bar button { background:#2563EB; color:#fff; border:none; padding:9px 26px; border-radius:8px; font-size:13px; cursor:pointer; font-family:'Segoe UI',Arial,sans-serif; }
+  h2.section { font-size:18px; font-weight:bold; margin:0 0 16px 0; }
+  .desc { text-align:justify; margin-bottom:10px; text-indent: 30px; }
+  .caption { text-align:center; font-size:14px; font-style:italic; font-weight:700; color:#374151; margin:14px 0 30px 0; }
+  svg { display:block; margin: 0 auto; }
+  
+  /* Bảng mô tả mối quan hệ */
+  .relation-table { width: 100%; border-collapse: collapse; margin: 25px 0 35px 0; font-family: 'Times New Roman', Times, serif; font-size: 15px; }
+  .relation-table th, .relation-table td { border: 1px solid #000; padding: 10px 12px; text-align: left; vertical-align: top; }
+  .relation-table th { background-color: #f3f4f6; font-weight: bold; }
+  .relation-table td strong { color: #1e3a8a; }
+  .badge-rel { display: inline-block; padding: 2px 6px; font-size: 11px; font-weight: bold; border-radius: 4px; font-family: 'Segoe UI', Arial, sans-serif; text-transform: uppercase; }
+  .badge-1n { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+  .badge-11 { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+  .badge-nn { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  
+  @media print { .btn-bar{display:none;} body{padding:10px 20px;} .relation-table th { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+
+<div class="btn-bar">
+  💡 Nhấn <strong>Ctrl+P</strong> → <strong>"Save as PDF"</strong> để lưu ảnh đẹp →
+  <button onclick="window.print()">🖨️ Xuất PDF / In ấn</button>
+</div>
+
+<h2 class="section">2.7. Xây dựng lược đồ quan hệ thực thể (ERD Diagram) - Hệ Thống Cửa Hàng 118</h2>
+
+<p class="desc">
+  Để tổ chức dữ liệu một cách tối ưu, loại bỏ dư thừa thông tin và đảm bảo tính toàn vẹn tham chiếu của toàn bộ hệ thống bán lẻ linh kiện và quản lý sửa chữa tại <strong>Cửa Hàng 118</strong>, cơ sở dữ liệu quan hệ được thiết kế chi tiết gồm 14 thực thể (bảng) được kết nối chặt chẽ qua cơ chế khóa chính ( <strong>Primary Key - PK</strong> ) và khóa ngoại ( <strong>Foreign Key - FK</strong> ). 
+</p>
+<p class="desc">
+  Dữ liệu người dùng được tập trung tại bảng tài khoản ( <strong>users</strong> ), lưu trữ đầy đủ thông tin đăng nhập, phân quyền ( <code>role</code> ) bao gồm khách hàng thành viên, nhân viên kỹ thuật và quản trị viên hệ thống. Đối với quy trình sửa chữa trực tuyến, hệ thống cho phép khách hàng vãng lai không đăng ký tài khoản thực hiện đặt lịch hẹn. Do đó, thông tin cá nhân của các khách hàng này sẽ được lưu tạm thời tại bảng khách hàng vãng lai ( <strong>customers</strong> ) để phục vụ liên hệ. Mỗi lượt đặt lịch hẹn trực tuyến được quản lý tại bảng lịch hẹn ( <strong>bookings</strong> ), có liên kết trực tiếp với bảng <strong>customers</strong> (nếu là khách vãng lai) hoặc liên kết ưu tiên kỹ thuật viên đảm nhận ( <code>preferred_technician_id</code> trỏ đến bảng <strong>users</strong> ).
+</p>
+<p class="desc">
+  Khi khách hàng mang thiết bị đến cửa hàng và nhân viên kỹ thuật tiếp nhận, một đơn sửa chữa chính thức sẽ được khởi tạo trong bảng đơn sửa chữa ( <strong>repair_orders</strong> ). Mỗi đơn sửa chữa liên kết chặt chẽ với đúng một lịch hẹn trước ( <strong>bookings</strong> ) hoặc liên kết với tài khoản thành viên trong hệ thống ( <strong>users</strong> ) nếu khách hàng đã đăng ký tài khoản từ trước. Quá trình xử lý thiết bị của kỹ thuật viên sẽ được chia nhỏ thành các bước tiến trình chi tiết trong bảng bước sửa chữa ( <strong>repair_steps</strong> ) để theo dõi trạng thái thiết bị theo thời gian thực (như Nhận máy, Đang kiểm tra, Đang thay linh kiện, Sửa hoàn tất).
+</p>
+<p class="desc">
+  Bên cạnh phân hệ sửa chữa dịch vụ kỹ thuật, phân hệ thương mại điện tử phục vụ khách hàng mua sắm linh kiện, phụ kiện điện tử trực tuyến. Mỗi tài khoản người dùng ( <strong>users</strong> ) có thể đặt nhiều đơn mua linh kiện khác nhau được ghi nhận trong bảng đơn hàng ( <strong>orders</strong> ). Để thúc đẩy doanh số và giữ chân khách hàng, hệ thống tích hợp bảng mã giảm giá ( <strong>vouchers</strong> ). Mỗi đơn hàng có thể được áp dụng tối đa một mã giảm giá linh hoạt (liên kết khóa ngoại <code>voucher_id</code> ), và mỗi voucher cá nhân sẽ trỏ trực tiếp đến tài khoản người dùng sở hữu (liên kết khóa ngoại <code>user_id</code> ).
+</p>
+<p class="desc">
+  Chi tiết về các sản phẩm linh kiện được chọn mua trong từng đơn hàng sẽ được lưu trữ trong bảng chi tiết đơn hàng ( <strong>order_items</strong> ). Đây là bảng trung gian thể hiện mối quan hệ Nhiều - Nhiều giữa bảng đơn hàng ( <strong>orders</strong> ) và bảng sản phẩm linh kiện ( <strong>products</strong> ). Bảng <strong>products</strong> chứa các thông tin cốt lõi của linh kiện như tên linh kiện, hãng sản xuất (brand), mã số định danh phân loại kho hàng (sku), đơn giá và số lượng tồn kho khả dụng hiện hành.
+</p>
+<p class="desc">
+  Để phân loại sản phẩm và dịch vụ kỹ thuật một cách khoa học, bảng danh mục ( <strong>categories</strong> ) được thiết kế nhằm quản lý cấu trúc cây danh mục nhiều cấp thông qua liên kết đệ quy tự tham chiếu ( <code>parent_id</code> ). Mỗi sản phẩm linh kiện ( <strong>products</strong> ) bắt buộc phải trực thuộc một danh mục cụ thể, đồng thời mỗi gói dịch vụ sửa chữa chi tiết ( <strong>services</strong> ) tại cửa hàng cũng thuộc về một danh mục phân loại tương ứng. Khách hàng sau khi trải nghiệm sản phẩm linh kiện có thể viết phản hồi, đánh giá trong bảng đánh giá ( <strong>reviews</strong> ), giúp liên kết tài khoản viết đánh giá ( <strong>users</strong> ) với sản phẩm linh kiện được đánh giá ( <strong>products</strong> ).
+</p>
+<p class="desc">
+  Hoạt động kiểm soát xuất nhập tồn linh kiện tại kho hàng được tối ưu thông qua thực thể lịch sử biến động kho ( <strong>stock_movements</strong> ). Mỗi giao dịch nhập kho, xuất kho hoặc điều chỉnh hao hụt sẽ được lưu vết chi tiết cho từng sản phẩm linh kiện. Đối với nghiệp vụ nhập hàng linh kiện từ các nhà sản xuất ngoại vi, bảng <strong>stock_movements</strong> sẽ liên kết trực tiếp với nhà cung cấp tương ứng được định nghĩa trong bảng nhà cung cấp ( <strong>suppliers</strong> ), đảm bảo khả năng truy xuất nguồn gốc linh kiện nhập khẩu 100%.
+</p>
+
+<h3 style="font-size:16px; font-weight:bold; margin-top:30px; margin-bottom:12px;">Mô tả mối quan hệ cụ thể giữa các bảng (Database ERD Relationships Table)</h3>
+
+<table class="relation-table">
+  <thead>
+    <tr>
+      <th style="width: 5%; text-align: center;">STT</th>
+      <th style="width: 18%;">Bảng nguồn (Parent)</th>
+      <th style="width: 18%;">Bảng đích (Child)</th>
+      <th style="width: 16%; text-align: center;">Loại quan hệ</th>
+      <th style="width: 18%;">Khóa ngoại (FK)</th>
+      <th style="width: 25%;">Mô tả nghiệp vụ CSDL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center;">1</td>
+      <td><strong>users</strong></td>
+      <td><strong>orders</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>orders.customer_id</code></td>
+      <td>Một tài khoản khách hàng thành viên có thể đặt nhiều đơn hàng. Đơn hàng lưu thông tin khóa ngoại <code>customer_id</code> để đối chiếu tài khoản.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">2</td>
+      <td><strong>users</strong></td>
+      <td><strong>vouchers</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>vouchers.user_id</code></td>
+      <td>Một voucher cá nhân được gán cho một khách hàng sở hữu bằng cách tham chiếu khóa ngoại <code>user_id</code>.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">3</td>
+      <td><strong>users</strong></td>
+      <td><strong>bookings</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>bookings.preferred_technician_id</code></td>
+      <td>Khách hàng khi đặt lịch hẹn trực tuyến có thể lựa chọn đích danh một kỹ thuật viên có tài khoản trong hệ thống để xử lý sự cố.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">4</td>
+      <td><strong>users</strong></td>
+      <td><strong>reviews</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>reviews.user_id</code></td>
+      <td>Ghi nhận tài khoản người dùng viết bài nhận xét đánh giá sản phẩm linh kiện thông qua trường khóa ngoại <code>reviews.user_id</code>.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">5</td>
+      <td><strong>users</strong></td>
+      <td><strong>repair_orders</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>repair_orders.customer_id</code></td>
+      <td>Lưu trữ lịch sử đơn sửa chữa thiết bị của từng khách hàng thành viên dựa trên khóa ngoại <code>repair_orders.customer_id</code>.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">6</td>
+      <td><strong>customers</strong></td>
+      <td><strong>bookings</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><em>Liên kết thông tin vãng lai</em></td>
+      <td>Hệ thống liên kết một khách hàng không đăng ký tài khoản (vãng lai) với lịch hẹn của họ khi thực hiện đặt chỗ trực tuyến.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">7</td>
+      <td><strong>bookings</strong></td>
+      <td><strong>repair_orders</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-11">1 - 1 (1..1)</span></td>
+      <td><code>repair_orders.booking_id</code></td>
+      <td>Mối quan hệ 1-1 chặt chẽ. Mỗi lượt đặt lịch hẹn sửa chữa trực tuyến hợp lệ sau khi tiếp nhận chỉ phát sinh duy nhất một đơn sửa chữa.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">8</td>
+      <td><strong>repair_orders</strong></td>
+      <td><strong>repair_steps</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>repair_steps.repair_order_id</code></td>
+      <td>Mỗi phiếu sửa chữa thiết bị có nhiều giai đoạn cập nhật trạng thái hoạt động chi tiết để khách hàng tiện theo dõi thời gian thực.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">9</td>
+      <td><strong>vouchers</strong></td>
+      <td><strong>orders</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>orders.voucher_id</code></td>
+      <td>Một voucher phát hành có thể được sử dụng để giảm giá cho nhiều đơn mua hàng trực trực tuyến khác nhau.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">10</td>
+      <td><strong>orders</strong></td>
+      <td><strong>order_items</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>order_items.order_id</code></td>
+      <td>Mỗi đơn đặt mua hàng chứa ít nhất một hoặc nhiều dòng chi tiết sản phẩm linh kiện được thêm vào giỏ hàng.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">11</td>
+      <td><strong>products</strong></td>
+      <td><strong>order_items</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>order_items.product_id</code></td>
+      <td>Một linh kiện điện tử có thể xuất hiện trong nhiều đơn hàng mua linh kiện khác nhau của nhiều nhóm đối tượng khách hàng.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">12</td>
+      <td><strong>categories</strong></td>
+      <td><strong>products</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>products.category_id</code></td>
+      <td>Phân loại sản phẩm linh kiện. Mỗi mặt hàng linh kiện bắt buộc phải thuộc một danh mục quản lý cụ thể.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">13</td>
+      <td><strong>categories</strong></td>
+      <td><strong>services</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>services.category_id</code></td>
+      <td>Phân loại dịch vụ kỹ thuật. Mỗi gói dịch vụ sửa chữa chi tiết thuộc về một danh mục phân nhóm dịch vụ tương ứng.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">14</td>
+      <td><strong>products</strong></td>
+      <td><strong>reviews</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>reviews.product_id</code></td>
+      <td>Mỗi mặt hàng linh kiện được mở bán trực tuyến có thể nhận nhiều lượt nhận xét, chấm điểm sao chất lượng từ khách hàng.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">15</td>
+      <td><strong>products</strong></td>
+      <td><strong>stock_movements</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>stock_movements.product_id</code></td>
+      <td>Lịch sử kho hàng ghi nhận đầy đủ mọi biến động xuất, nhập hoặc điều chỉnh hàng hư hại cho từng mặt hàng linh kiện.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">16</td>
+      <td><strong>suppliers</strong></td>
+      <td><strong>stock_movements</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>stock_movements.supplier_id</code></td>
+      <td>Nhà cung cấp linh kiện phục vụ cung ứng. Một đơn vị cung ứng có thể phân phối linh kiện qua nhiều đợt nhập kho khác nhau.</td>
+    </tr>
+    <tr>
+      <td style="text-align: center;">17</td>
+      <td><strong>categories</strong></td>
+      <td><strong>categories</strong></td>
+      <td style="text-align: center;"><span class="badge-rel badge-1n">1 - Nhiều (1..*)</span></td>
+      <td><code>categories.parent_id</code></td>
+      <td>Mối quan hệ tự đệ quy (Self-association). Một danh mục cha chứa nhiều danh mục con cấp dưới phục vụ hiển thị đa tầng.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="caption">Hình 23. Sơ đồ ERD (Entity Relationship Diagram) - 14 bảng - Hệ Thống Cửa Hàng 118</div>
+
+<svg width="1025" height="1060" viewBox="0 0 1025 1060"
+     xmlns="http://www.w3.org/2000/svg"
+     font-family="'Segoe UI', Arial, sans-serif" font-size="11">
+<defs>
+  <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0,10 3.5,0 7" fill="#333"/>
+  </marker>
+</defs>
+
+<!-- ====================== NỀN TRẮNG ====================== -->
+<rect width="1025" height="1060" fill="white" />
+
+<!-- ====================== COL 1 (x=40): USERS & REPAIRS FLOW ====================== -->
+<!-- ===== users (y=10, h=205) ===== -->
+<rect x="40"  y="10"  width="255" height="25" rx="4" ry="4" fill="#D1E8FF" stroke="#333" stroke-width="1.4"/>
+<text x="167" y="27"  text-anchor="middle" font-weight="bold" font-size="12.5" fill="#1E3A8A">users</text>
+<rect x="40"  y="35"  width="255" height="180" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="48" y="50"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="48" y="64"><tspan font-weight="bold" fill="#4B5563">full_name</tspan>: VARCHAR(150)</text>
+<text x="48" y="78"><tspan font-weight="bold" fill="#16A34A">email</tspan>: VARCHAR(200) <tspan font-weight="bold" fill="#16A34A">[UQ]</tspan></text>
+<text x="48" y="92"><tspan font-weight="bold" fill="#4B5563">phone</tspan>: VARCHAR(20)</text>
+<text x="48" y="106"><tspan font-weight="bold" fill="#4B5563">password_hash</tspan>: VARCHAR(255)</text>
+<text x="48" y="120"><tspan font-weight="bold" fill="#4B5563">role</tspan>: ENUM('customer','tech','admin')</text>
+<text x="48" y="134"><tspan font-weight="bold" fill="#4B5563">avatar_url</tspan>: VARCHAR(500)</text>
+<text x="48" y="148"><tspan font-weight="bold" fill="#4B5563">points</tspan>: INT DEFAULT 0</text>
+<text x="48" y="162"><tspan font-weight="bold" fill="#4B5563">is_active</tspan>: TINYINT(1)</text>
+<text x="48" y="176"><tspan font-weight="bold" fill="#4B5563">specialty</tspan>: VARCHAR(200)</text>
+<text x="48" y="190"><tspan font-weight="bold" fill="#4B5563">rating</tspan>: DECIMAL(2,1)</text>
+<text x="48" y="204"><tspan font-weight="bold" fill="#4B5563">skills</tspan>: VARCHAR(255)</text>
+
+<!-- ===== customers (y=245, h=105) ===== -->
+<rect x="40"  y="245" width="255" height="25" rx="4" ry="4" fill="#D1FAE5" stroke="#333" stroke-width="1.4"/>
+<text x="167" y="262" text-anchor="middle" font-weight="bold" font-size="12.5" fill="#065F46">customers</text>
+<rect x="40"  y="270" width="255" height="80" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="48" y="285"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="48" y="299"><tspan font-weight="bold" fill="#4B5563">name</tspan>: VARCHAR(150)</text>
+<text x="48" y="313"><tspan font-weight="bold" fill="#4B5563">phone</tspan>: VARCHAR(20)</text>
+<text x="48" y="327"><tspan font-weight="bold" fill="#4B5563">email</tspan>: VARCHAR(200)</text>
+<text x="48" y="341"><tspan font-weight="bold" fill="#4B5563">address</tspan>: TEXT</text>
+
+<!-- ===== bookings (y=380, h=175) ===== -->
+<rect x="40"  y="380" width="255" height="25" rx="4" ry="4" fill="#E0D7FF" stroke="#333" stroke-width="1.4"/>
+<text x="167" y="397" text-anchor="middle" font-weight="bold" font-size="12.5" fill="#5B21B6">bookings</text>
+<rect x="40"  y="405" width="255" height="150" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="48" y="420"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="48" y="434"><tspan font-weight="bold" fill="#4B5563">name</tspan>: VARCHAR(150)</text>
+<text x="48" y="448"><tspan font-weight="bold" fill="#4B5563">phone</tspan>: VARCHAR(20)</text>
+<text x="48" y="462"><tspan font-weight="bold" fill="#4B5563">email</tspan>: VARCHAR(200)</text>
+<text x="48" y="476"><tspan font-weight="bold" fill="#4B5563">service</tspan>: VARCHAR(200)</text>
+<text x="48" y="490"><tspan font-weight="bold" fill="#4B5563">booking_date</tspan>: DATE</text>
+<text x="48" y="504"><tspan font-weight="bold" fill="#4B5563">booking_time</tspan>: VARCHAR(10)</text>
+<text x="48" y="518"><tspan font-weight="bold" fill="#4B5563">address</tspan>: TEXT</text>
+<text x="48" y="532"><tspan font-weight="bold" fill="#4B5563">status</tspan>: ENUM('pending','confirmed'...)</text>
+<text x="48" y="546"><tspan font-weight="bold" fill="#2563EB">preferred_technician_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+
+<!-- ===== repair_orders (y=585, h=260) ===== -->
+<rect x="40"  y="585" width="255" height="25" rx="4" ry="4" fill="#E0D7FF" stroke="#333" stroke-width="1.4"/>
+<text x="167" y="602" text-anchor="middle" font-weight="bold" font-size="12.5" fill="#5B21B6">repair_orders</text>
+<rect x="40"  y="610" width="255" height="235" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="48" y="625"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="48" y="639"><tspan font-weight="bold" fill="#16A34A">receipt_code</tspan>: VARCHAR(20) <tspan font-weight="bold" fill="#16A34A">[UQ]</tspan></text>
+<text x="48" y="653"><tspan font-weight="bold" fill="#2563EB">customer_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="48" y="667"><tspan font-weight="bold" fill="#2563EB">booking_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="48" y="681"><tspan font-weight="bold" fill="#4B5563">device_name</tspan>: VARCHAR(200)</text>
+<text x="48" y="695"><tspan font-weight="bold" fill="#4B5563">device_serial</tspan>: VARCHAR(100)</text>
+<text x="48" y="709"><tspan font-weight="bold" fill="#4B5563">issue</tspan>: TEXT</text>
+<text x="48" y="723"><tspan font-weight="bold" fill="#4B5563">diagnosis</tspan>: TEXT</text>
+<text x="48" y="737"><tspan font-weight="bold" fill="#4B5563">estimated_cost</tspan>: INT</text>
+<text x="48" y="751"><tspan font-weight="bold" fill="#4B5563">final_cost</tspan>: INT</text>
+<text x="48" y="765"><tspan font-weight="bold" fill="#4B5563">technician_name</tspan>: VARCHAR(150)</text>
+<text x="48" y="779"><tspan font-weight="bold" fill="#4B5563">status</tspan>: ENUM('received','tested'...)</text>
+<text x="48" y="793"><tspan font-weight="bold" fill="#4B5563">warranty_period</tspan>: INT</text>
+<text x="48" y="807"><tspan font-weight="bold" fill="#4B5563">warranty_expiry</tspan>: DATE</text>
+<text x="48" y="821"><tspan font-weight="bold" fill="#4B5563">device_image_before</tspan>: VARCHAR(500)</text>
+<text x="48" y="835"><tspan font-weight="bold" fill="#4B5563">device_image_after</tspan>: VARCHAR(500)</text>
+
+<!-- ===== repair_steps (y=875, h=120) ===== -->
+<rect x="40"  y="875" width="255" height="25" rx="4" ry="4" fill="#E0D7FF" stroke="#333" stroke-width="1.4"/>
+<text x="167" y="892" text-anchor="middle" font-weight="bold" font-size="12.5" fill="#5B21B6">repair_steps</text>
+<rect x="40"  y="900" width="255" height="95" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="48" y="915"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="48" y="929"><tspan font-weight="bold" fill="#2563EB">repair_order_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="48" y="943"><tspan font-weight="bold" fill="#4B5563">step_order</tspan>: INT</text>
+<text x="48" y="957"><tspan font-weight="bold" fill="#4B5563">label</tspan>: VARCHAR(200)</text>
+<text x="48" y="971"><tspan font-weight="bold" fill="#4B5563">is_done</tspan>: TINYINT(1)</text>
+<text x="48" y="985"><tspan font-weight="bold" fill="#4B5563">completed_date</tspan>: DATETIME</text>
+
+
+<!-- ====================== COL 2 (x=385): E-COMMERCE & CATEGORIES ====================== -->
+<!-- ===== vouchers (y=10, h=175) ===== -->
+<rect x="385" y="10"  width="255" height="25" rx="4" ry="4" fill="#FEF3C7" stroke="#333" stroke-width="1.4"/>
+<text x="512" y="27"  text-anchor="middle" font-weight="bold" font-size="12.5" fill="#92400E">vouchers</text>
+<rect x="385" y="35"  width="255" height="150" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="393" y="50"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="393" y="64"><tspan font-weight="bold" fill="#16A34A">code</tspan>: VARCHAR(50) <tspan font-weight="bold" fill="#16A34A">[UQ]</tspan></text>
+<text x="393" y="78"><tspan font-weight="bold" fill="#4B5563">type</tspan>: ENUM('fixed','percent')</text>
+<text x="393" y="92"><tspan font-weight="bold" fill="#4B5563">value</tspan>: DECIMAL(15,2)</text>
+<text x="393" y="106"><tspan font-weight="bold" fill="#4B5563">min_order_value</tspan>: DECIMAL(15,2)</text>
+<text x="393" y="120"><tspan font-weight="bold" fill="#4B5563">usage_limit</tspan>: INT</text>
+<text x="393" y="134"><tspan font-weight="bold" fill="#4B5563">used_count</tspan>: INT DEFAULT 0</text>
+<text x="393" y="148"><tspan font-weight="bold" fill="#4B5563">points_required</tspan>: INT</text>
+<text x="393" y="162"><tspan font-weight="bold" fill="#4B5563">expiry_date</tspan>: DATETIME</text>
+<text x="393" y="176"><tspan font-weight="bold" fill="#2563EB">user_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+
+<!-- ===== orders (y=215, h=190) ===== -->
+<rect x="385" y="215" width="255" height="25" rx="4" ry="4" fill="#D1FAE5" stroke="#333" stroke-width="1.4"/>
+<text x="512" y="232" text-anchor="middle" font-weight="bold" font-size="12.5" fill="#065F46">orders</text>
+<rect x="385" y="240" width="255" height="165" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="393" y="255"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="393" y="269"><tspan font-weight="bold" fill="#2563EB">customer_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="393" y="283"><tspan font-weight="bold" fill="#4B5563">guest_name</tspan>: VARCHAR(150)</text>
+<text x="393" y="297"><tspan font-weight="bold" fill="#4B5563">guest_phone</tspan>: VARCHAR(20)</text>
+<text x="393" y="311"><tspan font-weight="bold" fill="#4B5563">shipping_address</tspan>: VARCHAR(300)</text>
+<text x="393" y="325"><tspan font-weight="bold" fill="#4B5563">total_amount</tspan>: DECIMAL(15,2)</text>
+<text x="393" y="339"><tspan font-weight="bold" fill="#4B5563">note</tspan>: TEXT</text>
+<text x="393" y="353"><tspan font-weight="bold" fill="#4B5563">status</tspan>: ENUM('pending','confirmed'...)</text>
+<text x="393" y="367"><tspan font-weight="bold" fill="#4B5563">payment_method</tspan>: ENUM('cod','bank'...)</text>
+<text x="393" y="381"><tspan font-weight="bold" fill="#4B5563">payment_status</tspan>: ENUM('unpaid','paid'...)</text>
+<text x="393" y="395"><tspan font-weight="bold" fill="#2563EB">voucher_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+
+<!-- ===== order_items (y=435, h=105) ===== -->
+<rect x="385" y="435" width="255" height="25" rx="4" ry="4" fill="#D1FAE5" stroke="#333" stroke-width="1.4"/>
+<text x="512" y="452" text-anchor="middle" font-weight="bold" font-size="12.5" fill="#065F46">order_items</text>
+<rect x="385" y="460" width="255" height="80" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="393" y="475"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="393" y="489"><tspan font-weight="bold" fill="#2563EB">order_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="393" y="503"><tspan font-weight="bold" fill="#2563EB">product_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="393" y="517"><tspan font-weight="bold" fill="#4B5563">quantity</tspan>: INT</text>
+<text x="393" y="531"><tspan font-weight="bold" fill="#4B5563">price</tspan>: DECIMAL(15,2)</text>
+
+<!-- ===== categories (y=570, h=105) ===== -->
+<rect x="385" y="570" width="255" height="25" rx="4" ry="4" fill="#FEF9C3" stroke="#333" stroke-width="1.4"/>
+<text x="512" y="587" text-anchor="middle" font-weight="bold" font-size="12.5" fill="#854D0E">categories</text>
+<rect x="385" y="595" width="255" height="80" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="393" y="610"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="393" y="624"><tspan font-weight="bold" fill="#4B5563">name</tspan>: VARCHAR(200)</text>
+<text x="393" y="638"><tspan font-weight="bold" fill="#4B5563">description</tspan>: TEXT</text>
+<text x="393" y="652"><tspan font-weight="bold" fill="#4B5563">image_url</tspan>: VARCHAR(500)</text>
+<text x="393" y="666"><tspan font-weight="bold" fill="#2563EB">parent_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+
+<!-- ===== services (y=705, h=135) ===== -->
+<rect x="385" y="705" width="255" height="25" rx="4" ry="4" fill="#FEF9C3" stroke="#333" stroke-width="1.4"/>
+<text x="512" y="722" text-anchor="middle" font-weight="bold" font-size="12.5" fill="#854D0E">services</text>
+<rect x="385" y="730" width="255" height="110" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="393" y="745"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="393" y="759"><tspan font-weight="bold" fill="#2563EB">category_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="393" y="773"><tspan font-weight="bold" fill="#4B5563">name</tspan>: VARCHAR(200)</text>
+<text x="393" y="787"><tspan font-weight="bold" fill="#4B5563">description</tspan>: TEXT</text>
+<text x="393" y="801"><tspan font-weight="bold" fill="#4B5563">price</tspan>: INT</text>
+<text x="393" y="815"><tspan font-weight="bold" fill="#4B5563">has_warranty</tspan>: TINYINT(1)</text>
+<text x="393" y="829"><tspan font-weight="bold" fill="#4B5563">is_active</tspan>: TINYINT(1)</text>
+
+
+<!-- ====================== COL 3 (x=730): PRODUCTS & STOCK FLOW ====================== -->
+<!-- ===== products (y=10, h=175) ===== -->
+<rect x="730" y="10"  width="255" height="25" rx="4" ry="4" fill="#FEF9C3" stroke="#333" stroke-width="1.4"/>
+<text x="857" y="27"  text-anchor="middle" font-weight="bold" font-size="12.5" fill="#854D0E">products</text>
+<rect x="730" y="35"  width="255" height="150" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="738" y="50"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="738" y="64"><tspan font-weight="bold" fill="#4B5563">name</tspan>: VARCHAR(200)</text>
+<text x="738" y="78"><tspan font-weight="bold" fill="#4B5563">price</tspan>: DECIMAL(15,2)</text>
+<text x="738" y="92"><tspan font-weight="bold" fill="#4B5563">stock</tspan>: INT DEFAULT 0</text>
+<text x="738" y="106"><tspan font-weight="bold" fill="#4B5563">image_url</tspan>: VARCHAR(500)</text>
+<text x="738" y="120"><tspan font-weight="bold" fill="#2563EB">category_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="738" y="134"><tspan font-weight="bold" fill="#4B5563">description</tspan>: TEXT</text>
+<text x="738" y="148"><tspan font-weight="bold" fill="#4B5563">brand</tspan>: VARCHAR(100)</text>
+<text x="738" y="162"><tspan font-weight="bold" fill="#16A34A">sku</tspan>: VARCHAR(100) <tspan font-weight="bold" fill="#16A34A">[UQ]</tspan></text>
+<text x="738" y="176"><tspan font-weight="bold" fill="#4B5563">is_active</tspan>: TINYINT(1)</text>
+
+<!-- ===== reviews (y=215, h=105) ===== -->
+<rect x="730" y="215" width="255" height="25" rx="4" ry="4" fill="#FEF9C3" stroke="#333" stroke-width="1.4"/>
+<text x="857" y="232" text-anchor="middle" font-weight="bold" font-size="12.5" fill="#854D0E">reviews</text>
+<rect x="730" y="240" width="255" height="80" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="738" y="255"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="738" y="269"><tspan font-weight="bold" fill="#2563EB">user_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="738" y="283"><tspan font-weight="bold" fill="#2563EB">product_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="738" y="297"><tspan font-weight="bold" fill="#4B5563">rating</tspan>: INT</text>
+<text x="738" y="311"><tspan font-weight="bold" fill="#4B5563">comment</tspan>: TEXT</text>
+
+<!-- ===== stock_movements (y=350, h=165) ===== -->
+<rect x="730" y="350" width="255" height="25" rx="4" ry="4" fill="#FEE2E2" stroke="#333" stroke-width="1.4"/>
+<text x="857" y="367" text-anchor="middle" font-weight="bold" font-size="12" fill="#991B1B">stock_movements</text>
+<rect x="730" y="375" width="255" height="140" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="738" y="390"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="738" y="404"><tspan font-weight="bold" fill="#2563EB">product_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="738" y="418"><tspan font-weight="bold" fill="#2563EB">supplier_id</tspan>: INT <tspan font-weight="bold" fill="#2563EB">[FK]</tspan></text>
+<text x="738" y="432"><tspan font-weight="bold" fill="#4B5563">type</tspan>: ENUM('IN','OUT','ADJUST')</text>
+<text x="738" y="446"><tspan font-weight="bold" fill="#4B5563">quantity</tspan>: INT</text>
+<text x="738" y="460"><tspan font-weight="bold" fill="#4B5563">price</tspan>: INT</text>
+<text x="738" y="474"><tspan font-weight="bold" fill="#4B5563">reason</tspan>: VARCHAR(200)</text>
+<text x="738" y="488"><tspan font-weight="bold" fill="#4B5563">notes</tspan>: TEXT</text>
+<text x="738" y="502"><tspan font-weight="bold" fill="#4B5563">created_at</tspan>: DATETIME</text>
+
+<!-- ===== suppliers (y=545, h=120) ===== -->
+<rect x="730" y="545" width="255" height="25" rx="4" ry="4" fill="#FEE2E2" stroke="#333" stroke-width="1.4"/>
+<text x="857" y="562" text-anchor="middle" font-weight="bold" font-size="12.5" fill="#991B1B">suppliers</text>
+<rect x="730" y="570" width="255" height="95" rx="4" ry="4" fill="white" stroke="#333" stroke-width="1.2"/>
+<text x="738" y="585"><tspan font-weight="bold" fill="#EA580C">id</tspan>: INT <tspan font-weight="bold" fill="#EA580C">[PK]</tspan></text>
+<text x="738" y="599"><tspan font-weight="bold" fill="#4B5563">name</tspan>: VARCHAR(200)</text>
+<text x="738" y="613"><tspan font-weight="bold" fill="#4B5563">contact_name</tspan>: VARCHAR(150)</text>
+<text x="738" y="627"><tspan font-weight="bold" fill="#4B5563">phone</tspan>: VARCHAR(20)</text>
+<text x="738" y="641"><tspan font-weight="bold" fill="#4B5563">email</tspan>: VARCHAR(200)</text>
+<text x="738" y="655"><tspan font-weight="bold" fill="#4B5563">address</tspan>: TEXT</text>
+
+
+<!-- ====================== RELATIONSHIP LINES ====================== -->
+
+<!-- 1. users ——→ orders (from Col 1 to Col 2) -->
+<path d="M 295 70 L 340 70 L 340 255 L 385 255" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="300" y="65" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="372" y="250" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 2. users ——→ vouchers (from Col 1 to Col 2) -->
+<line x1="295" y1="120" x2="385" y2="120" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="300" y="115" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="372" y="115" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 3. users ——→ bookings (left gutter x=15) -->
+<path d="M 40 150 L 15 150 L 15 546 L 40 546" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="22" y="145" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="22" y="540" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 4. users ——→ reviews (gutter crossing, y=5, x=705) -->
+<path d="M 295 40 L 340 40 L 340 5 L 705 5 L 705 269 L 730 269" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="300" y="35" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="712" y="264" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 5. users ——→ repair_orders (left gutter x=22) -->
+<path d="M 40 176 L 22 176 L 22 653 L 40 653" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="26" y="171" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="26" y="648" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 6. customers ——→ bookings (vertical inside Col 1) -->
+<line x1="167" y1="350" x2="167" y2="380" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="172" y="360" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="172" y="375" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 7. bookings ——→ repair_orders (vertical inside Col 1) -->
+<line x1="167" y1="555" x2="167" y2="585" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="172" y="562" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="172" y="578" font-size="10" fill="#555" font-weight="bold">1</text>
+
+<!-- 8. repair_orders ——→ repair_steps (vertical inside Col 1) -->
+<line x1="167" y1="845" x2="167" y2="875" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="172" y="852" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="172" y="868" font-size="10" fill="#555" font-weight="bold">1..*</text>
+
+<!-- 9. vouchers ——→ orders (vertical inside Col 2) -->
+<line x1="512" y1="185" x2="512" y2="215" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="517" y="195" font-size="10" fill="#555" font-weight="bold">0..1</text>
+<text x="517" y="208" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 10. orders ——→ order_items (vertical inside Col 2) -->
+<line x1="512" y1="405" x2="512" y2="435" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="517" y="412" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="517" y="428" font-size="10" fill="#555" font-weight="bold">1..*</text>
+
+<!-- 11. products ——→ order_items (from Col 3 to Col 2) -->
+<path d="M 730 120 L 685 120 L 685 503 L 640 503" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="720" y="115" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="645" y="498" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 12. categories ——→ products (from Col 2 to Col 3) -->
+<path d="M 640 624 L 670 624 L 670 162 L 730 162" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="645" y="619" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="720" y="157" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 13. categories ——→ services (vertical inside Col 2) -->
+<line x1="512" y1="675" x2="512" y2="705" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="517" y="682" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="517" y="698" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 14. products ——→ reviews (vertical inside Col 3) -->
+<line x1="857" y1="185" x2="857" y2="215" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="862" y="192" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="862" y="208" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 15. products ——→ stock_movements (right gutter x=1000) -->
+<path d="M 985 148 L 1000 148 L 1000 404 L 985 404" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="990" y="143" font-size="10" fill="#555" font-weight="bold">1</text>
+<text x="990" y="399" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+<!-- 16. suppliers ——→ stock_movements (vertical inside Col 3) -->
+<line x1="857" y1="515" x2="857" y2="545" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="862" y="522" font-size="10" fill="#555" font-weight="bold">0..*</text>
+<text x="862" y="538" font-size="10" fill="#555" font-weight="bold">0..1</text>
+
+<!-- 17. categories self-association (parent_id) -->
+<path d="M 385 610 L 360 610 L 360 652 L 385 652" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="365" y="600" font-size="10" fill="#555" font-weight="bold">0..1</text>
+<text x="365" y="642" font-size="10" fill="#555" font-weight="bold">0..*</text>
+
+
+<!-- ====================== CHÚ GIẢI (LEGEND) ====================== -->
+<rect x="40" y="1010" width="945" height="40" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="4"/>
+<text x="50" y="1026" font-size="11.5" fill="#374151" font-weight="bold">Chú giải: </text>
+<line x1="120" y1="1022" x2="165" y2="1022" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="168" y="1026" font-size="11" fill="#4B5563">Đường quan hệ khóa ngoại (CSDL)</text>
+
+<text x="400" y="1026" font-size="11" fill="#4B5563">
+  Phân hệ màu: 🔵 Người dùng &amp; Sửa chữa  🟡 Khuyến mãi/Mua sắm  🍋 Sản phẩm &amp; Dịch vụ  🔴 Nhà cung cấp &amp; Kho hàng
+</text>
+</svg>
+
+<div class="caption">Hình 23. Sơ đồ ERD (Entity Relationship Diagram) - 14 bảng - Hệ Thống Cửa Hàng 118</div>
+
+</body>
+</html>

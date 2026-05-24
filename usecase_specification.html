@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>2.6 - Đặc tả Use Case chi tiết - Cửa Hàng 118</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      margin: 0; 
+      padding: 30px 50px; 
+      background: #f8fafc; 
+      font-family: 'Times New Roman', Times, serif; 
+      color: #0f172a; 
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    
+    .page-container { 
+      background: #fff; 
+      padding: 40px; 
+      border-radius: 12px; 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); 
+      max-width: 1000px; 
+      margin: auto; 
+    }
+    
+    .btn-bar { text-align: center; margin-bottom: 26px; }
+    .btn-bar button { 
+      background: #2563EB; 
+      color: #fff; 
+      border: none; 
+      padding: 10px 28px; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      cursor: pointer; 
+      font-weight: 600; 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      transition: all 0.2s; 
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    }
+    .btn-bar button:hover { background: #1d4ed8; }
+    
+    h2.section { 
+      font-size: 22px; 
+      font-weight: bold; 
+      color: #0f172a; 
+      margin: 0 0 10px 0; 
+      text-transform: uppercase; 
+      text-align: center; 
+    }
+    
+    p.desc { 
+      text-align: center; 
+      color: #475569; 
+      font-size: 15px; 
+      margin-bottom: 35px; 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+    }
+    
+    .uc-block { 
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 35px; 
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .uc-block:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+    }
+    
+    /* Left border color-coding according to actor */
+    .uc-block.user-rel { border-left: 5px solid #64748b; }
+    .uc-block.cust-rel { border-left: 5px solid #2563EB; }
+    .uc-block.tech-rel { border-left: 5px solid #059669; }
+    .uc-block.admin-rel { border-left: 5px solid #d97706; }
+    
+    .uc-title { 
+      font-size: 18px; 
+      font-weight: bold; 
+      color: #0f172a;
+      margin-bottom: 15px; 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .actor-badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .user-rel .actor-badge { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+    .cust-rel .actor-badge { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .tech-rel .actor-badge { background: #f0fdf4; color: #065f46; border: 1px solid #a7f3d0; }
+    .admin-rel .actor-badge { background: #fffbeb; color: #9a3412; border: 1px solid #fde68a; }
+    
+    .uc-content { 
+      font-size: 16px; 
+      line-height: 1.7; 
+    }
+    .uc-content p { margin: 10px 0; text-align: justify; }
+    .uc-content strong { font-weight: bold; color: #1e293b; }
+    
+    .uc-steps { 
+      margin: 12px 0 12px 20px; 
+      padding-left: 15px; 
+      list-style-type: decimal; 
+    }
+    .uc-steps li { 
+      margin-bottom: 8px; 
+      text-align: justify;
+    }
+    .uc-steps li::marker {
+      font-weight: bold;
+      color: #64748b;
+    }
+
+    @media print { 
+      body { background: #fff; padding: 0; }
+      .page-container { box-shadow: none; padding: 0; max-width: 100%; }
+      .btn-bar { display: none; } 
+      .uc-block { page-break-inside: avoid; border: 1px solid #e2e8f0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="btn-bar">
+  💡 Nhấn <strong>Ctrl+P</strong> → <strong>"Save as PDF"</strong> để xuất báo cáo chất lượng cao →
+  <button onclick="window.print()">🖨️ Xuất PDF / In ấn</button>
+</div>
+
+<div class="page-container">
+  <h2 class="section">2.6. Đặc tả chức năng hệ thống (Use Case Specification)</h2>
+  <p class="desc">Tài liệu đặc tả chi tiết dòng sự kiện hoạt động của các phân hệ - Cửa Hàng 118</p>
+
+  <!-- USE CASE 1 -->
+  <div class="uc-block user-rel">
+    <div class="uc-title">
+      <span>2.6.1. Đặc tả Use Case Xác thực hệ thống</span>
+      <span class="actor-badge">User (Người dùng chung)</span>
+    </div>
+    <div class="uc-content">
+      <p><strong>Mô tả chi tiết:</strong> Hệ thống thực hiện xác thực danh tính người dùng thông qua biểu mẫu đăng nhập, hỗ trợ tạo mới tài khoản thành viên (đăng ký) cho khách hàng mới, đồng thời gửi mã bảo mật dùng một lần (OTP) qua email để kích hoạt tài khoản an toàn.</p>
+      <p><strong>Tác nhân chính:</strong> Người dùng chung (Khách hàng, Quản trị viên, Kỹ thuật viên).</p>
+      <p><strong>Điều kiện tiên quyết:</strong> Không có.</p>
+      <p><strong>Luồng sự kiện chính (Happy Path):</strong></p>
+      <ol class="uc-steps">
+        <li>Người dùng truy cập trang chủ và chọn chức năng tạo mới tài khoản (Đăng ký).</li>
+        <li>Người dùng điền đầy đủ thông tin cá nhân gồm họ tên, email cá nhân, số điện thoại liên lạc và mật khẩu.</li>
+        <li>Hệ thống tiếp nhận yêu cầu, tiến hành kiểm tra tính hợp lệ và tự động khởi tạo mã xác thực OTP gửi về Email.</li>
+        <li>Người dùng nhập mã OTP nhận được tại giao diện xác thực để kích hoạt tài khoản.</li>
+        <li>Hệ thống xác thực mã trùng khớp, lưu thông tin tài khoản vĩnh viễn và kích hoạt quyền truy cập.</li>
+        <li>Người dùng sử dụng tài khoản vừa tạo để đăng nhập, hệ thống cấp phát Token phiên làm việc tương ứng với quyền hạn (Role) được chỉ định.</li>
+      </ol>
+      <p><strong>Kết quả:</strong> Tài khoản mới được xác minh hợp lệ, người dùng đăng nhập thành công và được phân quyền làm việc.</p>
+    </div>
+  </div>
+
+  <!-- USE CASE 2 -->
+  <div class="uc-block cust-rel">
+    <div class="uc-title">
+      <span>2.6.2. Đặc tả Use Case Mua sắm trực tuyến</span>
+      <span class="actor-badge">Khách hàng (Customer)</span>
+    </div>
+    <div class="uc-content">
+      <p><strong>Mô tả chi tiết:</strong> Cung cấp kênh mua sắm linh kiện điện tử trực tuyến, cho phép khách hàng tra cứu tìm kiếm, xem thông số kỹ thuật chi tiết của linh kiện laptop/điện thoại, thêm linh kiện vào giỏ hàng và đặt đơn thanh toán kết hợp áp dụng Voucher.</p>
+      <p><strong>Tác nhân chính:</strong> Khách hàng thành viên.</p>
+      <p><strong>Điều kiện tiên quyết:</strong> Khách hàng đã đăng nhập thành công vào hệ thống.</p>
+      <p><strong>Luồng sự kiện chính (Happy Path):</strong></p>
+      <ol class="uc-steps">
+        <li>Khách hàng duyệt qua danh sách linh kiện hoặc tìm kiếm theo SKU/Tên linh kiện.</li>
+        <li>Khách hàng chọn xem trang chi tiết sản phẩm và thêm số lượng mong muốn vào giỏ hàng cá nhân.</li>
+        <li>Khách hàng truy cập giỏ hàng, áp dụng mã voucher giảm giá (nếu có đủ điểm tích lũy thành viên).</li>
+        <li>Khách hàng điền địa chỉ giao hàng và lựa chọn phương thức thanh toán (COD hoặc chuyển khoản qua ngân hàng).</li>
+        <li>Hệ thống tiếp nhận yêu cầu, kiểm tra số lượng tồn kho khả dụng của sản phẩm trong cơ sở dữ liệu.</li>
+        <li>Hệ thống trừ trực tiếp số lượng tồn kho tương ứng, lưu trữ thông tin đơn hàng mới và gửi thông báo kết đơn thành công.</li>
+      </ol>
+      <p><strong>Kết quả:</strong> Đơn đặt hàng linh kiện được khởi tạo thành công ở trạng thái chờ phê duyệt, số lượng tồn kho được cập nhật tự động.</p>
+    </div>
+  </div>
+
+  <!-- USE CASE 3 -->
+  <div class="uc-block cust-rel">
+    <div class="uc-title">
+      <span>2.6.3. Đặc tả Use Case Đặt lịch hẹn sửa chữa</span>
+      <span class="actor-badge">Khách hàng (Customer)</span>
+    </div>
+    <div class="uc-content">
+      <p><strong>Mô tả chi tiết:</strong> Hỗ trợ khách hàng gửi trước yêu cầu dịch vụ sửa chữa thiết bị công nghệ trực tuyến. Form đặt lịch thu thập thông tin mô tả sự cố phần cứng, lựa chọn khung giờ rảnh và cho phép chỉ định kỹ thuật viên quen thuộc đảm nhận.</p>
+      <p><strong>Tác nhân chính:</strong> Khách hàng (Thành viên hoặc Khách vãng lai).</p>
+      <p><strong>Điều kiện tiên quyết:</strong> Khách hàng truy cập vào module đặt lịch hẹn sửa chữa của hệ thống.</p>
+      <p><strong>Luồng sự kiện chính (Happy Path):</strong></p>
+      <ol class="uc-steps">
+        <li>Khách hàng chọn chức năng đặt lịch hẹn sửa chữa tại thanh điều hướng chính.</li>
+        <li>Khách hàng nhập thông tin liên lạc (Họ tên, SĐT), hãng máy (ví dụ Asus, Dell), mô tả sự cố và chọn khung giờ hẹn.</li>
+        <li>Khách hàng có thể tùy chọn chỉ định đích danh một kỹ thuật viên có đánh giá sao cao để ưu tiên tiếp nhận.</li>
+        <li>Hệ thống tiếp nhận yêu cầu, đối chiếu lịch rảnh và công suất phục vụ của cửa hàng trong khung giờ đó.</li>
+        <li>Hệ thống tự động phê duyệt lịch hẹn khả dụng và ghi nhận bản ghi vào cơ sở dữ liệu.</li>
+        <li>Hệ thống phản hồi thông báo đặt lịch hẹn thành công kèm mã số biên nhận tra cứu cho khách hàng.</li>
+      </ol>
+      <p><strong>Kết quả:</strong> Lịch hẹn được xếp lịch thành công, hệ thống lưu vết thông tin để sẵn sàng tiếp nhận máy thực tế tại quầy.</p>
+    </div>
+  </div>
+
+  <!-- USE CASE 4 -->
+  <div class="uc-block tech-rel">
+    <div class="uc-title">
+      <span>2.6.4. Đặc tả Use Case Xử lý đơn sửa chữa</span>
+      <span class="actor-badge">Kỹ thuật viên (Technician)</span>
+    </div>
+    <div class="uc-content">
+      <p><strong>Mô tả chi tiết:</strong> Phân hệ nghiệp vụ tác nghiệp tại bàn kỹ thuật. Kỹ thuật viên tiếp nhận thiết bị lỗi, tháo máy kiểm tra chẩn đoán lỗi phần cứng chính xác, chụp ảnh hiện trạng trước/sau sửa chữa và cập nhật chi phí báo giá trực tiếp lên hệ thống di động.</p>
+      <p><strong>Tác nhân chính:</strong> Kỹ thuật viên.</p>
+      <p><strong>Điều kiện tiên quyết:</strong> Kỹ thuật viên đã đăng nhập và được hệ thống phân công đảm nhận đơn sửa chữa.</p>
+      <p><strong>Luồng sự kiện chính (Happy Path):</strong></p>
+      <ol class="uc-steps">
+        <li>Kỹ thuật viên tiếp nhận thiết bị từ quầy lễ tân và mở ứng dụng di động để xem chi tiết thông tin đơn sửa.</li>
+        <li>Kỹ thuật viên kiểm tra phần cứng thiết bị, ghi nhận kết quả chẩn đoán lỗi chính xác (ví dụ cháy IC nguồn).</li>
+        <li>Kỹ thuật viên chụp ảnh hiện trạng linh kiện lỗi trước khi can thiệp và tải ảnh trực tiếp lên hệ thống làm bằng chứng.</li>
+        <li>Kỹ thuật viên nhập báo giá chi tiết gồm tiền công kỹ thuật và giá linh kiện thay thế (nếu có).</li>
+        <li>Hệ thống lưu dữ liệu chẩn đoán, tự động cập nhật trạng thái đơn thành "Chờ khách hàng duyệt chi phí".</li>
+        <li>Sau khi khách đồng ý và sửa chữa xong, KTV chụp lại ảnh máy hoàn thiện và cập nhật đơn thành "Đã hoàn thành".</li>
+      </ol>
+      <p><strong>Kết quả:</strong> Quy trình xử lý lỗi phần cứng được minh bạch hóa, hình ảnh và lịch sử can thiệp được lưu trữ đầy đủ trong CSDL.</p>
+    </div>
+  </div>
+
+  <!-- USE CASE 5 -->
+  <div class="uc-block admin-rel">
+    <div class="uc-title">
+      <span>2.6.5. Đặc tả Use Case Quản lý lịch hẹn</span>
+      <span class="actor-badge">Quản trị viên (Admin)</span>
+    </div>
+    <div class="uc-content">
+      <p><strong>Mô tả chi tiết:</strong> Phân phối và điều hành lịch làm việc tại cửa hàng. Admin hoặc lễ tân theo dõi danh sách lịch hẹn do khách hàng đăng ký từ Web, thực hiện duyệt/hủy hẹn và điều phối phân công công việc cho kỹ thuật viên phù hợp.</p>
+      <p><strong>Tác nhân chính:</strong> Quản trị viên (Admin hoặc Nhân viên Lễ tân).</p>
+      <p><strong>Điều kiện tiên quyết:</strong> Nhân viên đăng nhập thành công tài khoản có quyền quản trị/lễ tân.</p>
+      <p><strong>Luồng sự kiện chính (Happy Path):</strong></p>
+      <ol class="uc-steps">
+        <li>Admin truy cập phân hệ điều phối lịch hẹn trên Bảng điều khiển quản trị.</li>
+        <li>Hệ thống kết xuất hiển thị danh sách các lịch hẹn sửa chữa mới của khách hàng.</li>
+        <li>Admin xem xét thông tin sự cố, đối chiếu tay nghề chuyên môn của các KTV đang rảnh việc.</li>
+        <li>Admin click phê duyệt lịch hẹn và chọn phân công KTV chịu trách nhiệm xử lý chính.</li>
+        <li>Hệ thống lưu thay đổi và tự động phát thông báo nhiệm vụ mới đến ứng dụng di động của KTV được chọn.</li>
+        <li>Khi khách hàng mang thiết bị đến cửa hàng thực tế, Admin click chuyển lịch hẹn thành "Phiếu sửa chữa chính thức" và in biên nhận.</li>
+      </ol>
+      <p><strong>Kết quả:</strong> Lịch làm việc được điều phối nhịp nhàng, kỹ thuật viên tiếp quản công việc rõ ràng và chính xác.</p>
+    </div>
+  </div>
+
+  <!-- USE CASE 6 -->
+  <div class="uc-block admin-rel">
+    <div class="uc-title">
+      <span>2.6.6. Đặc tả Use Case Quản lý sản phẩm &amp; Kho hàng</span>
+      <span class="actor-badge">Quản trị viên (Admin)</span>
+    </div>
+    <div class="uc-content">
+      <p><strong>Mô tả chi tiết:</strong> Cho phép quản lý toàn diện danh mục linh kiện laptop/điện thoại, thực hiện thêm mới thông số sản phẩm, quản lý xuất nhập kho linh kiện và tự động cộng dồn số lượng tồn kho khả dụng khi có phiếu nhập hàng từ nhà cung cấp.</p>
+      <p><strong>Tác nhân chính:</strong> Quản trị viên (Admin).</p>
+      <p><strong>Điều kiện tiên quyết:</strong> Đăng nhập tài khoản Admin cấp cao thành công.</p>
+      <p><strong>Luồng sự kiện chính (Happy Path):</strong></p>
+      <ol class="uc-steps">
+        <li>Admin mở module quản lý sản phẩm và kho hàng để theo dõi số lượng xuất nhập tồn hiện hành.</li>
+        <li>Admin thực hiện thêm mới thông số kỹ thuật cho linh kiện mới về cửa hàng (Tên, Giá, Ảnh, Danh mục, mã định danh SKU).</li>
+        <li>Hệ thống xác thực dữ liệu đầu vào, lưu bản ghi mới vào cơ sở dữ liệu với số lượng tồn kho mặc định ban đầu là 0.</li>
+        <li>Để nhập số lượng thực tế, Admin thực hiện tạo Phiếu nhập kho (Stock Movement type = IN) cho linh kiện đó.</li>
+        <li>Admin chọn nhà cung cấp tương ứng trong danh sách đối tác và điền số lượng, đơn giá nhập kho thực tế.</li>
+        <li>Hệ thống phê duyệt phiếu nhập, tự động cộng dồn số lượng tồn kho khả dụng của sản phẩm và lưu vết lịch sử biến động.</li>
+      </ol>
+      <p><strong>Kết quả:</strong> Cơ sở dữ liệu tồn kho được cập nhật đồng bộ 100%, thông tin linh kiện hiển thị chính xác lên website mua sắm.</p>
+    </div>
+  </div>
+
+  <!-- USE CASE 7 -->
+  <div class="uc-block admin-rel">
+    <div class="uc-title">
+      <span>2.6.7. Đặc tả Use Case Báo cáo &amp; Thống kê</span>
+      <span class="actor-badge">Quản trị viên (Admin)</span>
+    </div>
+    <div class="uc-content">
+      <p><strong>Mô tả chi tiết:</strong> Bảng điều khiển kinh doanh tổng hợp số liệu trực quan dạng biểu đồ. Hệ thống kết xuất doanh thu bán lẻ linh kiện và doanh thu dịch vụ sửa chữa theo mốc thời gian tùy chọn, hỗ trợ xuất báo cáo định dạng Excel/PDF.</p>
+      <p><strong>Tác nhân chính:</strong> Quản trị viên (Admin).</p>
+      <p><strong>Điều kiện tiên quyết:</strong> Admin truy cập vào Dashboard quản trị hệ thống.</p>
+      <p><strong>Luồng sự kiện chính (Happy Path):</strong></p>
+      <ol class="uc-steps">
+        <li>Admin click chọn module Báo cáo thống kê trên thanh sidebar menu bên trái.</li>
+        <li>Admin thiết lập bộ lọc thời gian mong muốn thống kê (Từ ngày - Đến ngày) và chọn loại báo cáo (Doanh thu bán hàng hoặc Sửa chữa).</li>
+        <li>Admin nhấn nút thực thi truy vấn báo cáo.</li>
+        <li>Hệ thống thực hiện truy quét toàn bộ cơ sở dữ liệu đơn hàng và hóa đơn sửa chữa trong khoảng thời gian đã thiết lập.</li>
+        <li>Hệ thống tính toán tổng tiền, chiết khấu voucher, render biểu đồ SVG tăng trưởng trực quan và danh sách linh kiện bán chạy.</li>
+        <li>Admin click nút xuất file báo cáo để tải xuống máy tính file báo cáo định dạng Excel hoặc PDF phục vụ lưu trữ nội bộ.</li>
+      </ol>
+      <p><strong>Kết quả:</strong> Báo cáo số liệu kinh doanh được tổng hợp chính xác tuyệt đối, hỗ trợ xuất file dữ liệu định dạng chuẩn hóa thành công.</p>
+    </div>
+  </div>
+
+  <!-- USE CASE 8 -->
+  <div class="uc-block admin-rel">
+    <div class="uc-title">
+      <span>2.6.8. Đặc tả Use Case Quản lý tài khoản &amp; Phân quyền</span>
+      <span class="actor-badge">Quản trị viên (Admin)</span>
+    </div>
+    <div class="uc-content">
+      <p><strong>Mô tả chi tiết:</strong> Duy trì tính bảo mật và cấp bậc nhân sự. Cho phép Admin cấp cao duyệt danh sách người dùng, thực hiện cấp quyền vai trò (Admin, KTV, Customer), cấm tài khoản vi phạm đưa vào Blacklist hoặc tạo mới tài khoản cho nhân viên.</p>
+      <p><strong>Tác nhân chính:</strong> Quản trị viên tối cao (Super Admin).</p>
+      <p><strong>Điều kiện tiên quyết:</strong> Đăng nhập thành công với tài khoản có quyền Super Admin hệ thống.</p>
+      <p><strong>Luồng sự kiện chính (Happy Path):</strong></p>
+      <ol class="uc-steps">
+        <li>Admin truy cập mục Quản lý Tài khoản trên giao diện Dashboard quản trị.</li>
+        <li>Hệ thống kết xuất danh sách toàn bộ tài khoản người dùng đăng ký bao gồm khách hàng và nhân viên nội bộ.</li>
+        <li>Admin lọc tìm kiếm tài khoản theo số điện thoại, email hoặc họ tên.</li>
+        <li>Để phân quyền, Admin chọn tài khoản nhân viên mới và thay đổi vai trò (Role) từ Customer thành Technician hoặc Admin.</li>
+        <li>Để cấm người dùng spam đặt lịch ảo, Admin click nút "Blacklist" để cấm tài khoản đó truy cập các dịch vụ đặt đơn của hệ thống.</li>
+        <li>Hệ thống xác thực tính hợp pháp của quyền thực thi từ Super Admin, lưu thay đổi và cập nhật bảng danh sách tức thời.</li>
+      </ol>
+      <p><strong>Kết quả:</strong> Phân quyền nhân sự được thực thi chuẩn xác, các tài khoản vi phạm bị chặn triệt để khỏi dịch vụ hệ thống.</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

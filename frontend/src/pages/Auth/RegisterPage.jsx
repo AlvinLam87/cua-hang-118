@@ -142,11 +142,7 @@ const RegisterPage = () => {
                 <AlertCircle className="w-5 h-5 shrink-0" /> <span>{error}</span>
               </div>
             )}
-            {success && (
-              <div className="mb-6 flex items-center gap-3 p-4 bg-green-50 border border-green-100 rounded-xl text-green-700 text-sm">
-                <CheckCircle2 className="w-5 h-5 shrink-0" /> <span>{success}</span>
-              </div>
-            )}
+
 
             <form onSubmit={verifyOtpAndRegister} className="space-y-4">
               {/* Full Name */}

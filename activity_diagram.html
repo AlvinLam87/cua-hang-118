@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>2.5 - Lược đồ Hoạt động (Activity Diagram) - PlantUML</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; padding:30px 50px; background:#f8fafc; font-family:'Segoe UI',Arial,sans-serif; }
+    .page-container { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); max-width: 1200px; margin: auto; }
+    .btn-bar { text-align:center; margin-bottom:26px; }
+    .btn-bar button { background:#2563EB; color:#fff; border:none; padding:10px 28px; border-radius:8px; font-size:14px; cursor:pointer; font-weight: 600; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
+    h2.section { font-size:20px; font-weight:700; color:#0F172A; margin:0 0 8px 0; text-transform: uppercase; text-align: center;}
+    p.desc { text-align: center; color:#475569; font-size: 15px; margin-bottom: 40px; }
+    .sub { font-size:18px; font-weight:600; color:#1E293B; margin:50px 0 15px 0;}
+    .description { font-size: 16px; color: #1e293b; line-height: 1.6; text-align: justify; margin-bottom: 25px; text-indent: 30px; font-family: 'Times New Roman', Times, serif; }
+    .caption { text-align:center; font-size:14px; font-style:italic; font-weight:700; color:#374151; margin:20px 0 40px 0; }
+    .diagram-wrapper { text-align: center; margin-top: 15px; background: #fff; padding: 20px; border-radius: 8px; border: 1px dashed #cbd5e1; position: relative; overflow-x: auto; }
+    .diagram-wrapper img { max-width: 100%; height: auto; }
+    .plantuml-code { display: none; text-align: left; background: #f1f5f9; padding: 15px; font-family: monospace; font-size: 13px; white-space: pre-wrap; word-break: break-all;}
+    .loading { color: #2563EB; font-size: 15px; font-style: italic; margin-bottom: 10px; }
+    @media print { 
+        body { background: #fff; padding: 0; }
+        .page-container { box-shadow: none; padding: 10px; max-width: 100%; }
+        .btn-bar { display:none; } 
+        .sub { page-break-after: avoid; } 
+        .description { page-break-after: avoid; }
+        .diagram-wrapper { page-break-inside: avoid; border: none; } 
+        .caption { page-break-after: always; }
+        .caption:last-child { page-break-after: auto; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const blocks = document.querySelectorAll(".plantuml-code");
+        blocks.forEach(function(block) {
+            const code = block.textContent.trim();
+            if (code && typeof plantumlEncoder !== 'undefined') {
+                const encoded = plantumlEncoder.encode(code);
+                const img = document.createElement("img");
+                img.src = "https://www.plantuml.com/plantuml/svg/" + encoded;
+                img.onload = function() {
+                    const loader = block.parentNode.querySelector('.loading');
+                    if(loader) loader.style.display = 'none';
+                };
+                img.onerror = function() {
+                    const loader = block.parentNode.querySelector('.loading');
+                    if(loader) loader.innerHTML = '❌ Lỗi tải từ server PlantUML. Mời bạn copy mã bên dưới và dán vào <b>plantuml.com</b>';
+                    block.style.display = 'block';
+                };
+                block.parentNode.insertBefore(img, block);
+            } else {
+                block.style.display = 'block';
+            }
+        });
+    });
+  </script>
+</head>
+<body>
+
+<div class="btn-bar">
+  💡 Nhấn <strong>Ctrl+P</strong> → <strong>"Save as PDF"</strong> để xuất báo cáo chất lượng cao →
+  <button onclick="window.print()">🖨️ Xuất PDF / In ấn</button>
+</div>
+
+<div class="page-container">
+    <h2 class="section">2.5. Lược đồ Hoạt động (Activity Diagram)</h2>
+    <p class="desc">Kiến trúc Swimlane 4 luồng tối ưu: Tác nhân -> Giao diện -> Xử lý -> Dữ liệu</p>
+
+    <!-- DIAGRAM 1 -->
+    <div class="sub">2.5.1. Activity Diagram Đăng ký (Sign up)</div>
+    <p class="description">Người dùng đăng ký tài khoản bằng cách chọn chức năng đăng ký và nhập các thông tin tài khoản. Hệ thống sẽ xử lý các yêu cầu và check thông tin tài khoản có tồn tại hay không. Sau đó mã xác nhận sẽ được gửi về email và người dùng sẽ xác nhận mã otp.</p>
+    <div class="diagram-wrapper">
+        <div class="loading">⏳ Đang tự động vẽ sơ đồ từ PlantUML...</div>
+        <pre class="plantuml-code">
+@startuml
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #FFFDE0
+skinparam ActivityBorderColor #000000
+skinparam ArrowColor #000000
+skinparam swimlaneBorderColor #000000
+skinparam swimlaneTitleBackgroundColor #FFFDE0
+skinparam swimlaneBackgroundColor #FFFFFF
+skinparam ActivityDiamondBackgroundColor #FFFDE0
+skinparam ActivityDiamondBorderColor #000000
+
+|Người dùng|
+|Giao diện đăng ký|
+|Xử lý|
+|Dữ liệu|
+
+|Người dùng|
+start
+:Chọn chức năng đăng ký;
+|Xử lý|
+:Xử lý yêu cầu;
+|Giao diện đăng ký|
+:Hiển thị Form đăng ký;
+|Người dùng|
+:Nhập thông tin tài khoản;
+|Xử lý|
+:Kiểm tra thông tin tài khoản;
+|Dữ liệu|
+:Truy xuất dữ liệu;
+if (Tồn tại?) then (YES)
+  |Xử lý|
+  :Thông báo tài khoản đã tồn tại;
+  |Giao diện đăng ký|
+  :Hiển thị lỗi;
+  |Người dùng|
+  detach
+else (NO)
+  |Xử lý|
+  :Gửi mã xác nhận (OTP) về Email;
+  |Giao diện đăng ký|
+  :Hiển thị Form nhập mã OTP;
+  |Người dùng|
+  :Xác nhận mã OTP;
+  |Xử lý|
+  :Kiểm tra mã OTP;
+  if (Mã OTP hợp lệ?) then (YES)
+    :Xác nhận yêu cầu tạo tài khoản;
+    |Dữ liệu|
+    :Thêm vào database;
+    |Giao diện đăng ký|
+    :Hiển thị thông báo thành công;
+    stop
+  else (NO)
+    |Xử lý|
+    :Mã OTP không đúng;
+    |Giao diện đăng ký|
+    :Hiển thị thông báo lỗi OTP;
+    |Người dùng|
+    detach
+  endif
+endif
+@enduml
+        </pre>
+    </div>
+    <div class="caption">Hình 17. Activity Diagram - Đăng ký tài khoản</div>
+
+    <!-- DIAGRAM 2 -->
+    <div class="sub">2.5.2. Activity Diagram Đăng nhập (Login)</div>
+    <p class="description">Người dùng tiến hành đăng nhập bằng cách cung cấp thông tin tài khoản (Email/Số điện thoại) và mật khẩu. Hệ thống sẽ tiếp nhận dữ liệu và đối chiếu với cơ sở dữ liệu. Nếu thông tin đăng nhập chính xác, hệ thống khởi tạo phiên làm việc và chuyển hướng người dùng vào trang chủ. Trường hợp sai thông tin, hệ thống sẽ từ chối và yêu cầu nhập lại.</p>
+    <div class="diagram-wrapper">
+        <div class="loading">⏳ Đang tự động vẽ sơ đồ từ PlantUML...</div>
+        <pre class="plantuml-code">
+@startuml
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #FFFDE0
+skinparam ActivityBorderColor #000000
+skinparam ArrowColor #000000
+skinparam swimlaneBorderColor #000000
+skinparam swimlaneTitleBackgroundColor #FFFDE0
+skinparam swimlaneBackgroundColor #FFFFFF
+skinparam ActivityDiamondBackgroundColor #FFFDE0
+skinparam ActivityDiamondBorderColor #000000
+
+|Người dùng|
+|Giao diện|
+|Xử lý|
+|Dữ liệu|
+
+|Người dùng|
+start
+:Chọn chức năng đăng nhập;
+|Xử lý|
+:Xử lý yêu cầu;
+|Giao diện|
+:Hiển thị Form đăng nhập;
+|Người dùng|
+:Nhập thông tin đăng nhập;
+|Xử lý|
+:Kiểm tra tài khoản & mật khẩu;
+|Dữ liệu|
+:Truy xuất CSDL;
+if (Thông tin đúng?) then (NO)
+  |Xử lý|
+  :Thông báo sai thông tin;
+  |Giao diện|
+  :Hiển thị thông báo lỗi;
+  |Người dùng|
+  detach
+else (YES)
+  |Xử lý|
+  :Thông tin hợp lệ;
+  :Khởi tạo phiên làm việc (Session/Token);
+  |Giao diện|
+  :Hiển thị thông báo thành công;
+  :Chuyển hướng trang chủ;
+  stop
+endif
+@enduml
+        </pre>
+    </div>
+    <div class="caption">Hình 18. Activity Diagram - Đăng nhập hệ thống</div>
+
+    <!-- DIAGRAM 3 -->
+    <div class="sub">2.5.3. Activity Diagram Đặt lịch hẹn sửa chữa (Booking)</div>
+    <p class="description">Khách hàng chọn dịch vụ sửa chữa mong muốn, nhập tình trạng thiết bị và lựa chọn thời gian đặt lịch. Hệ thống sẽ tiến hành kiểm tra lịch làm việc hiện tại của cửa hàng. Nếu khung giờ trống và hợp lệ, hệ thống sẽ ghi nhận lịch hẹn, lưu vào cơ sở dữ liệu và thông báo đặt lịch thành công đến khách hàng.</p>
+    <div class="diagram-wrapper">
+        <div class="loading">⏳ Đang tự động vẽ sơ đồ từ PlantUML...</div>
+        <pre class="plantuml-code">
+@startuml
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #FFFDE0
+skinparam ActivityBorderColor #000000
+skinparam ArrowColor #000000
+skinparam swimlaneBorderColor #000000
+skinparam swimlaneTitleBackgroundColor #FFFDE0
+skinparam swimlaneBackgroundColor #FFFFFF
+skinparam ActivityDiamondBackgroundColor #FFFDE0
+skinparam ActivityDiamondBorderColor #000000
+
+|Người dùng|
+|Giao diện|
+|Xử lý|
+|Dữ liệu|
+
+|Người dùng|
+start
+:Chọn chức năng Đặt lịch hẹn;
+|Xử lý|
+:Tiếp nhận yêu cầu;
+|Giao diện|
+:Hiển thị Form đặt lịch hẹn;
+|Người dùng|
+:Nhập thông tin thiết bị & thời gian;
+:Nhấn xác nhận đặt lịch;
+|Xử lý|
+:Kiểm tra thông tin lịch hẹn;
+|Dữ liệu|
+:Truy xuất lịch làm việc & KTV;
+if (Khung giờ trống?) then (NO)
+  |Xử lý|
+  :Khung giờ đã đầy / Không hợp lệ;
+  |Giao diện|
+  :Thông báo yêu cầu chọn lại thời gian;
+  |Người dùng|
+  detach
+else (YES)
+  |Xử lý|
+  :Thông tin hợp lệ;
+  :Xác nhận yêu cầu đặt lịch;
+  |Dữ liệu|
+  :Thêm lịch hẹn vào database;
+  |Giao diện|
+  :Hiển thị thông báo đặt lịch thành công;
+  stop
+endif
+@enduml
+        </pre>
+    </div>
+    <div class="caption">Hình 19. Activity Diagram - Đặt lịch hẹn sửa chữa</div>
+
+    <!-- DIAGRAM 4 -->
+    <div class="sub">2.5.4. Activity Diagram Mua sắm & Thanh toán (Checkout)</div>
+    <p class="description">Khách hàng sau khi chọn sản phẩm vào giỏ sẽ tiến hành thanh toán bằng cách nhập thông tin giao hàng và chọn phương thức thanh toán. Hệ thống tiến hành kiểm tra số lượng tồn kho của sản phẩm. Nếu đủ số lượng, đơn hàng sẽ được khởi tạo, trừ số lượng tồn kho và hệ thống sẽ xử lý thanh toán thành công.</p>
+    <div class="diagram-wrapper">
+        <div class="loading">⏳ Đang tự động vẽ sơ đồ từ PlantUML...</div>
+        <pre class="plantuml-code">
+@startuml
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #FFFDE0
+skinparam ActivityBorderColor #000000
+skinparam ArrowColor #000000
+skinparam swimlaneBorderColor #000000
+skinparam swimlaneTitleBackgroundColor #FFFDE0
+skinparam swimlaneBackgroundColor #FFFFFF
+skinparam ActivityDiamondBackgroundColor #FFFDE0
+skinparam ActivityDiamondBorderColor #000000
+
+|Khách hàng|
+|Giao diện|
+|Xử lý|
+|Dữ liệu|
+
+|Khách hàng|
+start
+:Nhấn Thanh toán trong Giỏ hàng;
+|Xử lý|
+:Tính toán tổng tiền & Voucher;
+|Giao diện|
+:Hiển thị trang Thanh toán;
+|Khách hàng|
+:Nhập thông tin giao hàng;
+:Chọn phương thức thanh toán;
+:Xác nhận Đặt hàng;
+|Xử lý|
+:Kiểm tra số lượng tồn kho;
+|Dữ liệu|
+:Truy xuất kho hàng;
+if (Đủ tồn kho?) then (NO)
+  |Xử lý|
+  :Sản phẩm vượt quá số lượng;
+  |Giao diện|
+  :Thông báo lỗi hết hàng;
+  |Khách hàng|
+  detach
+else (YES)
+  |Xử lý|
+  :Đủ điều kiện thanh toán;
+  :Xử lý thanh toán Online / COD;
+  :Tạo đơn hàng mới;
+  |Dữ liệu|
+  :Lưu thông tin đơn hàng vào CSDL;
+  :Trừ số lượng tồn kho sản phẩm;
+  |Giao diện|
+  :Chuyển hướng trang đặt hàng thành công;
+  stop
+endif
+@enduml
+        </pre>
+    </div>
+    <div class="caption">Hình 20. Activity Diagram - Mua sắm & Thanh toán</div>
+
+    <!-- DIAGRAM 5 -->
+    <div class="sub">2.5.5. Activity Diagram Quản lý Sản phẩm & Kho hàng (Admin)</div>
+    <p class="description">Quản trị viên thực hiện quản lý danh mục sản phẩm và tiến hành nhập kho hàng hóa. Hệ thống xử lý thêm mới thông tin cấu hình sản phẩm vào cơ sở dữ liệu với số lượng tồn kho khởi tạo. Tiếp đến, Admin tiến hành lập đơn và thực hiện xác nhận nhập kho để tự động cộng dồn số lượng tồn kho thực tế của sản phẩm.</p>
+    <div class="diagram-wrapper">
+        <div class="loading">⏳ Đang tự động vẽ sơ đồ từ PlantUML...</div>
+        <pre class="plantuml-code">
+@startuml
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #FFFDE0
+skinparam ActivityBorderColor #000000
+skinparam ArrowColor #000000
+skinparam swimlaneBorderColor #000000
+skinparam swimlaneTitleBackgroundColor #FFFDE0
+skinparam swimlaneBackgroundColor #FFFFFF
+skinparam ActivityDiamondBackgroundColor #FFFDE0
+skinparam ActivityDiamondBorderColor #000000
+
+|Quản trị viên|
+|Giao diện|
+|Xử lý|
+|Dữ liệu|
+
+|Quản trị viên|
+start
+:Truy cập Quản lý Sản phẩm & Kho hàng;
+|Giao diện|
+:Hiển thị danh sách sản phẩm & tồn kho;
+|Quản trị viên|
+:Chọn chức năng Thêm sản phẩm mới;
+|Giao diện|
+:Hiển thị Form nhập liệu sản phẩm;
+|Quản trị viên|
+:Nhập thông tin sản phẩm (Tên, Giá, Ảnh);
+:Nhấn xác nhận Lưu sản phẩm;
+|Xử lý|
+:Kiểm tra tính hợp lệ dữ liệu sản phẩm;
+:Xử lý lưu trữ hình ảnh sản phẩm;
+|Dữ liệu|
+:Thêm bản ghi sản phẩm mới vào CSDL (tồn kho = 0);
+|Giao diện|
+:Hiển thị thông báo thêm sản phẩm thành công;
+|Quản trị viên|
+:Chọn chức năng Tạo đơn nhập kho cho sản phẩm mới;
+:Nhập số lượng & Đơn giá nhập kho;
+:Xác nhận đơn nhập kho;
+|Xử lý|
+:Xác thực thông tin đơn nhập kho;
+:Xử lý cộng dồn số lượng tồn kho mới;
+|Dữ liệu|
+:Lưu đơn nhập kho và cập nhật tồn kho sản phẩm;
+|Giao diện|
+:Hiển thị thông báo nhập kho thành công;
+:Cập nhật danh sách tồn kho sản phẩm mới;
+stop
+@enduml
+        </pre>
+    </div>
+    <div class="caption">Hình 21. Activity Diagram - Quản lý Sản phẩm & Kho hàng</div>
+
+    <!-- DIAGRAM 6 -->
+    <div class="sub">2.5.6. Activity Diagram Xử lý đơn sửa chữa (Kỹ thuật viên)</div>
+    <p class="description">Kỹ thuật viên nhận thiết bị từ khách hàng, tiến hành kiểm tra thực tế và chụp ảnh tình trạng máy. Dữ liệu chẩn đoán và chi phí dự kiến sẽ được kỹ thuật viên cập nhật lên ứng dụng. Hệ thống sẽ lưu lại thông tin này vào cơ sở dữ liệu, đồng thời chuyển trạng thái đơn hàng và hiển thị thông báo cập nhật thành công.</p>
+    <div class="diagram-wrapper">
+        <div class="loading">⏳ Đang tự động vẽ sơ đồ từ PlantUML...</div>
+        <pre class="plantuml-code">
+@startuml
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #FFFDE0
+skinparam ActivityBorderColor #000000
+skinparam ArrowColor #000000
+skinparam swimlaneBorderColor #000000
+skinparam swimlaneTitleBackgroundColor #FFFDE0
+skinparam swimlaneBackgroundColor #FFFFFF
+skinparam ActivityDiamondBackgroundColor #FFFDE0
+skinparam ActivityDiamondBorderColor #000000
+
+|Kỹ thuật viên|
+|Giao diện Mobile|
+|Xử lý|
+|Dữ liệu|
+
+|Kỹ thuật viên|
+start
+:Chọn xem chi tiết đơn sửa chữa;
+|Xử lý|
+:Truy xuất dữ liệu đơn;
+|Giao diện Mobile|
+:Hiển thị chi tiết thiết bị & lỗi;
+|Kỹ thuật viên|
+:Kiểm tra máy & Nhập chẩn đoán thực tế;
+:Chụp ảnh thiết bị trước khi sửa;
+:Nhấn Cập nhật báo giá;
+|Xử lý|
+:Tiếp nhận thông tin cập nhật;
+|Dữ liệu|
+:Lưu thông tin chẩn đoán vào CSDL;
+if (Kết quả?) then (Lỗi)
+  |Xử lý|
+  :Cập nhật thất bại do lỗi hệ thống;
+  |Giao diện Mobile|
+  :Hiển thị thông báo lỗi;
+  |Kỹ thuật viên|
+  detach
+else (Thành công)
+  |Xử lý|
+  :Cập nhật dữ liệu thành công;
+  |Dữ liệu|
+  :Đổi trạng thái đơn thành "Chờ sửa chữa";
+  |Giao diện Mobile|
+  :Hiển thị thông báo thành công;
+  stop
+endif
+@enduml
+        </pre>
+    </div>
+    <div class="caption">Hình 22. Activity Diagram - Xử lý đơn sửa chữa</div>
+
+    <!-- DIAGRAM 7 -->
+    <div class="sub">2.5.7. Activity Diagram Báo cáo Thống kê (Admin)</div>
+    <p class="description">Quản trị viên sử dụng chức năng báo cáo để theo dõi tình hình kinh doanh. Bằng cách chọn mốc thời gian cụ thể, hệ thống sẽ truy vấn dữ liệu đơn hàng và doanh thu từ cơ sở dữ liệu, sau đó tổng hợp và vẽ thành các biểu đồ trực quan. Quản trị viên cũng có thể xuất báo cáo ra file Excel hoặc PDF để lưu trữ.</p>
+    <div class="diagram-wrapper">
+        <div class="loading">⏳ Đang tự động vẽ sơ đồ từ PlantUML...</div>
+        <pre class="plantuml-code">
+@startuml
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #FFFDE0
+skinparam ActivityBorderColor #000000
+skinparam ArrowColor #000000
+skinparam swimlaneBorderColor #000000
+skinparam swimlaneTitleBackgroundColor #FFFDE0
+skinparam swimlaneBackgroundColor #FFFFFF
+skinparam ActivityDiamondBackgroundColor #FFFDE0
+skinparam ActivityDiamondBorderColor #000000
+
+|Quản trị viên|
+|Giao diện|
+|Xử lý|
+|Dữ liệu|
+
+|Quản trị viên|
+start
+:Truy cập trang Báo cáo Thống kê;
+|Giao diện|
+:Hiển thị bộ lọc (Thời gian, Danh mục);
+|Quản trị viên|
+:Chọn mốc thời gian (Từ ngày - Đến ngày);
+:Nhấn Xem báo cáo;
+|Xử lý|
+:Tiếp nhận yêu cầu lọc;
+|Dữ liệu|
+:Truy vấn doanh thu & số lượng đơn;
+|Xử lý|
+:Tính toán & Tổng hợp số liệu;
+if (Có dữ liệu?) then (YES)
+  |Giao diện|
+  :Hiển thị Biểu đồ doanh thu;
+  :Hiển thị Danh sách sản phẩm bán chạy;
+else (NO)
+  |Giao diện|
+  :Hiển thị "Không có dữ liệu trong kỳ";
+endif
+|Quản trị viên|
+:Nhấn Xuất file (Excel/PDF);
+|Xử lý|
+:Tạo file báo cáo tương ứng;
+|Giao diện|
+:Tải file xuống máy tính;
+stop
+@enduml
+        </pre>
+    </div>
+    <div class="caption">Hình 23. Activity Diagram - Báo cáo Thống kê</div>
+
+    <!-- DIAGRAM 8 -->
+    <div class="sub">2.5.8. Activity Diagram Quản lý Tài khoản & Phân quyền (Admin)</div>
+    <p class="description">Quản trị viên hệ thống có quyền xem danh sách toàn bộ người dùng, bao gồm khách hàng và nhân viên. Admin có thể thực hiện thao tác thêm mới tài khoản nội bộ, phân quyền vai trò (Admin, Kỹ thuật viên) hoặc khóa/mở khóa tài khoản khách hàng. Mọi thay đổi sẽ được hệ thống kiểm tra quyền hạn trước khi cập nhật vào cơ sở dữ liệu.</p>
+    <div class="diagram-wrapper">
+        <div class="loading">⏳ Đang tự động vẽ sơ đồ từ PlantUML...</div>
+        <pre class="plantuml-code">
+@startuml
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #FFFDE0
+skinparam ActivityBorderColor #000000
+skinparam ArrowColor #000000
+skinparam swimlaneBorderColor #000000
+skinparam swimlaneTitleBackgroundColor #FFFDE0
+skinparam swimlaneBackgroundColor #FFFFFF
+skinparam ActivityDiamondBackgroundColor #FFFDE0
+skinparam ActivityDiamondBorderColor #000000
+
+|Quản trị viên|
+|Giao diện|
+|Xử lý|
+|Dữ liệu|
+
+|Quản trị viên|
+start
+:Truy cập Quản lý Tài khoản;
+|Giao diện|
+:Hiển thị danh sách người dùng & nhân viên;
+|Quản trị viên|
+:Chọn Thêm/Sửa/Khóa hoặc Phân quyền;
+:Cập nhật thông tin/Vai trò;
+:Nhấn Lưu thay đổi;
+|Xử lý|
+:Kiểm tra quyền hạn & tính hợp lệ;
+if (Hợp lệ?) then (YES)
+  |Dữ liệu|
+  :Cập nhật bản ghi Tài khoản;
+  |Giao diện|
+  :Hiển thị thông báo cập nhật thành công;
+  stop
+else (NO)
+  |Xử lý|
+  :Không đủ quyền hoặc sai dữ liệu;
+  |Giao diện|
+  :Hiển thị thông báo lỗi;
+  |Quản trị viên|
+  detach
+endif
+@enduml
+        </pre>
+    </div>
+    <div class="caption">Hình 24. Activity Diagram - Quản lý Tài khoản & Phân quyền</div>
+
+</div>
+</body>
+</html>
