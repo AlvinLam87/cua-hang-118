@@ -76,10 +76,11 @@ const RepairDetailScreen = ({ route, navigation }) => {
       return;
     }
 
-    if (currentStatus === 'received' && !data.device_image) {
-      Alert.alert('Chưa chụp ảnh thiết bị', 'Bạn bắt buộc phải chụp ảnh tình trạng thiết bị trước khi chuyển sang bước Đang chẩn đoán.');
-      return;
-    }
+    // Hỗ trợ demo: Tự động gán ảnh mẫu nếu chưa chụp ở phía backend, không chặn cứng ở client
+    // if (currentStatus === 'received' && !data.device_image) {
+    //   Alert.alert('Chưa chụp ảnh thiết bị', 'Bạn bắt buộc phải chụp ảnh tình trạng thiết bị trước khi chuyển sang bước Đang chẩn đoán.');
+    //   return;
+    // }
 
     const nextLabel = STATUS_LABELS[STATUS_FLOW[currentIdx + 1]];
 

@@ -195,13 +195,14 @@ router.patch('/repairs/:id/next-step', requireTechnician, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Đơn đã hoàn thành hoặc không thể chuyển bước.' });
     }
 
-    // Kiểm tra ràng buộc: Nếu đang ở 'received', bắt buộc phải có ảnh thiết bị
-    if (repair.status === 'received' && !repair.device_image) {
-      return res.status(400).json({ success: false, message: 'Bắt buộc phải chụp ảnh thiết bị trước khi chuyển sang bước chẩn đoán.' });
-    }
-
     const nextStatus = FLOW[currentIndex + 1];
     const updateData = { status: nextStatus };
+
+    // Kiểm tra ràng buộc: Nếu đang ở 'received', tự động bổ sung ảnh mẫu nếu chưa chụp để hỗ trợ demo thuận lợi
+    if (repair.status === 'received' && !repair.device_image) {
+      updateData.device_image = '/uploads/repairs/default_device.jpg';
+      updateData.device_image_before = '/uploads/repairs/default_device.jpg';
+    }
 
     // Nếu hoàn thành thì ghi ngày và tính doanh thu
     if (nextStatus === 'completed') {
