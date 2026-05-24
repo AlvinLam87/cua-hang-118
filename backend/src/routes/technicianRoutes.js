@@ -412,5 +412,81 @@ router.get('/search', requireTechnician, async (req, res) => {
   }
 });
 
+// POST /api/v1/technician/repairs/warranty — Tạo đơn bảo hành nhanh từ đơn cũ
+router.post('/repairs/warranty', requireTechnician, async (req, res) => {
+  try {
+    const { parent_id, issue } = req.body;
+    if (!parent_id) return res.status(400).json({ success: false, message: 'Thiếu thông tin đơn hàng gốc.' });
+
+    const parentOrder = await RepairOrder.findByPk(parent_id);
+    if (!parentOrder) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng gốc.' });
+
+    // Lấy thông tin user hiện tại làm KTV phụ trách
+    const userId = req.user.id;
+    const { User, RepairStep } = require('../models');
+    const user = await User.findByPk(userId);
+    const currentTechName = user ? user.full_name : parentOrder.technician_name;
+
+    // Tạo mã nhận đơn mới
+    const count = await RepairOrder.count();
+    const receiptCode = `RCV-118${String(count + 1).padStart(3, '0')}`;
+
+    // Tạo đơn bảo hành mới
+    const newOrder = await RepairOrder.create({
+      receipt_code: receiptCode,
+      customer_id: parentOrder.customer_id,
+      device_name: parentOrder.device_name.startsWith('[Bảo Hành]') ? parentOrder.device_name : `[Bảo Hành] ${parentOrder.device_name}`,
+      issue: issue || `Yêu cầu bảo hành từ đơn cũ #${parentOrder.receipt_code}.`,
+      technician_name: currentTechName,
+      status: 'received',
+      received_date: new Date().toISOString().slice(0, 10),
+      estimated_cost: 0,
+      final_cost: 0,
+      notes: `Đơn bảo hành liên kết với đơn gốc #${parentOrder.receipt_code}.`,
+      warranty_period: 0, // Đơn bảo hành không gia hạn bảo hành mới mặc định
+    });
+
+    // Tạo bước tiếp nhận
+    await RepairStep.create({
+      repair_order_id: newOrder.id,
+      step_order: 1,
+      label: 'Tiếp nhận thiết bị',
+      is_done: true,
+      completed_date: new Date().toISOString().slice(0, 10)
+    });
+
+    // Tạo các bước còn lại chưa làm
+    const defaultSteps = [
+      'Chẩn đoán lỗi',
+      'Báo giá cho khách',
+      'Đang sửa chữa',
+      'Kiểm tra kỹ thuật',
+      'Hoàn thành'
+    ];
+    for (let i = 0; i < defaultSteps.length; i++) {
+      await RepairStep.create({
+        repair_order_id: newOrder.id,
+        step_order: i + 2,
+        label: defaultSteps[i],
+        is_done: false,
+        completed_date: null
+      });
+    }
+
+    // Phát socket thông báo thay đổi dữ liệu
+    try {
+      const socketConfig = require('../config/socket');
+      const io = socketConfig.getIO();
+      if (io) {
+        io.emit('data_changed', { type: 'repair_order', action: 'create', id: newOrder.id });
+      }
+    } catch (sErr) {}
+
+    res.status(201).json({ success: true, message: 'Đã tạo đơn bảo hành thành công.', data: newOrder });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 module.exports = router;
 

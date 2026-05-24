@@ -246,6 +246,31 @@ const TechnicianDashboardPage = () => {
     }
   };
 
+  const handleCreateWarrantyOrder = async (parentOrder) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn tạo đơn tiếp nhận bảo hành mới liên kết với đơn gốc #${parentOrder.receipt_code}?`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_V1_URL}/technician/repairs/warranty`, {
+        method: 'POST',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parent_id: parentOrder.id })
+      });
+      const result = await res.json();
+      if (result.success) {
+        alert(result.message);
+        setCustomerQuery(''); // Reset search
+        setCustomerSearchResults([]);
+        fetchData(); // Reload dashboard
+      } else {
+        alert(result.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Đã xảy ra lỗi khi tạo đơn bảo hành.');
+    }
+  };
+
 
 
   const handleUploadImage = async (id, file, type = 'before') => {
@@ -288,41 +313,40 @@ const TechnicianDashboardPage = () => {
     in_progress: { label: 'Đang sửa chữa', color: 'bg-yellow-100 text-yellow-700', next: 'Kiểm tra' },
     testing: { label: 'Đang kiểm tra', color: 'bg-cyan-100 text-cyan-700', next: 'Hoàn thành' },
     completed: { label: 'Đã xong', color: 'bg-emerald-100 text-emerald-700', next: null },
-    returned: { label: 'Đã bàn giao', color: 'bg-green-100 text-green-700', next: null },
-    cancelled: { label: 'Đã hủy', color: 'bg-red-100 text-red-700', next: null },
   };
-
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
       {/* HEADER & STATS BAR */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Trạm Làm Việc KTV</h1>
-          <p className="text-gray-500 mt-1 font-medium flex items-center gap-2">
-            <Clock className="w-4 h-4" /> Chào buổi chiều, hãy hoàn thành tốt các mục tiêu hôm nay!
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+            <span className="w-2.5 h-8 bg-blue-600 rounded-full inline-block"></span>
+            Trạm Làm Việc KTV
+          </h1>
+          <p className="text-gray-500 mt-1.5 font-medium flex items-center gap-2">
+            <Clock className="w-4 h-4 text-blue-500" /> Chào buổi chiều, hãy hoàn thành tốt các mục tiêu hôm nay!
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-2xl border border-blue-100 text-sm font-bold shadow-sm">
-          <Star className="w-4 h-4 fill-blue-600" />
+        <div className="flex items-center gap-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 px-4.5 py-2.5 rounded-2xl border border-blue-100 text-sm font-black shadow-xs hover:shadow-md transition-all">
+          <Star className="w-4 h-4 fill-amber-500 text-amber-500 animate-pulse" />
           Xếp hạng: {stats.rating.toFixed(1)}/5.0
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {[
-          { label: 'Việc đang nhận', val: stats.activeJobs, icon: Wrench, color: 'blue' },
-          { label: 'Xong tháng này', val: stats.completedMonth, icon: CheckCircle2, color: 'emerald' },
-          { label: 'Lịch hẹn sắp tới', val: bookings.length, icon: CalendarClock, color: 'amber' },
+          { label: 'Việc đang nhận', val: stats.activeJobs, icon: Wrench, color: 'blue', desc: 'Đang xử lý tại trạm', bg: 'from-blue-50 to-indigo-50/50', border: 'border-blue-100', text: 'text-blue-600' },
+          { label: 'Xong tháng này', val: stats.completedMonth, icon: CheckCircle2, color: 'emerald', desc: 'Đã hoàn thành xuất sắc', bg: 'from-emerald-50 to-teal-50/50', border: 'border-emerald-100', text: 'text-emerald-600' },
+          { label: 'Lịch hẹn sắp tới', val: bookings.length, icon: CalendarClock, color: 'amber', desc: 'Lịch hẹn đang chờ', bg: 'from-amber-50 to-orange-50/50', border: 'border-amber-100', text: 'text-amber-600' },
         ].map((s, i) => (
-          <div key={i} className={`bg-white border border-gray-100 p-5 rounded-3xl shadow-sm hover:shadow-md transition-all group border-l-4 border-l-${s.color}-500`}>
-             <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{s.label}</p>
-                  <p className="text-2xl font-black text-gray-900 mt-1 group-hover:text-blue-600 transition-colors">{s.val}</p>
-                </div>
-                <div className={`p-2.5 bg-${s.color}-50 text-${s.color}-600 rounded-2xl group-hover:scale-110 transition-transform`}>
-                  <s.icon className="w-6 h-6" />
-                </div>
+          <div key={i} className={`bg-gradient-to-br ${s.bg} border ${s.border} p-6 rounded-3xl shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-1 flex justify-between items-center group`}>
+             <div>
+               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{s.label}</p>
+               <p className="text-3xl font-black text-gray-900 mt-1.5 leading-none">{s.val}</p>
+               <p className="text-xs text-gray-400 font-medium mt-2">{s.desc}</p>
+             </div>
+             <div className={`p-4 bg-white ${s.text} rounded-2xl shadow-xs group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}>
+               <s.icon className="w-7 h-7" />
              </div>
           </div>
         ))}
@@ -353,7 +377,7 @@ const TechnicianDashboardPage = () => {
           </div>
 
           {activeTab === 'repairs' || activeTab === 'history' ? (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-5">
               {repairs.filter(r => {
                 if (activeTab === 'repairs') return !['completed', 'returned', 'cancelled'].includes(r.status);
                 return ['completed', 'returned', 'cancelled'].includes(r.status);
@@ -370,152 +394,185 @@ const TechnicianDashboardPage = () => {
                   return ['completed', 'returned', 'cancelled'].includes(r.status);
                 }).map((rp) => {
                   const status = STATUS_MAP[rp.status] || { label: rp.status, color: 'bg-gray-100 text-gray-600' };
+                  const isWarrantyOrder = rp.device_name.startsWith('[Bảo Hành]');
+                  
                   return (
-                    <div key={rp.id} className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm hover:shadow-lg transition-all group overflow-hidden relative">
-                      <div className="flex flex-col md:flex-row gap-6">
-                      {/* Device Images */}
-                      <div className="flex flex-col gap-3 shrink-0">
-                        {/* Image Before */}
-                        <div className="w-full md:w-40 h-32 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative group/img">
-                          {rp.device_image_before || rp.device_image ? (
-                            <img 
-                              src={(rp.device_image_before || rp.device_image).startsWith('http') ? (rp.device_image_before || rp.device_image) : `${API_BASE_URL}${rp.device_image_before || rp.device_image}`} 
-                              alt="Trước khi sửa" 
-                              className="w-full h-full object-cover" 
-                            />
-                          ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
-                              <Camera className="w-6 h-6 mb-1" />
-                              <span className="text-[8px] font-bold uppercase tracking-widest">Ảnh Trước</span>
-                            </div>
-                          )}
-                          <label className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                            <input 
-                              type="file" 
-                              className="hidden" 
-                              accept="image/*" 
-                              onChange={(e) => handleUploadImage(rp.id, e.target.files[0], 'before')} 
-                            />
-                            <Camera className="w-5 h-5 text-white" />
-                          </label>
-                        </div>
+                    <div key={rp.id} className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-xs hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
+                      {/* Left border highlight color based on status */}
+                      <div className={`absolute left-0 top-0 bottom-0 w-2 ${
+                        rp.status === 'in_progress' ? 'bg-yellow-500' :
+                        ['completed', 'returned'].includes(rp.status) ? 'bg-emerald-500' :
+                        rp.status === 'cancelled' ? 'bg-red-500' : 'bg-blue-500'
+                      }`}></div>
 
-                        {/* Image After (Visible from in_progress) */}
-                        {['in_progress', 'testing', 'completed', 'returned'].includes(rp.status) && (
-                          <div className="w-full md:w-40 h-32 rounded-2xl bg-emerald-50/30 border border-emerald-100/50 overflow-hidden relative group/img-after">
-                            {rp.device_image_after ? (
+                      <div className="flex flex-col lg:flex-row gap-6 items-start">
+                        {/* 1. Image previews column */}
+                        <div className="flex flex-row lg:flex-col gap-3 shrink-0 w-full lg:w-40">
+                          {/* Image Before */}
+                          <div className="flex-1 lg:flex-none aspect-video lg:aspect-square w-full h-28 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden relative group/img shadow-2xs">
+                            {rp.device_image_before || rp.device_image ? (
                               <img 
-                                src={rp.device_image_after.startsWith('http') ? rp.device_image_after : `${API_BASE_URL}${rp.device_image_after}`} 
-                                alt="Sau khi sửa" 
-                                className="w-full h-full object-cover" 
+                                src={(rp.device_image_before || rp.device_image).startsWith('http') ? (rp.device_image_before || rp.device_image) : `${API_BASE_URL}${rp.device_image_before || rp.device_image}`} 
+                                alt="Trước khi sửa" 
+                                className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300" 
                               />
                             ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center text-emerald-300">
-                                <CheckCircle2 className="w-6 h-6 mb-1" />
-                                <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-400">Ảnh Sau</span>
+                              <div className="w-full h-full flex flex-col items-center justify-center text-gray-300">
+                                <Camera className="w-6 h-6 mb-1" />
+                                <span className="text-[8px] font-black uppercase tracking-widest">Ảnh Trước</span>
                               </div>
                             )}
-                            <label className="absolute inset-0 bg-emerald-600/40 opacity-0 group-hover/img-after:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                            <label className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center cursor-pointer backdrop-blur-xs">
                               <input 
                                 type="file" 
                                 className="hidden" 
                                 accept="image/*" 
-                                onChange={(e) => handleUploadImage(rp.id, e.target.files[0], 'after')} 
+                                onChange={(e) => handleUploadImage(rp.id, e.target.files[0], 'before')} 
                               />
-                              <Camera className="w-5 h-5 text-white" />
+                              <div className="bg-white/20 p-2.5 rounded-full text-white"><Camera className="w-5 h-5" /></div>
                             </label>
+                            <span className="absolute top-2 left-2 bg-slate-900/70 backdrop-blur-md text-[8px] font-black text-white px-2 py-0.5 rounded-md uppercase tracking-wider text-center">Trước</span>
                           </div>
-                        )}
-                      </div>
 
-                      {/* Info Section */}
-                      <div className="flex-1 space-y-4">
-                        <div className="flex flex-wrap justify-between items-start gap-4">
+                          {/* Image After (Visible from in_progress onwards) */}
+                          {['in_progress', 'testing', 'completed', 'returned'].includes(rp.status) && (
+                            <div className="flex-1 lg:flex-none aspect-video lg:aspect-square w-full h-28 rounded-2xl bg-emerald-50/20 border border-emerald-100/50 overflow-hidden relative group/img-after shadow-2xs">
+                              {rp.device_image_after ? (
+                                <img 
+                                  src={rp.device_image_after.startsWith('http') ? rp.device_image_after : `${API_BASE_URL}${rp.device_image_after}`} 
+                                  alt="Sau khi sửa" 
+                                  className="w-full h-full object-cover group-hover/img-after:scale-105 transition-transform duration-300" 
+                                />
+                              ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center text-emerald-400">
+                                  <CheckCircle2 className="w-6 h-6 mb-1" />
+                                  <span className="text-[8px] font-black uppercase tracking-widest text-emerald-500">Ảnh Sau</span>
+                                </div>
+                              )}
+                              <label className="absolute inset-0 bg-emerald-900/60 opacity-0 group-hover/img-after:opacity-100 transition-opacity flex items-center justify-center cursor-pointer backdrop-blur-xs">
+                                <input 
+                                  type="file" 
+                                  className="hidden" 
+                                  accept="image/*" 
+                                  onChange={(e) => handleUploadImage(rp.id, e.target.files[0], 'after')} 
+                                />
+                                <div className="bg-white/20 p-2.5 rounded-full text-white"><Camera className="w-5 h-5" /></div>
+                              </label>
+                              <span className="absolute top-2 left-2 bg-emerald-600 text-[8px] font-black text-white px-2 py-0.5 rounded-md uppercase tracking-wider text-center">Sau</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 2. Main content column */}
+                        <div className="flex-1 space-y-4 w-full">
                           <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-mono text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">#{rp.receipt_code}</span>
-                              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${status.color}`}>
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <span className="font-mono text-xs font-black text-blue-700 bg-blue-50/80 border border-blue-100 px-2.5 py-0.5 rounded-lg shadow-2xs">#{rp.receipt_code}</span>
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-2xs ${status.color}`}>
+                                <span className="w-1.5 h-1.5 bg-current rounded-full animate-pulse"></span>
                                 {status.label}
                               </span>
+                              {isWarrantyOrder && (
+                                <span className="bg-rose-50 text-rose-700 border border-rose-100 px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                  Đơn Bảo Hành
+                                </span>
+                              )}
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{rp.device_name}</h3>
+                            <h3 className="text-xl font-extrabold text-gray-900 group-hover:text-blue-600 transition-colors leading-snug">{rp.device_name}</h3>
                           </div>
-                          
-                          <div className="flex items-center gap-2">
+
+                          {/* Metadata Grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-slate-50 transition-colors">
+                              <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-3xs shrink-0"><User className="w-4 h-4" /></div>
+                              <div className="min-w-0">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Khách hàng</p>
+                                <p className="text-xs font-bold text-slate-700 truncate">{rp.customer?.name}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-slate-50 transition-colors">
+                              <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-3xs shrink-0"><CalendarDays className="w-4 h-4" /></div>
+                              <div className="min-w-0">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ngày nhận máy</p>
+                                <p className="text-xs font-bold text-slate-700 truncate">{formatDate(rp.received_date)}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 p-3 bg-slate-50/50 rounded-2xl border border-slate-100/50 hover:bg-slate-50 transition-colors">
+                              <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-3xs shrink-0"><ShieldCheck className="w-4 h-4 text-emerald-500" /></div>
+                              <div className="min-w-0">
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Bảo hành dịch vụ</p>
+                                <p className="text-xs font-bold text-emerald-700 truncate">
+                                  {rp.warranty_period > 0 ? `${rp.warranty_period} tháng` : 'Không bảo hành'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {rp.issue && (
+                            <div className="text-xs text-slate-600 bg-blue-50/30 p-3 rounded-2xl border border-blue-50/50 flex gap-2">
+                              <Info className="w-4 h-4 text-blue-400 shrink-0" />
+                              <p className="italic leading-relaxed">"{rp.issue}"</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 3. Action and Pricing Column */}
+                        <div className="flex lg:flex-col justify-between items-end gap-4 w-full lg:w-auto self-stretch shrink-0 border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6">
+                          <div className="flex items-center gap-2 self-start lg:self-end">
                             <button 
                               onClick={() => setSelectedRepair(rp)}
-                              className="p-2.5 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-xl transition-all border border-gray-100"
-                              title="Xem chi tiết"
+                              className="p-2.5 bg-slate-50 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-xl transition-all border border-slate-100 hover:border-blue-100 shadow-2xs active:scale-95"
+                              title="Xem chi tiết đơn"
                             >
                               <Info className="w-4 h-4" />
                             </button>
                             {status.next && (
                               <button 
                                 onClick={() => handleNextStep(rp.id, rp.status)}
-                                className="flex items-center gap-2 bg-slate-900 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
+                                className="flex items-center gap-2 bg-slate-900 hover:bg-blue-600 hover:shadow-md hover:shadow-blue-200 text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all active:scale-95"
                               >
-                                Tiếp: {status.next} <ArrowRight className="w-3 h-3" />
+                                Tiếp: {status.next} <ArrowRight className="w-3.5 h-3.5" />
                               </button>
                             )}
                           </div>
-                        </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-gray-50 p-3 rounded-2xl flex items-center gap-3">
-                            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-gray-400 shadow-sm">
-                              <User className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-bold text-gray-400 uppercase">Khách hàng</p>
-                              <p className="text-xs font-bold text-gray-700 truncate">{rp.customer?.name}</p>
-                            </div>
-                          </div>
-                          <div className="bg-gray-50 p-3 rounded-2xl flex items-center gap-3">
-                            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center text-gray-400 shadow-sm">
-                              <CalendarDays className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-bold text-gray-400 uppercase">Ngày nhận</p>
-                              <p className="text-xs font-bold text-gray-700">{formatDate(rp.received_date)}</p>
-                            </div>
+                          <div className="text-right">
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Chi phí dự kiến</p>
+                            <p className="text-lg font-black text-blue-600 mt-0.5">
+                              {rp.estimated_cost ? `${rp.estimated_cost.toLocaleString()}đ` : 'Chưa báo giá'}
+                            </p>
                           </div>
                         </div>
-
-                        {rp.issue && (
-                          <div className="text-xs text-gray-500 bg-blue-50/30 p-3 rounded-xl border border-blue-50/50 flex gap-2">
-                            <Info className="w-4 h-4 text-blue-400 shrink-0" />
-                            <p className="italic">"{rp.issue}"</p>
-                          </div>
-                        )}
                       </div>
                     </div>
-                    </div>
-                  )
+                  );
                 })
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                {bookings.map((bk) => (
-                  <div key={bk.id} className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all group">
-                    <div className="flex justify-between items-start mb-4">
-                      <h4 className="font-bold text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-1">{bk.service}</h4>
-                      <span className="bg-emerald-50 text-emerald-600 text-[10px] font-black px-2 py-1 rounded-lg uppercase">{bk.status}</span>
+                  <div key={bk.id} className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-xs hover:shadow-md transition-all group hover:-translate-y-0.5 duration-300">
+                    <div className="flex justify-between items-start mb-4 gap-2">
+                      <h4 className="font-extrabold text-gray-900 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-snug">{bk.service}</h4>
+                      <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider shrink-0">{bk.status}</span>
                     </div>
                     
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-3 text-xs font-bold text-gray-600">
-                        <CalendarClock className="w-4 h-4 text-emerald-500" />
+                    <div className="space-y-3 mb-5">
+                      <div className="flex items-center gap-3 text-xs font-bold text-slate-600">
+                        <div className="w-7 h-7 bg-slate-50 rounded-lg flex items-center justify-center shrink-0"><CalendarClock className="w-4 h-4 text-emerald-500" /></div>
                         {formatDate(bk.booking_date)} • {bk.booking_time}
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <User className="w-4 h-4 text-gray-300" />
-                        {bk.name} ({bk.phone})
+                      <div className="flex items-center gap-3 text-xs text-slate-500">
+                        <div className="w-7 h-7 bg-slate-50 rounded-lg flex items-center justify-center shrink-0"><User className="w-4 h-4 text-slate-400" /></div>
+                        <span className="truncate">{bk.name} ({bk.phone})</span>
                       </div>
                     </div>
 
-                    <button className="w-full py-2.5 bg-gray-50 hover:bg-emerald-50 text-gray-500 hover:text-emerald-600 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2">
-                      Xem chi tiết <ChevronRight className="w-3 h-3" />
+                    <button className="w-full py-3 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 active:scale-95 border border-slate-100 hover:border-emerald-100">
+                      Xem chi tiết <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                ))}
@@ -541,18 +598,19 @@ const TechnicianDashboardPage = () => {
                 value={customerQuery}
                 onChange={(e) => setCustomerQuery(e.target.value)}
                 placeholder="Nhập SĐT khách hàng (ít nhất 6 số)..."
-                className="w-full bg-gray-50 border border-gray-200 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-gray-400 text-gray-900 font-medium"
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400 text-gray-900 font-bold"
               />
               {customerSearchLoading && <Loader2 className="w-4 h-4 text-blue-600 animate-spin absolute right-4 top-1/2 -translate-y-1/2" />}
             </div>
 
-            <div className="space-y-3 max-h-[300px] overflow-auto pr-1 custom-scrollbar">
+            <div className="space-y-3.5 max-h-[400px] overflow-auto pr-1 custom-scrollbar">
               {customerQuery.trim().length < 6 ? (
-                <div className="text-center py-6 text-gray-400">
+                <div className="text-center py-8 text-gray-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                   <p className="text-xs font-bold uppercase tracking-wider">Nhập ít nhất 6 số</p>
+                  <p className="text-[10px] text-gray-400 mt-1">Hệ thống sẽ tự động tra cứu</p>
                 </div>
               ) : customerSearchResults.length === 0 ? (
-                <div className="text-center py-6 text-gray-400">
+                <div className="text-center py-8 text-gray-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                   <p className="text-xs font-bold uppercase tracking-wider">Không tìm thấy kết quả</p>
                 </div>
               ) : (
@@ -586,31 +644,49 @@ const TechnicianDashboardPage = () => {
                   const st = statusMap[rp.status] || { label: rp.status, color: 'bg-gray-50 text-gray-600 border-gray-100' };
 
                   return (
-                    <div key={rp.id} className="bg-gray-50/50 hover:bg-blue-50/30 border border-gray-100 hover:border-blue-100/50 rounded-2xl p-3.5 flex items-center justify-between gap-3 transition-all group">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap mb-1">
-                          <span className="font-mono text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-100/50 px-1.5 py-0.5 rounded">#{rp.receipt_code}</span>
-                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border uppercase tracking-tight ${st.color}`}>
+                    <div key={rp.id} className="bg-slate-50 border border-slate-100 hover:border-blue-100 rounded-2xl p-4 transition-all group relative overflow-hidden">
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono text-[9px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">#{rp.receipt_code}</span>
+                          <span className={`text-[9px] font-black px-2 py-0.5 rounded border uppercase tracking-tight ${st.color}`}>
                             {st.label}
                           </span>
                         </div>
-                        <p className="text-xs font-bold text-gray-800 truncate" title={rp.device_name}>{rp.device_name}</p>
-                        <p className="text-[10px] font-medium text-gray-400 mt-0.5">Khách: <span className="text-gray-700 font-bold">{rp.customer?.name}</span></p>
-                        <div className="mt-1">
-                          <span className={`inline-flex items-center text-[9px] font-black px-1.5 py-0.5 rounded-full ${
+                        
+                        <div>
+                          <p className="text-xs font-black text-gray-800 truncate" title={rp.device_name}>{rp.device_name}</p>
+                          <p className="text-[10px] font-medium text-gray-400 mt-0.5">Khách: <span className="text-gray-700 font-bold">{rp.customer?.name}</span></p>
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-slate-200/50">
+                          <span className={`inline-flex items-center text-[9px] font-black px-2.5 py-1 rounded-full border shadow-3xs ${
                             isWarrantyActive 
-                              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
                               : rp.status === 'completed' || rp.status === 'returned'
-                                ? 'bg-red-50 text-red-600 border border-red-100'
+                                ? 'bg-red-50 text-red-600 border-red-100'
                                 : 'bg-gray-100 text-gray-500 border border-gray-200'
                           }`}>
+                            <ShieldCheck className="w-3 h-3 mr-1" />
                             {warrantyLabel}
                           </span>
+
+                          {/* Quick Warranty Order Button */}
+                          {isWarrantyActive && (
+                            <button
+                              onClick={() => handleCreateWarrantyOrder(rp)}
+                              className="ml-auto inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black px-2.5 py-1 rounded-xl shadow-xs transition-all active:scale-95"
+                              title="Tạo nhanh đơn tiếp nhận bảo hành cho thiết bị này"
+                            >
+                              Tiếp nhận BH
+                            </button>
+                          )}
                         </div>
                       </div>
+
+                      {/* Info floating button */}
                       <button 
                         onClick={() => setSelectedRepair(rp)}
-                        className="p-2 bg-white hover:bg-blue-600 text-gray-400 hover:text-white rounded-xl border border-gray-100 hover:border-blue-500 shadow-sm transition-all shrink-0 active:scale-95"
+                        className="absolute right-3 top-3 p-1.5 bg-white hover:bg-blue-600 text-gray-400 hover:text-white rounded-lg border border-gray-100 shadow-2xs transition-all shrink-0 active:scale-95"
                         title="Xem chi tiết đơn này"
                       >
                         <Info className="w-3.5 h-3.5" />
@@ -638,25 +714,25 @@ const TechnicianDashboardPage = () => {
                 value={invQuery}
                 onChange={(e) => setInvQuery(e.target.value)}
                 placeholder="Tìm màn hình, pin, cáp..."
-                className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-600"
+                className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-600 font-bold"
               />
               {invLoading && <Loader2 className="w-4 h-4 text-blue-500 animate-spin absolute right-4 top-1/2 -translate-y-1/2" />}
             </div>
 
-            <div className="space-y-3 max-h-[400px] overflow-auto pr-1 custom-scrollbar">
+            <div className="space-y-3.5 max-h-[400px] overflow-auto pr-1 custom-scrollbar">
               {inventory.length === 0 ? (
-                <div className="text-center py-8 opacity-40">
+                <div className="text-center py-8 opacity-40 bg-slate-800/20 rounded-2xl border border-dashed border-slate-700">
                   <p className="text-xs font-bold uppercase tracking-widest">Không có kết quả</p>
                 </div>
               ) : (
                 inventory.map((item) => (
-                  <div key={item.id} className="bg-slate-800/40 hover:bg-slate-800 border border-slate-700/50 rounded-2xl p-3 flex items-center gap-3 transition-all group overflow-hidden">
-                    <div className="w-12 h-12 bg-slate-700 rounded-xl overflow-hidden shrink-0 flex items-center justify-center">
+                  <div key={item.id} className="bg-slate-850 hover:bg-slate-800 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-3 flex items-center gap-3 transition-all group overflow-hidden shadow-2xs">
+                    <div className="w-12 h-12 bg-slate-700/60 rounded-xl overflow-hidden shrink-0 flex items-center justify-center border border-slate-700/40">
                       {item.image_url ? (
                         <img 
                           src={item.image_url.startsWith('http') ? item.image_url : `${API_BASE_URL}${item.image_url}`} 
                           alt="" 
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = '';
@@ -679,9 +755,8 @@ const TechnicianDashboardPage = () => {
                 ))
               )}
             </div>
-
             <div className="mt-8 p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20">
-              <p className="text-[10px] font-bold text-blue-400 uppercase mb-1">Mẹo nhỏ:</p>
+              <p className="text-[10px] font-black text-blue-400 uppercase mb-1">Mẹo nhỏ:</p>
               <p className="text-[11px] text-slate-400 leading-relaxed italic">
                 Sử dụng thanh tra cứu để báo giá nhanh cho khách hàng mà không cần rời trạm làm việc.
               </p>
