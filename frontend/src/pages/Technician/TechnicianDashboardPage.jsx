@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Loader2, CalendarClock, Wrench, User, CalendarDays, Phone, 
   CheckCircle2, Clock, MapPin, Search, TrendingUp, Package, 
-  Camera, ArrowRight, DollarSign, Star, Info, X, ChevronRight
+  Camera, ArrowRight, DollarSign, Star, Info, X, ChevronRight, ShieldCheck
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { formatDate, formatDateTime } from '../../utils/format.js';
@@ -780,6 +780,24 @@ const TechnicianDashboardPage = () => {
                     <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
                       <p className="text-lg font-black text-gray-900">{selectedRepair.device_name}</p>
                       <p className="text-sm text-gray-500 mt-1 italic">Mô tả: "{selectedRepair.issue}"</p>
+                      
+                      {/* Huy hiệu bảo hành dịch vụ của KTV */}
+                      <div className="mt-3.5 flex flex-wrap gap-2 pt-3 border-t border-gray-200/50">
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border ${
+                          selectedRepair.warranty_period > 0
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-100 shadow-xs'
+                            : 'text-gray-500 bg-gray-50 border-gray-200'
+                        }`}>
+                          <ShieldCheck className="w-4 h-4 shrink-0" />
+                          Bảo hành dịch vụ: {selectedRepair.warranty_period > 0 ? `${selectedRepair.warranty_period} tháng` : 'Không bảo hành'}
+                        </span>
+                        {selectedRepair.warranty_expiry && (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl shadow-xs">
+                            <Clock className="w-4 h-4 shrink-0" />
+                            Hết hạn: {new Date(selectedRepair.warranty_expiry).toLocaleDateString('vi-VN')}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
