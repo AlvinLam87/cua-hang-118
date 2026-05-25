@@ -321,6 +321,7 @@ router.get('/my-orders', async (req, res) => {
 // GET /api/v1/orders/:id/payment-status?phone= — khách poll trạng thái CK
 router.get('/:id/payment-status', async (req, res) => {
   try {
+    res.set('Cache-Control', 'no-store');
     const phone = String(req.query.phone || '').trim();
     if (!phone) {
       return res.status(400).json({ success: false, message: 'Thiếu số điện thoại xác minh.' });

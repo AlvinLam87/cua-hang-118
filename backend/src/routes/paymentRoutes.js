@@ -136,6 +136,15 @@ router.get('/webhook-sepay/ping', (req, res) => {
   });
 });
 
+router.get('/webhook-sepay', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Endpoint nhận webhook SePay (chỉ POST). Test: GET .../webhook-sepay/ping',
+    postUrl: '/api/v1/payments/webhook-sepay',
+    pingUrl: '/api/v1/payments/webhook-sepay/ping',
+  });
+});
+
 router.post('/webhook-sepay', async (req, res) => {
   try {
     const authCheck = verifySepayAuth(req);

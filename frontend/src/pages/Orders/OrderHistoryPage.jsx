@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Package, Loader2, Calendar, MapPin, ShoppingBag, Clock, QrCode, AlertCircle } from 'lucide-react';
 import ProfileSidebar from '../Profile/ProfileSidebar.jsx';
 import { API_V1_URL } from '../../utils/api.js';
+import { claimBankTransfer } from '../../utils/claimBankTransfer.js';
 import { createAppSocket } from '../../utils/socket.js';
 
 const statusColors = {
@@ -29,6 +30,7 @@ const OrderHistoryPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [claimingId, setClaimingId] = useState(null);
 
   const fetchOrders = useCallback(async () => {
     const token = localStorage.getItem('token');
@@ -95,6 +97,33 @@ const OrderHistoryPage = () => {
         guestPhone: order.guest_phone || user?.phone,
       },
     });
+  };
+
+  const handleClaimTransfer = async (order) => {
+    const phone = order.guest_phone || user?.phone;
+    if (!phone) return;
+    setClaimingId(order.id);
+    try {
+      const { ok, data } = await claimBankTransfer(order.id, phone);
+      if (ok && data.data?.payment_status === 'paid') {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === order.id
+              ? { ...o, payment_status: 'paid', status: data.data?.status || 'confirmed' }
+              : o
+          )
+        );
+      } else {
+        alert(
+          data.message ||
+            'Đã ghi nhận. Cửa hàng sẽ đối soát — hoặc bật BANK_TRANSFER_CLAIM_AUTO_PAID trên server.'
+        );
+      }
+    } catch {
+      alert('Lỗi kết nối. Thử lại sau.');
+    } finally {
+      setClaimingId(null);
+    }
   };
 
   const pendingCount = orders.filter(isPendingBankTransfer).length;
@@ -242,13 +271,26 @@ const OrderHistoryPage = () => {
                               {parseFloat(order.total_amount).toLocaleString('vi-VN')}đ
                             </span>
                             {isPending && (
-                              <button
-                                type="button"
-                                onClick={() => resumePayment(order)}
-                                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md transition-colors"
-                              >
-                                <QrCode className="w-4 h-4" /> Thanh toán / xem QR
-                              </button>
+                              <div className="flex flex-wrap gap-2 justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => resumePayment(order)}
+                                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md transition-colors"
+                                >
+                                  <QrCode className="w-4 h-4" /> Xem QR
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleClaimTransfer(order)}
+                                  disabled={claimingId === order.id}
+                                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md transition-colors"
+                                >
+                                  {claimingId === order.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : null}
+                                  Đã chuyển khoản
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>

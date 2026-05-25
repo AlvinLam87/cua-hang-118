@@ -4,6 +4,7 @@ import { CheckCircle2, Package, ArrowRight, Home, QrCode, Loader2, Clock, Histor
 import confetti from 'canvas-confetti';
 import { createAppSocket } from '../../utils/socket.js';
 import { useOrderPaymentPoll } from '../../hooks/useOrderPaymentPoll.js';
+import { claimBankTransfer } from '../../utils/claimBankTransfer.js';
 
 const formatPrice = (n) => (n != null ? Number(n).toLocaleString('vi-VN') : '0') + 'đ';
 
@@ -16,6 +17,8 @@ const OrderSuccessPage = () => {
   const guestPhone = location.state?.guestPhone;
   const [mounted, setMounted] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [claimLoading, setClaimLoading] = useState(false);
+  const [claimMessage, setClaimMessage] = useState('');
   const confettiFired = useRef(false);
 
   const isBankTransfer = paymentMethod === 'bank_transfer';
@@ -37,6 +40,30 @@ const OrderSuccessPage = () => {
     enabled: isBankTransfer && !!orderId && !!resolvedPhone && !paymentConfirmed,
     onPaid: () => setPaymentConfirmed(true),
   });
+
+  const handleClaimTransfer = async () => {
+    if (!orderId || !resolvedPhone || claimLoading) return;
+    setClaimLoading(true);
+    setClaimMessage('');
+    try {
+      const { ok, data } = await claimBankTransfer(orderId, resolvedPhone);
+      if (ok && data.data?.payment_status === 'paid') {
+        setPaymentConfirmed(true);
+        setClaimMessage(data.message || 'Đã ghi nhận thanh toán.');
+      } else if (ok) {
+        setClaimMessage(
+          data.message ||
+            'Đã ghi nhận. Nếu quá 5 phút vẫn chưa xác nhận, liên hệ cửa hàng hoặc thử lại sau.'
+        );
+      } else {
+        setClaimMessage(data.message || 'Không gửi được yêu cầu. Thử lại sau.');
+      }
+    } catch {
+      setClaimMessage('Lỗi kết nối. Kiểm tra mạng và thử lại.');
+    } finally {
+      setClaimLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!orderId) {
@@ -145,7 +172,24 @@ const OrderSuccessPage = () => {
                 Đang chờ ngân hàng xác nhận (thường 1–3 phút)...
               </p>
             </div>
-            <p className="text-xs text-center text-gray-500 mt-4">
+            <button
+              type="button"
+              onClick={handleClaimTransfer}
+              disabled={claimLoading}
+              className="w-full mt-4 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+            >
+              {claimLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" /> Đang gửi...
+                </>
+              ) : (
+                'Tôi đã chuyển khoản'
+              )}
+            </button>
+            {claimMessage && (
+              <p className="text-xs text-center text-emerald-800 mt-2 font-medium">{claimMessage}</p>
+            )}
+            <p className="text-xs text-center text-gray-500 mt-3">
               Chưa thanh toán? Đơn sẽ hiển thị <strong>Chờ thanh toán</strong> trong{' '}
               <Link to="/lich-su-don-hang" className="text-blue-600 font-bold hover:underline">
                 Lịch sử đơn hàng
