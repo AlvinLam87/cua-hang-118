@@ -188,7 +188,10 @@ router.patch('/repairs/:id/next-step', requireTechnician, async (req, res) => {
     }
 
     // Luồng trạng thái theo thứ tự
-    const FLOW = ['received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed'];
+    const isWarranty = repair.device_name.startsWith('[Bảo Hành]');
+    const FLOW = isWarranty
+      ? ['received', 'diagnosing', 'in_progress', 'testing', 'completed']
+      : ['received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed'];
     const currentIndex = FLOW.indexOf(repair.status);
 
     if (currentIndex === -1 || currentIndex >= FLOW.length - 1) {

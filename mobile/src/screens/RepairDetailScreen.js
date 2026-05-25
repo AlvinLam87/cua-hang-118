@@ -49,9 +49,7 @@ const RepairDetailScreen = ({ route, navigation }) => {
   const [saving, setSaving]       = useState(false);
   const [stepping, setStepping]   = useState(false);
   const [data, setData]           = useState(repair || null);
-  const [currentStep, setCurrentStep] = useState(
-    STATUS_TO_STEP[repair?.status] || 1
-  );
+  const [currentStep, setCurrentStep] = useState(1);
 
   // Edit state
   const [isEditing, setIsEditing]         = useState(false);
@@ -59,21 +57,34 @@ const RepairDetailScreen = ({ route, navigation }) => {
   const [editCost, setEditCost]           = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  const steps = [
-    { id: 1, title: 'Tiếp nhận thiết bị' },
-    { id: 2, title: 'Chẩn đoán lỗi' },
-    { id: 3, title: 'Báo giá cho khách' },
-    { id: 4, title: 'Đang sửa chữa',        subtitle: `Kỹ thuật viên: ${data?.technician_name || 'N/A'}` },
-    { id: 5, title: 'Kiểm tra & bàn giao' },
-    { id: 6, title: 'Hoàn thành',           subtitle: data?.completed_date ? `Ngày: ${data.completed_date}` : 'Chờ hoàn thành' },
-  ];
+  const isWarranty = data?.device_name?.startsWith('[Bảo Hành]');
+
+  const steps = isWarranty
+    ? [
+        { id: 1, title: 'Tiếp nhận bảo hành' },
+        { id: 2, title: 'Kiểm tra lỗi' },
+        { id: 3, title: 'Đang xử lý bảo hành', subtitle: `Kỹ thuật viên: ${data?.technician_name || 'N/A'}` },
+        { id: 4, title: 'Kiểm tra kỹ thuật' },
+        { id: 5, title: 'Bàn giao thiết bị',  subtitle: data?.completed_date ? `Ngày: ${parseDate(data.completed_date) ? parseDate(data.completed_date).toLocaleDateString('vi-VN') : data.completed_date}` : 'Chờ bàn giao' },
+      ]
+    : [
+        { id: 1, title: 'Tiếp nhận thiết bị' },
+        { id: 2, title: 'Chẩn đoán lỗi' },
+        { id: 3, title: 'Báo giá cho khách' },
+        { id: 4, title: 'Đang sửa chữa',        subtitle: `Kỹ thuật viên: ${data?.technician_name || 'N/A'}` },
+        { id: 5, title: 'Kiểm tra & bàn giao' },
+        { id: 6, title: 'Hoàn thành',           subtitle: data?.completed_date ? `Ngày: ${parseDate(data.completed_date) ? parseDate(data.completed_date).toLocaleDateString('vi-VN') : data.completed_date}` : 'Chờ hoàn thành' },
+      ];
 
   // Sync currentStep whenever data.status changes
   useEffect(() => {
     if (data?.status) {
-      setCurrentStep(STATUS_TO_STEP[data.status] || 1);
+      const statusToStepMap = isWarranty
+        ? { received: 1, diagnosing: 2, in_progress: 3, testing: 4, completed: 5 }
+        : { received: 1, diagnosing: 2, quoted: 3, in_progress: 4, testing: 5, completed: 6 };
+      setCurrentStep(statusToStepMap[data.status] || 1);
     }
-  }, [data?.status]);
+  }, [data?.status, isWarranty]);
 
   const handleCall = () => {
     if (data?.customer?.phone) {
@@ -84,20 +95,36 @@ const RepairDetailScreen = ({ route, navigation }) => {
   const handleNextStep = () => {
     if (!data) return;
     const currentStatus = data.status || 'received';
-    const currentIdx    = STATUS_FLOW.indexOf(currentStatus);
+    
+    const flow = isWarranty
+      ? ['received', 'diagnosing', 'in_progress', 'testing', 'completed']
+      : ['received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed'];
+      
+    const labels = isWarranty
+      ? {
+          received:    'Tiếp nhận bảo hành',
+          diagnosing:  'Kiểm tra lỗi',
+          in_progress: 'Đang xử lý bảo hành',
+          testing:     'Kiểm tra kỹ thuật',
+          completed:   'Bàn giao thiết bị',
+        }
+      : {
+          received:    'Tiếp nhận thiết bị',
+          diagnosing:  'Đang chẩn đoán',
+          quoted:      'Đã báo giá',
+          in_progress: 'Đang sửa chữa',
+          testing:     'Đang kiểm tra & bàn giao',
+          completed:   'Hoàn thành',
+        };
 
-    if (currentIdx >= STATUS_FLOW.length - 1) {
+    const currentIdx = flow.indexOf(currentStatus);
+
+    if (currentIdx === -1 || currentIdx >= flow.length - 1) {
       Alert.alert('Thông báo', 'Đơn này đã hoàn thành rồi!');
       return;
     }
 
-    // Hỗ trợ demo: Tự động gán ảnh mẫu nếu chưa chụp ở phía backend, không chặn cứng ở client
-    // if (currentStatus === 'received' && !data.device_image) {
-    //   Alert.alert('Chưa chụp ảnh thiết bị', 'Bạn bắt buộc phải chụp ảnh tình trạng thiết bị trước khi chuyển sang bước Đang chẩn đoán.');
-    //   return;
-    // }
-
-    const nextLabel = STATUS_LABELS[STATUS_FLOW[currentIdx + 1]];
+    const nextLabel = labels[flow[currentIdx + 1]];
 
     Alert.alert(
       'Xác nhận chuyển bước',

@@ -208,23 +208,26 @@ const TechnicianDashboardPage = () => {
 
   const handleNextStep = async (id, repairStatus) => {
     const rp = data.repairs.find(r => r.id === id);
-    const FLOW = ['received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed'];
+    const isWarranty = rp.device_name.startsWith('[Bảo Hành]');
+    const FLOW = isWarranty
+      ? ['received', 'diagnosing', 'in_progress', 'testing', 'completed']
+      : ['received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed'];
     const nextStatus = FLOW[FLOW.indexOf(repairStatus) + 1];
 
-    // If moving to quoted: require diagnosis and estimated_cost
-    if (nextStatus === 'quoted') {
+    // If moving to quoted OR in_progress in a warranty order from diagnosing: require diagnosis
+    if (nextStatus === 'quoted' || (isWarranty && nextStatus === 'in_progress' && repairStatus === 'diagnosing')) {
       setActionFormData({ 
         diagnosis: rp.diagnosis || '', 
-        estimated_cost: rp.estimated_cost || '' 
+        estimated_cost: 0 
       });
-      setActionModal({ show: true, repair: rp, type: 'quote' });
+      setActionModal({ show: true, repair: rp, type: isWarranty ? 'warranty_diagnosis' : 'quote' });
       return;
     }
 
     // If moving to completed: allow entering final_cost
     if (nextStatus === 'completed') {
       setActionFormData({
-        final_cost: rp.final_cost || rp.estimated_cost || ''
+        final_cost: rp.final_cost || rp.estimated_cost || 0
       });
       setActionModal({ show: true, repair: rp, type: 'complete' });
       return;
@@ -233,7 +236,8 @@ const TechnicianDashboardPage = () => {
     try {
       const res = await fetch(`${API_V1_URL}/technician/repairs/${id}/next-step`, { 
         method: 'PATCH', 
-        headers 
+        headers,
+        body: JSON.stringify({ final_cost: 0 })
       });
       const result = await res.json();
       if (result.success) {
@@ -821,17 +825,25 @@ const TechnicianDashboardPage = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Kết quả kiểm tra & Báo giá</h3>
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                      {selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'Kết quả kiểm tra bảo hành' : 'Kết quả kiểm tra & Báo giá'}
+                    </h3>
                     <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100/50 relative group">
                       <div className="flex justify-between items-start mb-2">
-                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Chẩn đoán từ KTV</p>
+                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">
+                          {selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'Nội dung xử lý bảo hành' : 'Chẩn đoán từ KTV'}
+                        </p>
                         <button 
                           onClick={() => {
                             setActionFormData({ 
                               diagnosis: selectedRepair.diagnosis || '', 
-                              estimated_cost: selectedRepair.estimated_cost || '' 
+                              estimated_cost: selectedRepair.estimated_cost || 0 
                             });
-                            setActionModal({ show: true, repair: selectedRepair, type: 'quote' });
+                            setActionModal({ 
+                              show: true, 
+                              repair: selectedRepair, 
+                              type: selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'warranty_diagnosis' : 'quote' 
+                            });
                           }}
                           className="text-[10px] font-bold text-blue-600 hover:underline"
                         >
@@ -841,12 +853,14 @@ const TechnicianDashboardPage = () => {
                       <p className="text-sm font-bold text-gray-900 leading-relaxed">
                         {selectedRepair.diagnosis || 'Chưa có chẩn đoán chi tiết.'}
                       </p>
-                      <div className="mt-4 pt-4 border-t border-blue-100/30 flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-500">Chi phí dự kiến:</span>
-                        <span className={`text-lg font-black ${selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'text-emerald-600' : 'text-blue-600'}`}>
-                          {selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'Miễn phí (Bảo hành)' : (selectedRepair.estimated_cost ? `${selectedRepair.estimated_cost.toLocaleString()}đ` : 'Chưa báo giá')}
-                        </span>
-                      </div>
+                      {!selectedRepair.device_name.startsWith('[Bảo Hành]') && (
+                        <div className="mt-4 pt-4 border-t border-blue-100/30 flex items-center justify-between">
+                          <span className="text-xs font-bold text-gray-500">Chi phí dự kiến:</span>
+                          <span className="text-lg font-black text-blue-600">
+                            {selectedRepair.estimated_cost ? `${selectedRepair.estimated_cost.toLocaleString()}đ` : 'Chưa báo giá'}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -899,11 +913,15 @@ const TechnicianDashboardPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-2xl">
-                      <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shadow-sm"><User className="w-5 h-5" /></div>
+                      <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shadow-sm">
+                        {selectedRepair.device_name.startsWith('[Bảo Hành]') ? <ShieldCheck className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                      </div>
                       <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase">Chi phí dự kiến</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase">
+                          {selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'Loại đơn hàng' : 'Chi phí dự kiến'}
+                        </p>
                         <p className={`text-sm font-bold ${selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'text-emerald-600' : 'text-gray-900'}`}>
-                          {selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'Miễn phí (Bảo hành)' : (selectedRepair.estimated_cost ? `${selectedRepair.estimated_cost.toLocaleString()}đ` : 'Chưa có')}
+                          {selectedRepair.device_name.startsWith('[Bảo Hành]') ? 'Đơn Nhận Bảo Hành' : (selectedRepair.estimated_cost ? `${selectedRepair.estimated_cost.toLocaleString()}đ` : 'Chưa có')}
                         </p>
                       </div>
                     </div>
@@ -915,15 +933,26 @@ const TechnicianDashboardPage = () => {
                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Tiến độ thực hiện</h3>
                   <div className="relative pl-6 border-l-2 border-dashed border-gray-100 space-y-8">
                     {/* Status Log / Timeline */}
-                    {[
-                      { s: 'received', label: 'Tiếp nhận máy', date: selectedRepair.received_date },
-                      { s: 'diagnosing', label: 'Chẩn đoán lỗi' },
-                      { s: 'quoted', label: 'Đã báo giá' },
-                      { s: 'in_progress', label: 'Đang sửa chữa' },
-                      { s: 'testing', label: 'Kiểm tra kỹ thuật' },
-                      { s: 'completed', label: 'Hoàn thành', date: selectedRepair.completed_date },
-                    ].map((step, idx) => {
-                      const FLOW = ['received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed'];
+                    {(selectedRepair.device_name.startsWith('[Bảo Hành]')
+                      ? [
+                          { s: 'received', label: 'Tiếp nhận bảo hành', date: selectedRepair.received_date },
+                          { s: 'diagnosing', label: 'Kiểm tra lỗi' },
+                          { s: 'in_progress', label: 'Đang xử lý bảo hành' },
+                          { s: 'testing', label: 'Kiểm tra kỹ thuật' },
+                          { s: 'completed', label: 'Bàn giao thiết bị', date: selectedRepair.completed_date },
+                        ]
+                      : [
+                          { s: 'received', label: 'Tiếp nhận máy', date: selectedRepair.received_date },
+                          { s: 'diagnosing', label: 'Chẩn đoán lỗi' },
+                          { s: 'quoted', label: 'Đã báo giá' },
+                          { s: 'in_progress', label: 'Đang sửa chữa' },
+                          { s: 'testing', label: 'Kiểm tra kỹ thuật' },
+                          { s: 'completed', label: 'Hoàn thành', date: selectedRepair.completed_date },
+                        ]
+                    ).map((step, idx) => {
+                      const FLOW = selectedRepair.device_name.startsWith('[Bảo Hành]')
+                        ? ['received', 'diagnosing', 'in_progress', 'testing', 'completed']
+                        : ['received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed'];
                       const currentIdx = FLOW.indexOf(selectedRepair.status);
                       const stepIdx = FLOW.indexOf(step.s);
                       const isPast = stepIdx < currentIdx;
@@ -963,43 +992,46 @@ const TechnicianDashboardPage = () => {
         </div>
       )}
 
-      {/* ACTION MODAL (Diagnosis/Quote/Complete) */}
       {actionModal.show && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-xl font-black text-gray-900">
-                {actionModal.type === 'quote' ? 'Cập Nhật Báo Giá' : 'Xác Nhận Hoàn Thành'}
+                {actionModal.type === 'quote' ? 'Cập Nhật Báo Giá' : actionModal.type === 'warranty_diagnosis' ? 'Chẩn Đoán Lỗi Bảo Hành' : 'Xác Nhận Hoàn Thành'}
               </h2>
               <button onClick={() => setActionModal({ show: false, repair: null, type: '' })} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
                 <X className="w-5 h-5 text-gray-400" />
               </button>
             </div>
             <div className="p-6 space-y-4">
-              {actionModal.type === 'quote' && (
+              {(actionModal.type === 'quote' || actionModal.type === 'warranty_diagnosis') && (
                 <>
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Chẩn đoán bệnh</label>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                      {actionModal.type === 'warranty_diagnosis' ? 'Nội dung kiểm tra / xử lý' : 'Chẩn đoán bệnh'}
+                    </label>
                     <textarea 
                       value={actionFormData.diagnosis}
                       onChange={(e) => setActionFormData({...actionFormData, diagnosis: e.target.value})}
-                      placeholder="Mô tả chi tiết lỗi đã chẩn đoán..."
+                      placeholder={actionModal.type === 'warranty_diagnosis' ? 'Mô tả chi tiết nội dung xử lý bảo hành...' : 'Mô tả chi tiết lỗi đã chẩn đoán...'}
                       className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all min-h-[100px]"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Chi phí dự kiến (VNĐ)</label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input 
-                        type="number"
-                        value={actionFormData.estimated_cost}
-                        onChange={(e) => setActionFormData({...actionFormData, estimated_cost: e.target.value})}
-                        placeholder="0"
-                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold"
-                      />
+                  {actionModal.type === 'quote' && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Chi phí dự kiến (VNĐ)</label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input 
+                          type="number"
+                          value={actionFormData.estimated_cost}
+                          onChange={(e) => setActionFormData({...actionFormData, estimated_cost: e.target.value})}
+                          placeholder="0"
+                          className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-bold"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </>
               )}
 
@@ -1022,7 +1054,7 @@ const TechnicianDashboardPage = () => {
 
               <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
                 <p className="text-[10px] text-blue-600 font-bold leading-relaxed">
-                  Lưu ý: Sau khi xác nhận, hệ thống sẽ cập nhật dữ liệu và {actionModal.type === 'quote' ? 'chuyển sang bước Đã báo giá.' : 'hoàn thành đơn hàng này.'}
+                  Lưu ý: Sau khi xác nhận, hệ thống sẽ cập nhật dữ liệu và {actionModal.type === 'quote' ? 'chuyển sang bước Đã báo giá.' : actionModal.type === 'warranty_diagnosis' ? 'chuyển sang bước Đang sửa chữa (Miễn phí).' : 'hoàn thành đơn hàng này.'}
                 </p>
               </div>
             </div>
