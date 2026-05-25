@@ -533,8 +533,28 @@ router.put('/product-orders/:id', requireAdmin, async (req, res) => {
 
     const prevPayment = order.payment_status;
     const newPayment = req.body.payment_status;
+    const prevStatus = order.status;
+    const newStatus = req.body.status;
 
     await order.update(req.body);
+
+    // ── Hoàn trả tồn kho khi hủy đơn hàng ────────────────────────────
+    if (newStatus === 'cancelled' && prevStatus !== 'cancelled') {
+      try {
+        const orderItems = await OrderItem.findAll({ where: { order_id: order.id } });
+        for (const item of orderItems) {
+          const product = await Product.findByPk(item.product_id);
+          if (product) {
+            product.stock_quantity = (product.stock_quantity || 0) + item.quantity;
+            product.in_stock = true; // Cập nhật trạng thái còn hàng
+            await product.save();
+            console.log(`🔄 [Inventory] Đã hoàn trả lại số lượng ${item.quantity} cho sản phẩm '${product.name}' (Mã đơn: #${order.id})`);
+          }
+        }
+      } catch (stockErr) {
+        console.error('⚠️ [Inventory] Lỗi tự động trả lại tồn kho:', stockErr.message);
+      }
+    }
 
     // ── Tích điểm khi đơn hàng được thanh toán ──────────────────────
     if (newPayment === 'paid' && prevPayment !== 'paid') {
