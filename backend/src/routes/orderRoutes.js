@@ -287,7 +287,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/v1/orders/my-orders
+// GET /api/v1/orders/my-orders (đặt trước /:id để tránh nuốt path)
 router.get('/my-orders', async (req, res) => {
   try {
     const jwt = require('jsonwebtoken');
@@ -298,22 +298,108 @@ router.get('/my-orders', async (req, res) => {
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, jwtSecret);
     console.log('--- Đang lấy đơn hàng cho User ID:', decoded.id, '---');
-    
+
     const orders = await Order.findAll({
       where: { customer_id: decoded.id },
-      include: [{ 
-        model: OrderItem, 
-        as: 'items', 
-        include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'image_url'] }] 
+      include: [{
+        model: OrderItem,
+        as: 'items',
+        include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'image_url'] }],
       }],
       order: [['created_at', 'DESC']],
     });
-    
+
     console.log('=> Tìm thấy:', orders.length, 'đơn hàng.');
     res.json({ success: true, data: orders });
   } catch (err) {
     console.error('❌ Lỗi API my-orders:', err.message);
     res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/v1/orders/:id/payment-status?phone= — khách poll trạng thái CK
+router.get('/:id/payment-status', async (req, res) => {
+  try {
+    const phone = String(req.query.phone || '').trim();
+    if (!phone) {
+      return res.status(400).json({ success: false, message: 'Thiếu số điện thoại xác minh.' });
+    }
+
+    const order = await Order.findByPk(req.params.id, {
+      attributes: ['id', 'guest_phone', 'payment_method', 'payment_status', 'status', 'total_amount'],
+    });
+
+    if (!order || order.guest_phone !== phone) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        order_id: order.id,
+        payment_status: order.payment_status,
+        status: order.status,
+        payment_method: order.payment_method,
+        total_amount: order.total_amount,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/v1/orders/:id/claim-bank-transfer — khách báo đã CK (dự phòng khi chưa có SePay)
+router.post('/:id/claim-bank-transfer', async (req, res) => {
+  try {
+    const phone = String(req.body.guest_phone || '').trim();
+    if (!phone) {
+      return res.status(400).json({ success: false, message: 'Thiếu số điện thoại.' });
+    }
+
+    const order = await Order.findByPk(req.params.id);
+    if (!order || order.guest_phone !== phone) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
+    }
+    if (order.payment_method !== 'bank_transfer') {
+      return res.status(400).json({ success: false, message: 'Đơn này không dùng chuyển khoản.' });
+    }
+
+    const { markOrderPaid } = require('./paymentRoutes');
+    const autoConfirm = process.env.BANK_TRANSFER_CLAIM_AUTO_PAID === 'true';
+
+    if (autoConfirm && order.payment_status !== 'paid') {
+      await markOrderPaid(order, order.id, { source: 'customer_claim' });
+    } else {
+      try {
+        const socketConfig = require('../config/socket');
+        const io = socketConfig.getIO();
+        if (io) {
+          io.emit('data_changed', {
+            type: 'order',
+            action: 'transfer_claimed',
+            id: order.id,
+            message: `Khách báo đã CK đơn #${order.id} — cần đối soát`,
+          });
+        }
+      } catch (socketErr) {
+        console.warn('⚠️ [Socket] claim transfer:', socketErr.message);
+      }
+    }
+
+    await order.reload();
+
+    return res.json({
+      success: true,
+      message: autoConfirm
+        ? 'Đã ghi nhận thanh toán.'
+        : 'Đã ghi nhận. Hệ thống sẽ xác nhận sau khi đối soát ngân hàng.',
+      data: {
+        payment_status: order.payment_status,
+        status: order.status,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
   }
 });
 

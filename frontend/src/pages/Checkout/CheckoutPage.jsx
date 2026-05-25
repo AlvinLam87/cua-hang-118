@@ -8,6 +8,7 @@ import {
 import ProductImage from '../../components/ProductImage.jsx';
 import { normalizeProductImages } from '../../utils/media.js';
 import { API_V1_URL } from '../../utils/api.js';
+import { useOrderPaymentPoll } from '../../hooks/useOrderPaymentPoll.js';
 
 const formatPrice = (price) => price.toLocaleString('vi-VN') + 'đ';
 
@@ -195,6 +196,14 @@ const CheckoutPage = () => {
 
   const [showQRCode, setShowQRCode] = useState(false);
   const [tempOrderData, setTempOrderData] = useState(null);
+  const [qrPaymentConfirmed, setQrPaymentConfirmed] = useState(false);
+
+  useOrderPaymentPoll({
+    orderId: tempOrderData?.orderId,
+    guestPhone: tempOrderData?.guestPhone || form.guest_phone,
+    enabled: showQRCode && !!tempOrderData?.orderId,
+    onPaid: () => setQrPaymentConfirmed(true),
+  });
 
   const handleCheckout = async (e) => {
     e.preventDefault();
@@ -238,9 +247,11 @@ const CheckoutPage = () => {
       if (data.success) {
         if (form.payment_method === 'bank_transfer') {
           // Nếu chuyển khoản, hiện QR trước
+          setQrPaymentConfirmed(false);
           setTempOrderData({
             orderId: data.data.order_id,
-            totalAmount: data.data.total_amount
+            totalAmount: data.data.total_amount,
+            guestPhone: form.guest_phone,
           });
           setShowQRCode(true);
         } else {
@@ -264,15 +275,27 @@ const CheckoutPage = () => {
     }
   };
 
-  const handleConfirmPaid = () => {
+  const handleConfirmPaid = async () => {
+    if (tempOrderData?.orderId && form.guest_phone) {
+      try {
+        await fetch(`${API_V1_URL}/orders/${tempOrderData.orderId}/claim-bank-transfer`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ guest_phone: form.guest_phone }),
+        });
+      } catch {
+        /* webhook/poll sẽ xử lý sau */
+      }
+    }
     clearCart();
     setShowQRCode(false);
-    navigate('/dat-hang-thanh-cong', { 
-      state: { 
+    navigate('/dat-hang-thanh-cong', {
+      state: {
         orderId: tempOrderData.orderId,
         paymentMethod: 'bank_transfer',
-        totalAmount: tempOrderData.totalAmount
-      } 
+        totalAmount: tempOrderData.totalAmount,
+        guestPhone: form.guest_phone,
+      },
     });
   };
 
@@ -704,6 +727,12 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
+              {qrPaymentConfirmed && (
+                <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold flex items-center justify-center gap-2">
+                  <CheckCircle2 className="w-5 h-5" /> Đã xác nhận thanh toán thành công!
+                </div>
+              )}
+
               <div className="space-y-3">
                 <button 
                   onClick={handleConfirmPaid}
@@ -713,7 +742,9 @@ const CheckoutPage = () => {
                   Tôi Đã Chuyển Khoản Xong
                 </button>
                 <p className="text-[10px] text-gray-400 italic">
-                  Hệ thống sẽ chuyển bạn đến trang xác nhận sau khi bạn bấm xác nhận.
+                  {qrPaymentConfirmed
+                    ? 'Bạn có thể bấm nút trên để sang trang xác nhận.'
+                    : 'Sau khi CK, hệ thống tự nhận trong 1–3 phút (cần cấu hình SePay).'}
                 </p>
               </div>
             </div>

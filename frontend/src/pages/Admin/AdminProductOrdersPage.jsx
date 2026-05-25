@@ -116,7 +116,12 @@ const AdminProductOrdersPage = () => {
       return;
     }
 
-    if (detail.action === 'update') {
+    if (detail.action === 'update' || detail.action === 'transfer_claimed') {
+      if (detail.action === 'transfer_claimed') {
+        refresh();
+        setFeedback({ type: 'success', message: detail.message || 'Khách báo đã chuyển khoản — vui lòng đối soát.' });
+        return;
+      }
       if (!patchOrderFromEvent(detail)) refresh();
       return;
     }

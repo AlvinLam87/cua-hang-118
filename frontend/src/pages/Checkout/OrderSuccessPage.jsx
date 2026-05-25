@@ -3,14 +3,23 @@ import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle2, Package, ArrowRight, Home, QrCode, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { createAppSocket } from '../../utils/socket.js';
+import { useOrderPaymentPoll } from '../../hooks/useOrderPaymentPoll.js';
 
 const OrderSuccessPage = () => {
   const location = useLocation();
   const orderId = location.state?.orderId;
   const paymentMethod = location.state?.paymentMethod;
   const totalAmount = location.state?.totalAmount;
+  const guestPhone = location.state?.guestPhone;
   const [mounted, setMounted] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+
+  useOrderPaymentPoll({
+    orderId,
+    guestPhone,
+    enabled: paymentMethod === 'bank_transfer' && !!orderId && !!guestPhone,
+    onPaid: () => setPaymentConfirmed(true),
+  });
 
   useEffect(() => {
     setMounted(true);
