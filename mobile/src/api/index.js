@@ -63,6 +63,7 @@ export const API_URL_BASE = getBaseUrl().replace('/api/v1', ''); // Used for ima
 
 export const technicianAPI = {
   getTasks:      ()             => api.get('/technician/tasks'),
+  updateBooking: (id, data)     => api.patch(`/technician/bookings/${id}`, data),
   updateRepair:  (id, data)     => api.put(`/technician/repairs/${id}`, data),
   nextStep:      (id)           => api.patch(`/technician/repairs/${id}/next-step`),
   uploadImage:   (id, formData) => api.post(`/technician/repairs/${id}/image`, formData, {

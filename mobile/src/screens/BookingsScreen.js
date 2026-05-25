@@ -4,12 +4,13 @@ import {
   ActivityIndicator, RefreshControl, Linking, SafeAreaView, Platform
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { User, Wrench, MapPin, Phone, Navigation, Clock, Calendar } from 'lucide-react-native';
+import { User, Wrench, MapPin, Phone, Navigation, Clock, Calendar, Camera, ChevronRight } from 'lucide-react-native';
 import { technicianAPI } from '../api';
 import { initSocket } from '../api/socket';
 import { getBookingStatusInfo, isActiveBookingStatus } from '../constants/statusMaps';
+import { isCameraJob } from '../utils/bookingTypes';
 
-const BookingsScreen = () => {
+const BookingsScreen = ({ navigation }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -92,16 +93,42 @@ const BookingsScreen = () => {
   const renderBookingCard = ({ item }) => {
     const statusInfo = getBookingStatusInfo(item.status);
     const isInactive = !isActiveBookingStatus(item.status);
+    const isCamera = item.job_kind === 'camera' || isCameraJob(item.service);
+    const accent = isCamera ? '#7C3AED' : '#2563EB';
+    const accentSoft = isCamera ? '#F5F3FF' : '#EFF6FF';
 
     return (
-      <View style={[styles.card, isInactive && styles.cardInactive]}>
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate('BookingDetail', { booking: { ...item, job_kind: isCamera ? 'camera' : 'repair' } })}
+        style={[
+          styles.card,
+          isInactive && styles.cardInactive,
+          isCamera && styles.cardCamera,
+        ]}
+      >
+        {isCamera && (
+          <View style={styles.cameraBanner}>
+            <Camera color="#7C3AED" size={14} />
+            <Text style={styles.cameraBannerText}>Khảo sát / lắp Camera — không phải sửa chữa</Text>
+          </View>
+        )}
+
         <View style={styles.cardHeader}>
           <View style={styles.dateTimeContainer}>
-            <View style={styles.timeBox}>
-              <Clock color="#2563EB" size={16} />
-              <Text style={styles.timeText}>{item.booking_time}</Text>
-            </View>
-            <Text style={styles.dateText}>{item.booking_date}</Text>
+            {item.booking_time ? (
+              <View style={[styles.timeBox, { backgroundColor: accentSoft }]}>
+                <Clock color={accent} size={16} />
+                <Text style={[styles.timeText, { color: accent }]}>{item.booking_time}</Text>
+              </View>
+            ) : (
+              <Text style={styles.noScheduleText}>
+                {isCamera ? 'Liên hệ đặt lịch khảo sát' : 'Chưa có giờ hẹn'}
+              </Text>
+            )}
+            {item.booking_date ? (
+              <Text style={styles.dateText}>{item.booking_date}</Text>
+            ) : null}
           </View>
           <View style={[styles.badge, { backgroundColor: statusInfo.bg, borderColor: statusInfo.borderColor }]}>
             <Text style={[styles.badgeText, { color: statusInfo.color }]}>
@@ -113,18 +140,23 @@ const BookingsScreen = () => {
         <View style={styles.divider} />
 
         <View style={styles.infoRow}>
-          <View style={styles.iconContainer}>
-            <User color="#4F46E5" size={18} />
+          <View style={[styles.iconContainer, isCamera && styles.iconContainerCamera]}>
+            <User color={isCamera ? '#7C3AED' : '#4F46E5'} size={18} />
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoTitle}>{item.name}</Text>
             <Text style={styles.infoSubtitle}>{item.phone}</Text>
           </View>
+          <ChevronRight color="#94A3B8" size={20} />
         </View>
 
         <View style={styles.infoRow}>
-          <View style={styles.iconContainer}>
-            <Wrench color="#EA580C" size={18} />
+          <View style={[styles.iconContainer, isCamera && styles.iconContainerCamera]}>
+            {isCamera ? (
+              <Camera color="#7C3AED" size={18} />
+            ) : (
+              <Wrench color="#EA580C" size={18} />
+            )}
           </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoText}>{item.service || 'N/A'}</Text>
@@ -147,16 +179,30 @@ const BookingsScreen = () => {
         )}
 
         <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.actionBtn} onPress={() => handleCall(item.phone)}>
+          <TouchableOpacity
+            style={[styles.actionBtn, isCamera && { backgroundColor: '#7C3AED' }]}
+            onPress={(e) => {
+              e?.stopPropagation?.();
+              handleCall(item.phone);
+            }}
+          >
             <Phone color="#FFFFFF" size={18} />
             <Text style={styles.actionBtnText}>Gọi khách</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBtn, styles.actionBtnSecondary]}>
-            <Navigation color="#334155" size={18} />
-            <Text style={[styles.actionBtnText, styles.actionBtnTextSecondary]}>Chỉ đường</Text>
-          </TouchableOpacity>
+          {item.address ? (
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.actionBtnSecondary]}
+              onPress={(e) => {
+                e?.stopPropagation?.();
+                Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`);
+              }}
+            >
+              <Navigation color="#334155" size={18} />
+              <Text style={[styles.actionBtnText, styles.actionBtnTextSecondary]}>Chỉ đường</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -174,7 +220,7 @@ const BookingsScreen = () => {
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Lịch Hẹn</Text>
-          <Text style={styles.headerSubtitle}>Quản lý các công việc đã lên lịch.</Text>
+          <Text style={styles.headerSubtitle}>Lịch sửa chữa và khảo sát Camera — giao diện khác nhau.</Text>
         </View>
         
         {/* Tabs inside header */}
@@ -350,6 +396,34 @@ const styles = StyleSheet.create({
   },
   cardInactive: {
     opacity: 0.72,
+  },
+  cardCamera: {
+    borderColor: '#DDD6FE',
+    backgroundColor: '#FEFCFF',
+  },
+  cameraBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#EDE9FE',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  cameraBannerText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#6D28D9',
+    flex: 1,
+  },
+  noScheduleText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  iconContainerCamera: {
+    backgroundColor: '#F5F3FF',
   },
   divider: {
     height: 1,

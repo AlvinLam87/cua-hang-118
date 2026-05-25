@@ -76,7 +76,66 @@ router.get('/tasks', requireTechnician, async (req, res) => {
       order: [['booking_date', 'ASC'], ['booking_time', 'ASC']],
     });
 
-    res.json({ success: true, data: { repairs, bookings } });
+    const { isCameraBookingService } = require('../utils/bookingKind');
+    const bookingsPayload = bookings.map((b) => {
+      const row = b.toJSON ? b.toJSON() : b;
+      row.job_kind = isCameraBookingService(row.service) ? 'camera' : 'repair';
+      return row;
+    });
+
+    res.json({ success: true, data: { repairs, bookings: bookingsPayload } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// PATCH /api/v1/technician/bookings/:id — Cập nhật lịch Camera / khảo sát (không qua RepairDetail)
+router.patch('/bookings/:id', requireTechnician, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const booking = await Booking.findByPk(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy lịch hẹn.' });
+    }
+
+    const canEdit =
+      booking.preferred_technician_id == null ||
+      Number(booking.preferred_technician_id) === Number(userId);
+    if (!canEdit) {
+      return res.status(403).json({ success: false, message: 'Bạn không được phân công lịch này.' });
+    }
+
+    const allowed = ['status', 'message'];
+    const updates = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ success: false, message: 'Không có dữ liệu cập nhật.' });
+    }
+
+    if (updates.status && !['confirmed', 'completed', 'cancelled'].includes(updates.status)) {
+      return res.status(400).json({ success: false, message: 'Trạng thái không hợp lệ.' });
+    }
+
+    await booking.update(updates);
+
+    try {
+      const socketConfig = require('../config/socket');
+      const io = socketConfig.getIO();
+      if (io) {
+        io.emit('data_changed', { type: 'booking', id: booking.id, status: booking.status });
+        io.emit('new_booking', { id: booking.id, status: booking.status });
+      }
+    } catch (socketErr) {
+      console.warn('⚠️ [Socket] booking update:', socketErr.message);
+    }
+
+    const { isCameraBookingService } = require('../utils/bookingKind');
+    const data = booking.toJSON();
+    data.job_kind = isCameraBookingService(data.service) ? 'camera' : 'repair';
+
+    res.json({ success: true, message: 'Đã cập nhật lịch hẹn.', data });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

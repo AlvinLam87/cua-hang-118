@@ -9,6 +9,7 @@ const { Op } = require('sequelize');
 const ExcelJS = require('exceljs');
 const socketConfig = require('../config/socket');
 const sharp = require('sharp');
+const { isCameraBookingService } = require('../utils/bookingKind');
 
 const avatarUploadDir = path.join(__dirname, '..', '..', 'public', 'uploads', 'avatars');
 const productUploadDir = path.join(__dirname, '..', '..', 'public', 'uploads', 'products');
@@ -652,8 +653,12 @@ router.put('/bookings/:id', requireAdmin, async (req, res) => {
       }
     }
 
-    // ── Khi xác nhận lịch hẹn → tự động tạo đơn sửa chữa ──────────────
-    if (req.body.status === 'confirmed' && prevStatus !== 'confirmed') {
+    // ── Khi xác nhận lịch hẹn → tạo đơn sửa chữa (không áp dụng job Camera / khảo sát) ──
+    if (
+      req.body.status === 'confirmed' &&
+      prevStatus !== 'confirmed' &&
+      !isCameraBookingService(booking.service)
+    ) {
       try {
         // 1. Tìm hoặc tạo khách hàng từ thông tin booking
         let customer = await Customer.findOne({ where: { phone: booking.phone } });
@@ -720,6 +725,12 @@ router.put('/bookings/:id', requireAdmin, async (req, res) => {
       } catch (innerErr) {
         console.error('⚠️ [Hệ thống] Lỗi khi chuyển đổi lịch hẹn:', innerErr.message);
       }
+    } else if (
+      req.body.status === 'confirmed' &&
+      prevStatus !== 'confirmed' &&
+      isCameraBookingService(booking.service)
+    ) {
+      console.log(`ℹ️ [Hệ thống] Lịch Camera #${booking.id} — chỉ phân KTV, không tạo đơn sửa chữa.`);
     }
 
     res.json({ success: true, data: booking });
