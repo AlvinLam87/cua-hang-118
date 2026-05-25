@@ -53,7 +53,7 @@ const OrderSuccessPage = () => {
       } else if (ok) {
         setClaimMessage(
           data.message ||
-            'Đã ghi nhận. Nếu quá 5 phút vẫn chưa xác nhận, liên hệ cửa hàng hoặc thử lại sau.'
+            'Đã ghi nhận. Cửa hàng sẽ đối soát — trang sẽ tự cập nhật khi SePay xác nhận tiền vào.'
         );
       } else {
         setClaimMessage(data.message || 'Không gửi được yêu cầu. Thử lại sau.');
@@ -183,7 +183,7 @@ const OrderSuccessPage = () => {
                   <Loader2 className="w-5 h-5 animate-spin" /> Đang gửi...
                 </>
               ) : (
-                'Tôi đã chuyển khoản'
+                'Báo đã chuyển khoản (chờ xác nhận)'
               )}
             </button>
             {claimMessage && (

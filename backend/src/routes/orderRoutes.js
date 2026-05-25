@@ -366,26 +366,20 @@ router.post('/:id/claim-bank-transfer', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Đơn này không dùng chuyển khoản.' });
     }
 
-    const { markOrderPaid } = require('./paymentRoutes');
-    const autoConfirm = process.env.BANK_TRANSFER_CLAIM_AUTO_PAID === 'true';
-
-    if (autoConfirm && order.payment_status !== 'paid') {
-      await markOrderPaid(order, order.id, { source: 'customer_claim' });
-    } else {
-      try {
-        const socketConfig = require('../config/socket');
-        const io = socketConfig.getIO();
-        if (io) {
-          io.emit('data_changed', {
-            type: 'order',
-            action: 'transfer_claimed',
-            id: order.id,
-            message: `Khách báo đã CK đơn #${order.id}`,
-          });
-        }
-      } catch (socketErr) {
-        console.warn('⚠️ [Socket] claim transfer:', socketErr.message);
+    // Không tự đổi paid khi khách bấm nút — chỉ SePay webhook hoặc admin mới xác nhận tiền thật.
+    try {
+      const socketConfig = require('../config/socket');
+      const io = socketConfig.getIO();
+      if (io) {
+        io.emit('data_changed', {
+          type: 'order',
+          action: 'transfer_claimed',
+          id: order.id,
+          message: `Khách báo đã CK đơn #${order.id} — cần đối soát`,
+        });
       }
+    } catch (socketErr) {
+      console.warn('⚠️ [Socket] claim transfer:', socketErr.message);
     }
 
     await order.reload();
@@ -393,8 +387,8 @@ router.post('/:id/claim-bank-transfer', async (req, res) => {
     return res.json({
       success: true,
       message: order.payment_status === 'paid'
-        ? 'Đã ghi nhận thanh toán.'
-        : 'Đã ghi nhận. Hệ thống sẽ tự xác nhận khi nhận được tiền từ ngân hàng.',
+        ? 'Đơn đã được xác nhận thanh toán trước đó.'
+        : 'Đã ghi nhận báo chuyển khoản. Cửa hàng sẽ đối soát — chưa xác nhận tự động.',
       data: {
         payment_status: order.payment_status,
         status: order.status,

@@ -116,7 +116,7 @@ const OrderHistoryPage = () => {
       } else {
         alert(
           data.message ||
-            'Đã ghi nhận. Cửa hàng sẽ đối soát — hoặc bật BANK_TRANSFER_CLAIM_AUTO_PAID trên server.'
+            'Đã ghi nhận báo chuyển khoản. Cửa hàng sẽ đối soát — chưa xác nhận thanh toán tự động.'
         );
       }
     } catch {
@@ -288,7 +288,7 @@ const OrderHistoryPage = () => {
                                   {claimingId === order.id ? (
                                     <Loader2 className="w-4 h-4 animate-spin" />
                                   ) : null}
-                                  Đã chuyển khoản
+                                  Báo đã CK
                                 </button>
                               </div>
                             )}
