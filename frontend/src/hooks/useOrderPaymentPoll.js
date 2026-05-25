@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { API_V1_URL } from '../utils/api.js';
 
-const POLL_MS = 5000;
+const POLL_MS = 3000;
 
 /**
  * Poll trạng thái thanh toán CK (bắt khi SePay webhook đã cập nhật DB).

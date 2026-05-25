@@ -366,10 +366,25 @@ router.post('/:id/claim-bank-transfer', async (req, res) => {
     }
 
     const { markOrderPaid } = require('./paymentRoutes');
-    const skipAuto = process.env.BANK_TRANSFER_CLAIM_AUTO_PAID === 'false';
+    const autoConfirm = process.env.BANK_TRANSFER_CLAIM_AUTO_PAID === 'true';
 
-    if (!skipAuto && order.payment_status !== 'paid') {
+    if (autoConfirm && order.payment_status !== 'paid') {
       await markOrderPaid(order, order.id, { source: 'customer_claim' });
+    } else {
+      try {
+        const socketConfig = require('../config/socket');
+        const io = socketConfig.getIO();
+        if (io) {
+          io.emit('data_changed', {
+            type: 'order',
+            action: 'transfer_claimed',
+            id: order.id,
+            message: `Khách báo đã CK đơn #${order.id}`,
+          });
+        }
+      } catch (socketErr) {
+        console.warn('⚠️ [Socket] claim transfer:', socketErr.message);
+      }
     }
 
     await order.reload();
@@ -378,7 +393,7 @@ router.post('/:id/claim-bank-transfer', async (req, res) => {
       success: true,
       message: order.payment_status === 'paid'
         ? 'Đã ghi nhận thanh toán.'
-        : 'Đã ghi nhận. Vui lòng đợi đối soát ngân hàng.',
+        : 'Đã ghi nhận. Hệ thống sẽ tự xác nhận khi nhận được tiền từ ngân hàng.',
       data: {
         payment_status: order.payment_status,
         status: order.status,
