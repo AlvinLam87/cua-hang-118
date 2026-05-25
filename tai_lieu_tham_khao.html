@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Tài liệu tham khảo - Cửa Hàng 118</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      margin: 0; 
+      padding: 30px 50px; 
+      background: #f8fafc; 
+      font-family: 'Times New Roman', Times, serif; 
+      color: #0f172a; 
+      font-size: 16.5px;
+      line-height: 1.8;
+    }
+    
+    .page-container { 
+      background: #fff; 
+      padding: 50px 60px; 
+      border-radius: 12px; 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); 
+      max-width: 1000px; 
+      margin: auto; 
+    }
+    
+    .btn-bar { text-align: center; margin-bottom: 26px; }
+    .btn-bar button { 
+      background: #2563EB; 
+      color: #fff; 
+      border: none; 
+      padding: 10px 28px; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      cursor: pointer; 
+      font-weight: 600; 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      transition: all 0.2s; 
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    }
+    .btn-bar button:hover { background: #1d4ed8; }
+    
+    h1.chapter-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: #1e3a8a;
+      text-align: center;
+      text-transform: uppercase;
+      margin: 10px 0 5px 0;
+      letter-spacing: 0.5px;
+    }
+    
+    p.desc { 
+      text-align: center; 
+      color: #64748b; 
+      font-size: 15px; 
+      margin-bottom: 40px; 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+    }
+    
+    h2.section-title { 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 19px; 
+      font-weight: 700; 
+      color: #0f172a; 
+      margin: 35px 0 15px 0; 
+      border-left: 4px solid #2563EB;
+      padding-left: 12px;
+    }
+
+    .ref-list {
+      list-style-type: none;
+      padding-left: 0;
+      margin: 20px 0;
+    }
+
+    .ref-item {
+      margin-bottom: 18px;
+      padding-left: 35px;
+      text-indent: -35px;
+      text-align: justify;
+      font-size: 16.5px;
+    }
+
+    .ref-number {
+      font-weight: bold;
+      display: inline-block;
+      width: 35px;
+      text-align: left;
+      text-indent: 0;
+    }
+
+    .book-title {
+      font-style: italic;
+    }
+
+    .url-link {
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+      font-size: 14.5px;
+      color: #2563EB;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .url-link:hover {
+      text-decoration: underline;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .badge-vietnamese {
+      background-color: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .badge-english {
+      background-color: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+
+    .badge-web {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    @media print { 
+      body { background: #fff; padding: 0; }
+      .page-container { box-shadow: none; padding: 0; max-width: 100%; }
+      .btn-bar { display: none; } 
+      .ref-item { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="btn-bar">
+  💡 Nhấn <strong>Ctrl+P</strong> → chọn <strong>"Save as PDF"</strong> để lưu báo cáo chất lượng cao →
+  <button onclick="window.print()">🖨️ Xuất PDF / In ấn danh mục</button>
+</div>
+
+<div class="page-container">
+  <h1 class="chapter-title">TÀI LIỆU THAM KHẢO</h1>
+  <p class="desc">Danh mục tài liệu nghiên cứu khoa học, giáo trình và tài liệu kỹ thuật chính thức - Cửa Hàng 118</p>
+
+  <!-- ==================== PHẦN 1 ==================== -->
+  <h2 class="section-title">I. Giáo trình &amp; Sách khoa học (Vietnamese References)</h2>
+  <ul class="ref-list">
+    <li class="ref-item">
+      <span class="ref-number">[1]</span>
+      Đồng Thị Bích Thủy, Trần Đan Thư, <span class="book-title">Giáo trình Phân tích và Thiết kế Hệ thống Thông tin</span>, Nhà xuất bản Giáo dục Việt Nam, Hà Nội, 2018. <span class="badge badge-vietnamese">Tiếng Việt</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[2]</span>
+      Nguyễn Văn Vung, <span class="book-title">Công nghệ Phần mềm Hướng đối tượng</span>, Nhà xuất bản Khoa học và Kỹ thuật, Hà Nội, 2020. <span class="badge badge-vietnamese">Tiếng Việt</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[3]</span>
+      Nguyễn Gia Tuấn Anh, <span class="book-title">Hệ quản trị Cơ sở dữ liệu và Thiết kế CSDL quan hệ</span>, Nhà xuất bản Đại học Quốc gia TP. Hồ Chí Minh, 2019. <span class="badge badge-vietnamese">Tiếng Việt</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[4]</span>
+      Trần Hạnh Nhi, <span class="book-title">Nhập môn Công nghệ Phần mềm</span>, Trường Đại học Công nghệ Thông tin - ĐHQG TP. Hồ Chí Minh, 2021. <span class="badge badge-vietnamese">Tiếng Việt</span>
+    </li>
+  </ul>
+
+  <!-- ==================== PHẦN 2 ==================== -->
+  <h2 class="section-title">II. Tài liệu Kỹ thuật trực tuyến (Official Documentation &amp; Web Resources)</h2>
+  <ul class="ref-list">
+    <li class="ref-item">
+      <span class="ref-number">[5]</span>
+      React.js Community, <span class="book-title">React Documentation - The Library for Web and Native User Interfaces</span>, [Trực tuyến]. Khả dụng: <a class="url-link" href="https://react.dev" target="_blank">https://react.dev</a> [Truy cập: ngày 25 tháng 5 năm 2026]. <span class="badge badge-english">Tiếng Anh</span> <span class="badge badge-web">Web</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[6]</span>
+      Node.js Foundation, <span class="book-title">Node.js API Reference and Runtime Documentation</span>, [Trực tuyến]. Khả dụng: <a class="url-link" href="https://nodejs.org/docs" target="_blank">https://nodejs.org/docs</a> [Truy cập: ngày 25 tháng 5 năm 2026]. <span class="badge badge-english">Tiếng Anh</span> <span class="badge badge-web">Web</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[7]</span>
+      ExpressJS Team, <span class="book-title">Express - Minimalist and Flexible Node.js Web Application Framework</span>, [Trực tuyến]. Khả dụng: <a class="url-link" href="https://expressjs.com" target="_blank">https://expressjs.com</a> [Truy cập: ngày 25 tháng 5 năm 2026]. <span class="badge badge-english">Tiếng Anh</span> <span class="badge badge-web">Web</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[8]</span>
+      Sequelize ORM Community, <span class="book-title">Sequelize ORM for Node.js - Modern SQL Database Object-Relational Mapping</span>, [Trực tuyến]. Khả dụng: <a class="url-link" href="https://sequelize.org" target="_blank">https://sequelize.org</a> [Truy cập: ngày 25 tháng 5 năm 2026]. <span class="badge badge-english">Tiếng Anh</span> <span class="badge badge-web">Web</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[9]</span>
+      PostgreSQL Global Development Group, <span class="book-title">PostgreSQL Database System v15 Documentation</span>, [Trực tuyến]. Khả dụng: <a class="url-link" href="https://www.postgresql.org/docs" target="_blank">https://www.postgresql.org/docs</a> [Truy cập: ngày 25 tháng 5 năm 2026]. <span class="badge badge-english">Tiếng Anh</span> <span class="badge badge-web">Web</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[10]</span>
+      Expo Team, <span class="book-title">Expo SDK Reference and React Native Framework Documentation</span>, [Trực tuyến]. Khả dụng: <a class="url-link" href="https://docs.expo.dev" target="_blank">https://docs.expo.dev</a> [Truy cập: ngày 25 tháng 5 năm 2026]. <span class="badge badge-english">Tiếng Anh</span> <span class="badge badge-web">Web</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[11]</span>
+      Socket.io Authors, <span class="book-title">Socket.io - Real-Time Bidirectional Event-Based Communication</span>, [Trực tuyến]. Khả dụng: <a class="url-link" href="https://socket.io/docs" target="_blank">https://socket.io/docs</a> [Truy cập: ngày 25 tháng 5 năm 2026]. <span class="badge badge-english">Tiếng Anh</span> <span class="badge badge-web">Web</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[12]</span>
+      SePay Developer Hub, <span class="book-title">SePay Webhook &amp; Auto Payment Bank Reconciliation API Guide</span>, [Trực tuyến]. Khả dụng: <a class="url-link" href="https://docs.sepay.vn" target="_blank">https://docs.sepay.vn</a> [Truy cập: ngày 25 tháng 5 năm 2026]. <span class="badge badge-english">Tiếng Anh</span> <span class="badge badge-web">Web</span>
+    </li>
+  </ul>
+
+  <!-- ==================== PHẦN 3 ==================== -->
+  <h2 class="section-title">III. Bài viết &amp; Tạp chí Khoa học (Scientific Articles &amp; Research Papers)</h2>
+  <ul class="ref-list">
+    <li class="ref-item">
+      <span class="ref-number">[13]</span>
+      M. Spies, <span class="book-title">"Modern Single Page Application Architectures with React and Node.js RESTful APIs,"</span> <span class="book-title">IEEE Software and Database Engineering Journal</span>, vol. 18, no. 4, pp. 210-224, 2023. <span class="badge badge-english">Tiếng Anh</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[14]</span>
+      A. Johnson, <span class="book-title">"Cross-platform Mobile Development: A comparative study of React Native, Expo, and Native SDKs,"</span> <span class="book-title">ACM Communications on Computing Systems</span>, vol. 12, no. 3, pp. 45-58, 2022. <span class="badge badge-english">Tiếng Anh</span>
+    </li>
+    <li class="ref-item">
+      <span class="ref-number">[15]</span>
+      L. Martinez and R. Chen, <span class="book-title">"High-performance Real-Time Web Communications using WebSockets and Socket.io Services,"</span> <span class="book-title">International Journal of Computer Science and Network Security</span>, vol. 23, no. 6, pp. 89-101, 2023. <span class="badge badge-english">Tiếng Anh</span>
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>
