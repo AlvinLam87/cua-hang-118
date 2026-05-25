@@ -52,7 +52,14 @@ const AdminProductOrdersPage = () => {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+
+    const handleGlobalUpdate = () => fetchData();
+
+    window.addEventListener('admin-data-update', handleGlobalUpdate);
+    return () => window.removeEventListener('admin-data-update', handleGlobalUpdate);
+  }, []);
 
   const handleUpdateStatus = async (orderId, field, value) => {
     try {
