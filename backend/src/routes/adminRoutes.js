@@ -353,19 +353,32 @@ router.put('/orders/:id', requireAdmin, async (req, res) => {
       const io = socketConfig.getIO();
       if (io) {
         io.emit('technician_update', { id: order.id, status: newStatus });
-        io.emit('data_changed', { type: 'repair_order', id: order.id });
+        io.emit('data_changed', { type: 'repair_order', id: order.id, status: newStatus });
       }
     } catch (sErr) {
       console.warn('⚠️ [Socket] Admin update error:', sErr.message);
     }
 
-    // ── Tự động hoàn thành lịch hẹn nếu có liên kết ─────────────────
-    if (['completed', 'returned'].includes(newStatus) && order.booking_id) {
+    // ── Đồng bộ lịch hẹn liên kết ───────────────────────────────────
+    if (order.booking_id) {
       try {
-        await Booking.update({ status: 'completed' }, { where: { id: order.booking_id } });
-        console.log(`✅ [Admin] Đã tự động hoàn thành Lịch hẹn #${order.booking_id}`);
+        if (['completed', 'returned'].includes(newStatus)) {
+          await Booking.update({ status: 'completed' }, { where: { id: order.booking_id } });
+          console.log(`✅ [Admin] Đã tự động hoàn thành Lịch hẹn #${order.booking_id}`);
+        } else if (newStatus === 'cancelled') {
+          await Booking.update(
+            { status: 'cancelled' },
+            { where: { id: order.booking_id, status: { [Op.in]: ['pending', 'confirmed'] } } }
+          );
+          console.log(`✅ [Admin] Đã đồng bộ hủy Lịch hẹn #${order.booking_id}`);
+        }
+        const io = socketConfig.getIO();
+        if (io) {
+          io.emit('new_booking', { id: order.booking_id, status: newStatus === 'cancelled' ? 'cancelled' : 'completed' });
+          io.emit('data_changed', { type: 'booking', id: order.booking_id });
+        }
       } catch (bookingErr) {
-        console.error('⚠️ [Admin] Lỗi hoàn thành lịch hẹn tự động:', bookingErr.message);
+        console.error('⚠️ [Admin] Lỗi đồng bộ lịch hẹn:', bookingErr.message);
       }
     }
 
@@ -580,6 +593,28 @@ router.put('/bookings/:id', requireAdmin, async (req, res) => {
     const prevStatus = booking.status;
     await booking.update(req.body);
 
+    // ── Khi hủy lịch hẹn → hủy đơn sửa chữa liên kết (nếu chưa hoàn tất) ──
+    if (req.body.status === 'cancelled' && prevStatus !== 'cancelled') {
+      try {
+        await RepairOrder.update(
+          { status: 'cancelled' },
+          {
+            where: {
+              booking_id: booking.id,
+              status: { [Op.notIn]: ['completed', 'returned'] },
+            },
+          }
+        );
+        const io = socketConfig.getIO();
+        if (io) {
+          io.emit('data_changed', { type: 'repair_order', action: 'cancel', booking_id: booking.id });
+          io.emit('technician_update', { booking_id: booking.id, status: 'cancelled' });
+        }
+      } catch (syncErr) {
+        console.error('⚠️ [Admin] Lỗi đồng bộ hủy đơn sửa chữa:', syncErr.message);
+      }
+    }
+
     // ── Khi xác nhận lịch hẹn → tự động tạo đơn sửa chữa ──────────────
     if (req.body.status === 'confirmed' && prevStatus !== 'confirmed') {
       try {
@@ -652,11 +687,12 @@ router.put('/bookings/:id', requireAdmin, async (req, res) => {
 
     res.json({ success: true, data: booking });
 
-    // Phát sự kiện để cập nhật Sidebar
+    // Phát sự kiện để cập nhật Sidebar & app KTV
     try {
       const io = socketConfig.getIO();
       if (io) {
         io.emit('new_booking', { id: booking.id, status: booking.status });
+        io.emit('data_changed', { type: 'booking', id: booking.id, status: booking.status });
       }
     } catch (sErr) {}
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }

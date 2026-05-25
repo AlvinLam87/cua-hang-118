@@ -3,8 +3,11 @@ import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   ActivityIndicator, RefreshControl, Linking, SafeAreaView, Platform
 } from 'react-native';
-import { User, Wrench, MapPin, Phone, Navigation, Clock, Calendar, RefreshCw } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { User, Wrench, MapPin, Phone, Navigation, Clock, Calendar } from 'lucide-react-native';
 import { technicianAPI } from '../api';
+import { initSocket } from '../api/socket';
+import { getBookingStatusInfo, isActiveBookingStatus } from '../constants/statusMaps';
 
 const BookingsScreen = () => {
   const [bookings, setBookings] = useState([]);
@@ -28,7 +31,26 @@ const BookingsScreen = () => {
 
   useEffect(() => {
     fetchData();
+    const socket = initSocket();
+    const onDataChanged = (payload) => {
+      if (!payload?.type || payload.type === 'booking' || payload.type === 'repair_order') {
+        fetchData();
+      }
+    };
+    const onBookingUpdate = () => fetchData();
+    socket.on('data_changed', onDataChanged);
+    socket.on('new_booking', onBookingUpdate);
+    return () => {
+      socket.off('data_changed', onDataChanged);
+      socket.off('new_booking', onBookingUpdate);
+    };
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -68,10 +90,11 @@ const BookingsScreen = () => {
   };
 
   const renderBookingCard = ({ item }) => {
-    const isConfirmed = item.status === 'confirmed';
+    const statusInfo = getBookingStatusInfo(item.status);
+    const isInactive = !isActiveBookingStatus(item.status);
 
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, isInactive && styles.cardInactive]}>
         <View style={styles.cardHeader}>
           <View style={styles.dateTimeContainer}>
             <View style={styles.timeBox}>
@@ -80,9 +103,9 @@ const BookingsScreen = () => {
             </View>
             <Text style={styles.dateText}>{item.booking_date}</Text>
           </View>
-          <View style={[styles.badge, isConfirmed ? styles.badgeConfirmed : styles.badgePending]}>
-            <Text style={[styles.badgeText, isConfirmed ? styles.badgeTextConfirmed : styles.badgeTextPending]}>
-              {isConfirmed ? 'Đã xác nhận' : 'Chờ xác nhận'}
+          <View style={[styles.badge, { backgroundColor: statusInfo.bg, borderColor: statusInfo.borderColor }]}>
+            <Text style={[styles.badgeText, { color: statusInfo.color }]}>
+              {statusInfo.label}
             </Text>
           </View>
         </View>
@@ -320,24 +343,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
   },
-  badgeConfirmed: {
-    backgroundColor: '#ECFDF5',
-    borderColor: '#A7F3D0',
-  },
-  badgePending: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#E2E8F0',
-  },
   badgeText: {
     fontFamily: 'Inter',
     fontSize: 12,
     fontWeight: '600',
   },
-  badgeTextConfirmed: {
-    color: '#059669',
-  },
-  badgeTextPending: {
-    color: '#475569',
+  cardInactive: {
+    opacity: 0.72,
   },
   divider: {
     height: 1,

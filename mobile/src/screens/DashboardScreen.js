@@ -5,19 +5,17 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Wrench, Calendar, CheckCircle, User, CalendarDays, LogOut, ChevronRight, Bell, Search } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { technicianAPI } from '../api';
-import { initSocket, disconnectSocket } from '../api/socket';
+import { initSocket } from '../api/socket';
 import ToastNotification from '../components/ToastNotification';
+import {
+  getRepairStatusInfo,
+  isTerminalRepairStatus,
+  isActiveBookingStatus,
+} from '../constants/statusMaps';
 
 const { width } = Dimensions.get('window');
-
-const STATUS_MAP = {
-  received: { label: 'Tiếp nhận', bg: '#EEF2FF', color: '#4F46E5', borderColor: '#C7D2FE' },
-  in_progress: { label: 'Đang xử lý', bg: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
-  waiting_parts: { label: 'Chờ linh kiện', bg: '#FFFBEB', color: '#D97706', borderColor: '#FDE68A' },
-  completed: { label: 'Hoàn thành', bg: '#ECFDF5', color: '#059669', borderColor: '#A7F3D0' },
-  cancelled: { label: 'Đã hủy', bg: '#FEF2F2', color: '#DC2626', borderColor: '#FECACA' },
-};
 
 const DashboardScreen = ({ navigation }) => {
   const [data, setData] = useState({ repairs: [], bookings: [] });
@@ -85,30 +83,36 @@ const DashboardScreen = ({ navigation }) => {
     const socket = initSocket();
 
     const handleNewOrder = (newOrderData) => {
-      console.log('📡 Nhận được thông báo đơn mới:', newOrderData);
-      
-      // Tự động làm mới danh sách
       fetchData(true);
-      
-      // Hiển thị Toast thông báo mới
       showToast(
         'assignment',
         'Đơn hàng mới',
         `Đơn ${newOrderData.receipt_code || 'mới'} vừa được hệ thống tự động tạo.`
       );
-      
-      // Tăng số đếm thông báo
       setUnreadCount(prev => prev + 1);
     };
 
+    const handleDataSync = () => fetchData(true);
+
     socket.on('new_repair_order', handleNewOrder);
+    socket.on('data_changed', handleDataSync);
+    socket.on('new_booking', handleDataSync);
+    socket.on('technician_update', handleDataSync);
 
     return () => {
       clearTimeout(t);
       socket.off('new_repair_order', handleNewOrder);
-      disconnectSocket();
+      socket.off('data_changed', handleDataSync);
+      socket.off('new_booking', handleDataSync);
+      socket.off('technician_update', handleDataSync);
     };
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData(false);
+    }, [])
+  );
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -121,18 +125,18 @@ const DashboardScreen = ({ navigation }) => {
     navigation.getParent()?.replace('Login') || navigation.replace('Login');
   };
 
-  const getStatusInfo = (status) => STATUS_MAP[status] || STATUS_MAP.received;
-
-  const activeRepairs = data.repairs.filter(r => r.status !== 'completed');
-  const completedRepairs = data.repairs.filter(r => r.status === 'completed');
+  const activeRepairs = data.repairs.filter((r) => !isTerminalRepairStatus(r.status));
+  const completedRepairs = data.repairs.filter((r) => ['completed', 'returned'].includes(r.status));
+  const activeBookings = (data.bookings || []).filter((b) => isActiveBookingStatus(b.status));
 
   const renderRepairCard = ({ item }) => {
-    const statusInfo = getStatusInfo(item.status);
+    const statusInfo = getRepairStatusInfo(item.status);
+    const isCancelled = item.status === 'cancelled';
     const isActive = item.status === 'in_progress';
 
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, isCancelled && styles.cardCancelled]}
         activeOpacity={0.8}
         onPress={() => navigation.navigate('RepairDetail', { repairId: item.id, repair: item })}
       >
@@ -235,7 +239,7 @@ const DashboardScreen = ({ navigation }) => {
         <View style={styles.verticalDivider} />
 
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{data.bookings.length}</Text>
+          <Text style={styles.statNumber}>{activeBookings.length}</Text>
           <Text style={styles.statLabel}>Lịch hẹn</Text>
         </View>
         
@@ -497,6 +501,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 8,
     elevation: 2,
+  },
+  cardCancelled: {
+    opacity: 0.65,
+    borderColor: '#FECACA',
+    backgroundColor: '#FFFBFB',
   },
   cardHeader: {
     flexDirection: 'row',

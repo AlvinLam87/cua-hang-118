@@ -59,18 +59,21 @@ router.get('/tasks', requireTechnician, async (req, res) => {
     });
 
     const { Op } = require('sequelize');
-    // Fetch Bookings: lấy tất cả booking pending/confirmed (hoặc được phân công cho kỹ thuật viên này)
+    // Lịch hẹn: KTV được phân công thấy mọi trạng thái (kể cả đã hủy); lịch chung chỉ pending/confirmed
     const bookings = await Booking.findAll({
       where: {
         [Op.or]: [
-          { preferred_technician_id: userId },
+          {
+            preferred_technician_id: userId,
+            status: { [Op.in]: ['pending', 'confirmed', 'completed', 'cancelled'] },
+          },
           {
             preferred_technician_id: null,
-            status: { [Op.in]: ['pending', 'confirmed'] }
-          }
-        ]
+            status: { [Op.in]: ['pending', 'confirmed'] },
+          },
+        ],
       },
-      order: [['booking_date', 'ASC'], ['booking_time', 'ASC']]
+      order: [['booking_date', 'ASC'], ['booking_time', 'ASC']],
     });
 
     res.json({ success: true, data: { repairs, bookings } });

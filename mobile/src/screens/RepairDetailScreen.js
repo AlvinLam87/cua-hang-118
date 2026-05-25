@@ -26,6 +26,8 @@ const STATUS_LABELS = {
   in_progress: 'Đang sửa chữa',
   testing:     'Đang kiểm tra & bàn giao',
   completed:   'Hoàn thành',
+  returned:    'Đã bàn giao',
+  cancelled:   'Đã hủy',
 };
 
 const RepairDetailScreen = ({ route, navigation }) => {
