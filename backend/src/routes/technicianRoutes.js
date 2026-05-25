@@ -452,11 +452,13 @@ router.post('/repairs/warranty', requireTechnician, async (req, res) => {
       });
     }
 
-    // Lấy thông tin user hiện tại làm KTV phụ trách
+    // KTV phụ trách: admin gửi cho KTV đơn gốc; KTV tự nhận đơn thì gán theo tài khoản đăng nhập
     const userId = req.user.id;
     const { User, RepairStep } = require('../models');
     const user = await User.findByPk(userId);
-    const currentTechName = user ? user.full_name : parentOrder.technician_name;
+    const currentTechName = req.user.role === 'admin'
+      ? (req.body.technician_name || parentOrder.technician_name || 'Cửa hàng 118')
+      : (user ? user.full_name : parentOrder.technician_name);
 
     // Tạo mã nhận đơn mới bằng cách lấy ID lớn nhất
     const maxOrder = await RepairOrder.findOne({ order: [['id', 'DESC']] });
