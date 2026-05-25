@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Loader2, Pencil, X, Save, Activity, UserRound, Stethoscope, Wallet, Search,
   Info, Camera, CheckCircle2, Clock, CalendarDays, Phone, DollarSign, TrendingUp, ChevronRight, ShieldCheck
@@ -34,6 +34,67 @@ const AdminOrdersPage = () => {
   const [feedback, setFeedback] = useState({ type: '', message: '' });
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+  // Customer warranty lookup states
+  const [customerQuery, setCustomerQuery] = useState('');
+  const [customerSearchLoading, setCustomerSearchLoading] = useState(false);
+  const [customerSearchResults, setCustomerSearchResults] = useState([]);
+
+  const searchCustomerRepairs = useCallback(async (q) => {
+    if (!q || q.trim().length < 6) {
+      setCustomerSearchResults([]);
+      return;
+    }
+    setCustomerSearchLoading(true);
+    try {
+      const res = await fetch(`${API_V1_URL}/technician/search?phone=${encodeURIComponent(q.trim())}`, { 
+        headers: { 'Authorization': `Bearer ${token}` } 
+      });
+      const result = await res.json();
+      if (result.success) {
+        setCustomerSearchResults(result.data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCustomerSearchLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      searchCustomerRepairs(customerQuery);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [customerQuery, searchCustomerRepairs]);
+
+  const handleCreateWarrantyOrder = async (parentOrder) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn tạo đơn tiếp nhận bảo hành mới liên kết với đơn gốc #${parentOrder.receipt_code}?`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`${API_V1_URL}/technician/repairs/warranty`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`, 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ parent_id: parentOrder.id })
+      });
+      const result = await res.json();
+      if (result.success) {
+        showMessage('success', result.message);
+        setCustomerQuery(''); // Reset search
+        setCustomerSearchResults([]);
+        fetchData(); // Reload orders list
+      } else {
+        showMessage('error', result.message);
+      }
+    } catch (err) {
+      console.error(err);
+      showMessage('error', 'Đã xảy ra lỗi khi tạo đơn bảo hành.');
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -301,159 +362,190 @@ const AdminOrdersPage = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 p-4 sm:p-5 mb-5 shadow-sm">
-        <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Tìm theo mã biên nhận, khách hàng, thiết bị..."
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]">
-            <option value="all">Tất cả trạng thái</option>
-            {statusOptions.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
-        </div>
-        <p className="mt-2 text-xs text-gray-500">
-          Kết quả lọc: <span className="font-bold text-gray-700">{filteredOrders.length}</span> đơn
-        </p>
-      </div>
-
-      {editing && (
-        <div className="fixed inset-0 bg-slate-900/55 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setEditing(null)}>
-          <div className="bg-white rounded-3xl p-0 w-full max-w-3xl shadow-[0_30px_80px_-30px_rgba(15,23,42,0.45)] border border-blue-50 overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <div className="w-full p-5 border-b border-gray-100 bg-linear-to-r from-blue-50/60 via-white to-indigo-50/60">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-xl font-black text-gray-900 tracking-tight">Cập Nhật Đơn #{editing}</h2>
-                    <p className="text-xs text-gray-500 mt-1">Điều chỉnh tiến độ xử lý, kỹ thuật viên phụ trách và chi phí đơn sửa chữa.</p>
-                  </div>
-                  <button onClick={() => setEditing(null)} className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl p-2 transition-colors"><X className="w-5 h-5" /></button>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* LEFT COLUMN: Main list (8 cols on large screen) */}
+        <div className="lg:col-span-8 space-y-5">
+          <div className="bg-white rounded-3xl border border-gray-100 p-4 sm:p-5 shadow-sm">
+            <div className="flex flex-col lg:flex-row gap-3 lg:items-center">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Tìm theo mã biên nhận, khách hàng, thiết bị..."
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]">
+                <option value="all">Tất cả trạng thái</option>
+                {statusOptions.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
             </div>
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3.5 p-5">
-              <div><label className="block text-sm font-semibold text-gray-700 mb-1">Trạng thái</label>
-                <div className="relative">
-                <Activity className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <select value={form.status} onChange={e => setForm({...form, status: e.target.value})} className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
-                  {statusOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                </select></div></div>
-               <div><label className="block text-sm font-semibold text-gray-700 mb-1">KTV phụ trách</label>
-                 <div className="relative">
-                 <UserRound className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                 <select 
-                   value={form.technician_name} 
-                   onChange={e => setForm({...form, technician_name: e.target.value})} 
-                   className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
-                 >
-                   <option value="">-- Chọn kỹ thuật viên --</option>
-                   {technicians.map(t => (
-                     <option key={t.id} value={t.full_name}>{t.full_name}</option>
-                   ))}
-                 </select></div></div>
-              <div className="md:col-span-2"><label className="block text-sm font-semibold text-gray-700 mb-1">Chẩn đoán</label>
-                <div className="relative">
-                <Stethoscope className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
-                <textarea value={form.diagnosis} onChange={e => setForm({...form, diagnosis: e.target.value})} rows="2" className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none" /></div></div>
-              <div><label className="block text-sm font-semibold text-gray-700 mb-1">Chi phí dự kiến</label>
-                  <div className="relative">
-                  <Wallet className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input type="number" value={form.estimated_cost} onChange={e => setForm({...form, estimated_cost: e.target.value})} className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" /></div></div>
-              <div><label className="block text-sm font-semibold text-gray-700 mb-1">Chi phí thực tế</label>
-                  <div className="relative">
-                  <Wallet className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input type="number" value={form.final_cost} onChange={e => setForm({...form, final_cost: e.target.value})} className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" /></div></div>
-              
-              {['completed', 'returned'].includes(form.status) && (
-                <>
-                  <div className="md:col-span-2 border-t border-dashed border-gray-200 pt-3.5 mt-2">
-                    <span className="text-xs font-black text-blue-600 uppercase tracking-widest">Thông tin Bảo hành điện tử</span>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Thời hạn bảo hành</label>
-                    <select
-                      value={form.warranty_period}
-                      onChange={e => setForm({...form, warranty_period: Number(e.target.value)})}
-                      className="w-full px-3.5 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-                    >
-                      <option value={0}>Không bảo hành</option>
-                      <option value={1}>1 tháng</option>
-                      <option value={3}>3 tháng</option>
-                      <option value={6}>6 tháng</option>
-                      <option value={12}>12 tháng</option>
-                      <option value={24}>24 tháng</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Điều khoản bảo hành</label>
-                    <textarea
-                      value={form.warranty_terms}
-                      onChange={e => setForm({...form, warranty_terms: e.target.value})}
-                      rows="2"
-                      className="w-full px-3.5 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none text-xs"
-                      placeholder="Nhập điều khoản bảo hành..."
-                    />
-                  </div>
-                </>
-              )}
+            <p className="mt-2 text-xs text-gray-500">
+              Kết quả lọc: <span className="font-bold text-gray-700">{filteredOrders.length}</span> đơn
+            </p>
+          </div>
 
-              <button type="submit" className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 md:col-span-2 shadow-lg shadow-blue-600/20 mt-2"><Save className="w-4 h-4" /> Cập Nhật</button>
-            </form>
+          <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+            <div className="overflow-auto max-h-[68vh]">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 z-10"><tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Mã biên nhận</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Khách hàng</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Thiết bị</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Lỗi</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-600">Chi phí</th>
+                  <th className="text-center px-4 py-3 font-semibold text-gray-600">Trạng thái</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600">KTV</th>
+                  <th className="text-center px-4 py-3 font-semibold text-gray-600">Thao tác</th>
+                </tr></thead>
+                <tbody>
+                  {pagedOrders.map((o) => {
+                    const st = getStatusStyle(o.status);
+                    return (
+                      <tr key={o.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                        <td className="px-4 py-3 font-mono font-bold text-blue-700">{o.receipt_code}</td>
+                        <td className="px-4 py-3"><div className="font-semibold text-gray-800">{o.customer?.name || '—'}</div><div className="text-xs text-gray-400">{o.customer?.phone}</div></td>
+                        <td className="px-4 py-3 text-gray-700">{o.device_name}</td>
+                        <td className="px-4 py-3 text-gray-500 max-w-[200px] truncate">{o.issue}</td>
+                        <td className="px-4 py-3 text-right font-bold">
+                          {o.device_name?.startsWith('[Bảo Hành]') ? (
+                            <span className="text-emerald-600 font-bold">Miễn phí (Bảo hành)</span>
+                          ) : o.final_cost ? (
+                            <span className="text-emerald-600" title="Chi phí thực tế">{o.final_cost.toLocaleString()}đ</span>
+                          ) : o.estimated_cost ? (
+                            <span className="text-blue-600" title="Chi phí dự kiến">{o.estimated_cost.toLocaleString()}đ</span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${st.color || ''}`}>{st.label || o.status}</span></td>
+                        <td className="px-4 py-3 text-gray-600">{o.technician_name || '—'}</td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button onClick={() => setSelectedDetail(o)} className="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-500 flex items-center justify-center" title="Xem chi tiết"><Info className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => openEdit(o)} className="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center" title="Chỉnh sửa"><Pencil className="w-3.5 h-3.5" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <AdminPagination page={page} totalPages={totalPages} onChange={setPage} />
           </div>
         </div>
-      )}
 
-      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
-        <div className="overflow-auto max-h-[68vh]">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10"><tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Mã biên nhận</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Khách hàng</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Thiết bị</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Lỗi</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-600">Chi phí</th>
-              <th className="text-center px-4 py-3 font-semibold text-gray-600">Trạng thái</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">KTV</th>
-              <th className="text-center px-4 py-3 font-semibold text-gray-600">Thao tác</th>
-            </tr></thead>
-            <tbody>
-              {pagedOrders.map((o) => {
-                const st = getStatusStyle(o.status);
-                return (
-                  <tr key={o.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                    <td className="px-4 py-3 font-mono font-bold text-blue-700">{o.receipt_code}</td>
-                    <td className="px-4 py-3"><div className="font-semibold text-gray-800">{o.customer?.name || '—'}</div><div className="text-xs text-gray-400">{o.customer?.phone}</div></td>
-                    <td className="px-4 py-3 text-gray-700">{o.device_name}</td>
-                    <td className="px-4 py-3 text-gray-500 max-w-[200px] truncate">{o.issue}</td>
-                    <td className="px-4 py-3 text-right font-bold">
-                      {o.final_cost ? (
-                        <span className="text-emerald-600" title="Chi phí thực tế">{o.final_cost.toLocaleString()}đ</span>
-                      ) : o.estimated_cost ? (
-                        <span className="text-blue-600" title="Chi phí dự kiến">{o.estimated_cost.toLocaleString()}đ</span>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center"><span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${st.color || ''}`}>{st.label || o.status}</span></td>
-                    <td className="px-4 py-3 text-gray-600">{o.technician_name || '—'}</td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => setSelectedDetail(o)} className="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-500 flex items-center justify-center" title="Xem chi tiết"><Info className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => openEdit(o)} className="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center" title="Chỉnh sửa"><Pencil className="w-3.5 h-3.5" /></button>
+        {/* RIGHT COLUMN: Sidebar (4 cols on large screen) */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* TRA CỨU KHÁCH HÀNG & BẢO HÀNH */}
+          <div className="bg-white rounded-3xl p-6 text-gray-900 shadow-sm border border-gray-100 text-center">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="p-2.5 bg-blue-50 text-blue-600 rounded-2xl">
+                <Search className="w-5 h-5" />
+              </div>
+              <h2 className="text-xl font-black tracking-tight text-gray-900">Tra Cứu Bảo Hành</h2>
+            </div>
+
+            <div className="relative mb-6">
+              <Phone className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <input 
+                type="text" 
+                value={customerQuery}
+                onChange={(e) => setCustomerQuery(e.target.value)}
+                placeholder="Nhập SĐT khách hàng (ít nhất 6 số)..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder:text-gray-400 text-gray-900 font-bold"
+              />
+              {customerSearchLoading && <Loader2 className="w-4 h-4 text-blue-600 animate-spin absolute right-4 top-1/2 -translate-y-1/2" />}
+            </div>
+
+            <div className="space-y-3.5 max-h-[400px] overflow-auto pr-1 custom-scrollbar">
+              {customerQuery.trim().length < 6 ? (
+                <div className="text-center py-8 text-gray-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-xs font-bold uppercase tracking-wider">Nhập ít nhất 6 số</p>
+                  <p className="text-[10px] text-gray-400 mt-1">Hệ thống sẽ tự động tra cứu</p>
+                </div>
+              ) : customerSearchResults.length === 0 ? (
+                <div className="text-center py-8 text-gray-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-xs font-bold uppercase tracking-wider">Không tìm thấy kết quả</p>
+                </div>
+              ) : (
+                customerSearchResults.map((rp) => {
+                  // Determine warranty status
+                  let warrantyLabel = 'Không bảo hành';
+                  let isWarrantyActive = false;
+                  if (rp.warranty_expiry) {
+                    const expiry = new Date(rp.warranty_expiry);
+                    const now = new Date();
+                    isWarrantyActive = expiry > now;
+                    warrantyLabel = isWarrantyActive 
+                      ? `Còn BH: ${new Date(rp.warranty_expiry).toLocaleDateString('vi-VN')}`
+                      : `Hết BH: ${new Date(rp.warranty_expiry).toLocaleDateString('vi-VN')}`;
+                  } else if (rp.status === 'completed' && rp.warranty_period > 0) {
+                    warrantyLabel = `${rp.warranty_period} tháng`;
+                  } else if (rp.status !== 'completed' && rp.status !== 'returned') {
+                    warrantyLabel = 'Chờ hoàn thành';
+                  }
+
+                  const statusMap = {
+                    received: { label: 'Đã nhận máy', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+                    diagnosing: { label: 'Đang chẩn đoán', color: 'bg-orange-50 text-orange-600 border-orange-100' },
+                    quoted: { label: 'Đã báo giá', color: 'bg-purple-50 text-purple-600 border-purple-100' },
+                    in_progress: { label: 'Đang sửa chữa', color: 'bg-yellow-50 text-yellow-600 border-yellow-100' },
+                    testing: { label: 'Đang kiểm tra', color: 'bg-cyan-50 text-cyan-600 border-cyan-100' },
+                    completed: { label: 'Đã xong', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+                    returned: { label: 'Đã bàn giao', color: 'bg-green-50 text-green-600 border-green-100' },
+                    cancelled: { label: 'Đã hủy', color: 'bg-red-50 text-red-600 border-red-100' },
+                  };
+                  const st = statusMap[rp.status] || { label: rp.status, color: 'bg-gray-50 text-gray-600 border-gray-100' };
+
+                  return (
+                    <div key={rp.id} className="bg-slate-50 border border-slate-100 hover:border-blue-100 rounded-2xl p-4 transition-all group relative overflow-hidden text-left">
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono text-[9px] font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded">#{rp.receipt_code}</span>
+                          <span className={`text-[9px] font-black px-2 py-0.5 rounded border uppercase tracking-tight ${st.color}`}>
+                            {st.label}
+                          </span>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs font-black text-gray-800 truncate" title={rp.device_name}>{rp.device_name}</p>
+                          <p className="text-[10px] font-medium text-gray-400 mt-0.5">Khách: <span className="text-gray-700 font-bold">{rp.customer?.name}</span></p>
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-slate-200/50">
+                          <span className={`inline-flex items-center text-[9px] font-black px-2.5 py-1 rounded-full border shadow-3xs ${
+                            isWarrantyActive 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
+                              : rp.status === 'completed' || rp.status === 'returned'
+                                ? 'bg-red-50 text-red-600 border-red-100'
+                                : 'bg-gray-100 text-gray-500 border border-gray-200'
+                          }`}>
+                            <ShieldCheck className="w-3 h-3 mr-1" />
+                            {warrantyLabel}
+                          </span>
+
+                          {/* Quick Warranty Order Button */}
+                          {isWarrantyActive && (
+                            <button
+                              onClick={() => handleCreateWarrantyOrder(rp)}
+                              className="ml-auto inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black px-2.5 py-1 rounded-xl shadow-xs transition-all active:scale-95"
+                              title="Tạo nhanh đơn tiếp nhận bảo hành cho thiết bị này"
+                            >
+                              Tiếp nhận BH
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </div>
-        <AdminPagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
 
       {/* REPAIR DETAIL MODAL (Shared Style) */}
@@ -523,13 +615,23 @@ const AdminOrdersPage = () => {
                         <p className="text-sm font-bold text-gray-900">{selectedDetail.customer?.phone}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-2xl">
-                      <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shadow-sm"><DollarSign className="w-5 h-5" /></div>
-                      <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase">Báo giá dự kiến</p>
-                        <p className="text-sm font-bold text-gray-900">{selectedDetail.estimated_cost?.toLocaleString()}đ</p>
+                    {selectedDetail.device_name?.startsWith('[Bảo Hành]') ? (
+                      <div className="flex items-center gap-3 p-3 bg-emerald-50/30 border border-emerald-100/50 rounded-2xl">
+                        <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center shadow-sm shrink-0"><ShieldCheck className="w-5 h-5" /></div>
+                        <div>
+                          <p className="text-[10px] font-bold text-emerald-700 uppercase">Loại đơn hàng</p>
+                          <p className="text-sm font-bold text-emerald-600">Đơn Nhận Bảo Hành (Miễn phí)</p>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex items-center gap-3 p-3 bg-white border border-gray-100 rounded-2xl">
+                        <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shadow-sm"><DollarSign className="w-5 h-5" /></div>
+                        <div>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">Báo giá dự kiến</p>
+                          <p className="text-sm font-bold text-gray-900">{selectedDetail.estimated_cost?.toLocaleString()}đ</p>
+                        </div>
+                      </div>
+                    )}
 
                     {['completed', 'returned'].includes(selectedDetail.status) && (
                       <div className="flex items-start gap-3 p-3 bg-blue-50/50 border border-blue-100/50 rounded-2xl">
@@ -537,7 +639,9 @@ const AdminOrdersPage = () => {
                         <div className="flex-1 min-w-0">
                           <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Bảo hành điện tử</p>
                           <p className="text-sm font-bold text-gray-900 mt-1">
-                            Thời hạn: {selectedDetail.warranty_period ? `${selectedDetail.warranty_period} tháng` : 'Không bảo hành'}
+                            {selectedDetail.device_name?.startsWith('[Bảo Hành]')
+                              ? 'Thời hạn: Tiếp nhận bảo hành (Miễn phí)'
+                              : `Thời hạn: ${selectedDetail.warranty_period ? `${selectedDetail.warranty_period} tháng` : 'Không bảo hành'}`}
                           </p>
                           {selectedDetail.warranty_expiry && (
                             <p className="text-[10px] text-gray-500 mt-0.5">
@@ -557,16 +661,27 @@ const AdminOrdersPage = () => {
 
                 <div>
                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Tiến độ thực hiện</h3>
-                  <div className="relative pl-6 border-l-2 border-dashed border-gray-100 space-y-8">
-                    {[
-                      { s: 'received', label: 'Tiếp nhận máy', date: selectedDetail.received_date },
-                      { s: 'diagnosing', label: 'Chẩn đoán lỗi' },
-                      { s: 'quoted', label: 'Đã báo giá' },
-                      { s: 'in_progress', label: 'Đang sửa chữa' },
-                      { s: 'testing', label: 'Kiểm tra kỹ thuật' },
-                      { s: 'completed', label: 'Hoàn thành', date: selectedDetail.completed_date },
-                    ].map((step, idx) => {
-                      const FLOW = ['received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed'];
+                  <div className="relative pl-6 border-l-2 border-dashed border-gray-100 space-y-8 text-left">
+                    {(selectedDetail.device_name?.startsWith('[Bảo Hành]')
+                      ? [
+                          { s: 'received', label: 'Tiếp nhận bảo hành', date: selectedDetail.received_date },
+                          { s: 'diagnosing', label: 'Kiểm tra lỗi' },
+                          { s: 'in_progress', label: 'Đang xử lý bảo hành' },
+                          { s: 'testing', label: 'Kiểm tra kỹ thuật' },
+                          { s: 'completed', label: 'Bàn giao thiết bị', date: selectedDetail.completed_date },
+                        ]
+                      : [
+                          { s: 'received', label: 'Tiếp nhận máy', date: selectedDetail.received_date },
+                          { s: 'diagnosing', label: 'Chẩn đoán lỗi' },
+                          { s: 'quoted', label: 'Đã báo giá' },
+                          { s: 'in_progress', label: 'Đang sửa chữa' },
+                          { s: 'testing', label: 'Kiểm tra kỹ thuật' },
+                          { s: 'completed', label: 'Hoàn thành', date: selectedDetail.completed_date },
+                        ]
+                    ).map((step, idx) => {
+                      const FLOW = selectedDetail.device_name?.startsWith('[Bảo Hành]')
+                        ? ['received', 'diagnosing', 'in_progress', 'testing', 'completed']
+                        : ['received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed'];
                       const currentIdx = FLOW.indexOf(selectedDetail.status);
                       const stepIdx = FLOW.indexOf(step.s);
                       const isPast = stepIdx < currentIdx;
