@@ -54,7 +54,13 @@ const AdminOrdersPage = () => {
   const [warrantySearchResults, setWarrantySearchResults] = useState([]);
 
   const phoneDigits = useMemo(() => query.replace(/\D/g, ''), [query]);
-  const isWarrantyPhoneSearch = phoneDigits.length >= 6;
+  // Chỉ tra cứu BH khi nhập SĐT (chuỗi chủ yếu là số), tránh nhầm với mã RCV-118xxx
+  const isWarrantyPhoneSearch = useMemo(() => {
+    const trimmed = query.trim();
+    if (!trimmed || phoneDigits.length < 6) return false;
+    const nonSpace = trimmed.replace(/\s/g, '');
+    return /^[\d\s\-+().]+$/.test(nonSpace);
+  }, [query, phoneDigits]);
 
   const searchWarrantyByPhone = useCallback(async (phone) => {
     if (!phone || phone.length < 6) {
@@ -354,6 +360,26 @@ const AdminOrdersPage = () => {
     return filteredOrders;
   }, [isWarrantyPhoneSearch, warrantySearchResults, filteredOrders, statusFilter]);
 
+  const computeCanReceiveWarranty = (o) => {
+    if (o.can_receive_warranty === true) return true;
+    if (o.device_name?.startsWith('[Bảo Hành]')) return false;
+    if (!['completed', 'returned'].includes(o.status)) return false;
+
+    const expiryRaw = o.warranty_expiry_effective || o.warranty_expiry;
+    if (expiryRaw) {
+      const exp = parseSafeDate(expiryRaw);
+      return Boolean(exp && exp > new Date());
+    }
+
+    const period = Number(o.warranty_period) || 0;
+    if (period <= 0 || !o.completed_date) return false;
+    const base = parseSafeDate(o.completed_date);
+    if (!base) return false;
+    const exp = new Date(base);
+    exp.setMonth(exp.getMonth() + period);
+    return exp > new Date();
+  };
+
   const getWarrantyLabel = (rp) => {
     const effectiveExpiry = rp.warranty_expiry_effective || rp.warranty_expiry;
     if (effectiveExpiry) {
@@ -465,7 +491,7 @@ const AdminOrdersPage = () => {
                   </tr>
                 ) : pagedOrders.map((o) => {
                   const st = getStatusStyle(o.status);
-                  const canReceiveWarranty = o.can_receive_warranty === true;
+                  const canReceiveWarranty = computeCanReceiveWarranty(o);
                   const warrantyLabel = getWarrantyLabel(o);
                   return (
                     <tr key={o.id} className="border-b border-gray-50 hover:bg-gray-50/50">
@@ -502,8 +528,8 @@ const AdminOrdersPage = () => {
                       <td className="px-4 py-3 text-gray-600">{o.technician_name || '—'}</td>
                       <td className="px-4 py-3 text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => setSelectedDetail(o)} className="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-500 flex items-center justify-center" title="Xem chi tiết"><Info className="w-3.5 h-3.5" /></button>
-                          <button onClick={() => openEdit(o)} className="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center" title="Chỉnh sửa"><Pencil className="w-3.5 h-3.5" /></button>
+                          <button type="button" onClick={() => setSelectedDetail(o)} className="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-500 flex items-center justify-center" title="Xem chi tiết"><Info className="w-3.5 h-3.5" /></button>
+                          <button type="button" onClick={() => openEdit(o)} className="w-8 h-8 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center" title="Chỉnh sửa"><Pencil className="w-3.5 h-3.5" /></button>
                           {canReceiveWarranty && (
                             <button
                               type="button"
@@ -525,6 +551,112 @@ const AdminOrdersPage = () => {
           <AdminPagination page={page} totalPages={totalPages} onChange={setPage} />
         </div>
       </div>
+
+      {/* EDIT MODAL */}
+      {editing && (
+        <div className="fixed inset-0 bg-slate-900/55 z-[70] flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setEditing(null)}>
+          <div className="bg-white rounded-3xl p-0 w-full max-w-3xl shadow-[0_30px_80px_-30px_rgba(15,23,42,0.45)] border border-blue-50 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full p-5 border-b border-gray-100 bg-linear-to-r from-blue-50/60 via-white to-indigo-50/60">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-black text-gray-900 tracking-tight">
+                    Cập Nhật Đơn #{[...orders, ...warrantySearchResults].find((x) => x.id === editing)?.receipt_code || editing}
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-1">Điều chỉnh tiến độ, KTV phụ trách và chi phí đơn sửa chữa.</p>
+                </div>
+                <button type="button" onClick={() => setEditing(null)} className="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl p-2 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3.5 p-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Trạng thái</label>
+                <div className="relative">
+                  <Activity className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                    {statusOptions.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">KTV phụ trách</label>
+                <div className="relative">
+                  <UserRound className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <select
+                    value={form.technician_name}
+                    onChange={(e) => setForm({ ...form, technician_name: e.target.value })}
+                    className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
+                  >
+                    <option value="">-- Chọn kỹ thuật viên --</option>
+                    {technicians.map((t) => (
+                      <option key={t.id} value={t.full_name}>{t.full_name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Chẩn đoán</label>
+                <div className="relative">
+                  <Stethoscope className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" />
+                  <textarea value={form.diagnosis} onChange={(e) => setForm({ ...form, diagnosis: e.target.value })} rows="2" className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Chi phí dự kiến</label>
+                <div className="relative">
+                  <Wallet className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input type="number" value={form.estimated_cost} onChange={(e) => setForm({ ...form, estimated_cost: e.target.value })} className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Chi phí thực tế</label>
+                <div className="relative">
+                  <Wallet className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input type="number" value={form.final_cost} onChange={(e) => setForm({ ...form, final_cost: e.target.value })} className="w-full pl-10 pr-3 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" />
+                </div>
+              </div>
+
+              {['completed', 'returned'].includes(form.status) && (
+                <>
+                  <div className="md:col-span-2 border-t border-dashed border-gray-200 pt-3.5 mt-2">
+                    <span className="text-xs font-black text-blue-600 uppercase tracking-widest">Thông tin Bảo hành điện tử</span>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Thời hạn bảo hành</label>
+                    <select
+                      value={form.warranty_period}
+                      onChange={(e) => setForm({ ...form, warranty_period: Number(e.target.value) })}
+                      className="w-full px-3.5 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      <option value={0}>Không bảo hành</option>
+                      <option value={1}>1 tháng</option>
+                      <option value={3}>3 tháng</option>
+                      <option value={6}>6 tháng</option>
+                      <option value={12}>12 tháng</option>
+                      <option value={24}>24 tháng</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Điều khoản bảo hành</label>
+                    <textarea
+                      value={form.warranty_terms}
+                      onChange={(e) => setForm({ ...form, warranty_terms: e.target.value })}
+                      rows="2"
+                      className="w-full px-3.5 py-2.5 border border-gray-200 bg-gray-50/80 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none text-xs"
+                      placeholder="Nhập điều khoản bảo hành..."
+                    />
+                  </div>
+                </>
+              )}
+
+              <button type="submit" className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 md:col-span-2 shadow-lg shadow-blue-600/20 mt-2">
+                <Save className="w-4 h-4" /> Cập Nhật
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* REPAIR DETAIL MODAL (Shared Style) */}
       {selectedDetail && (
@@ -683,16 +815,27 @@ const AdminOrdersPage = () => {
                 </div>
               </div>
             </div>
-            <div className="p-6 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
+            <div className="p-6 bg-gray-50 flex flex-wrap justify-end gap-3 border-t border-gray-100">
+              {computeCanReceiveWarranty(selectedDetail) && (
+                <button
+                  type="button"
+                  onClick={() => handleCreateWarrantyOrder(selectedDetail)}
+                  className="px-6 py-3 bg-emerald-600 text-white rounded-2xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-sm flex items-center gap-2"
+                >
+                  <Send className="w-4 h-4" />
+                  Gửi đơn bảo hành cho KTV
+                </button>
+              )}
               {['completed', 'returned'].includes(selectedDetail.status) && (
                 <button
+                  type="button"
                   onClick={() => handlePrint(selectedDetail)}
                   className="px-6 py-3 bg-blue-600 text-white rounded-2xl text-sm font-bold hover:bg-blue-700 transition-all shadow-sm flex items-center gap-2"
                 >
                   In Phiếu Bảo Hành
                 </button>
               )}
-              <button onClick={() => setSelectedDetail(null)} className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-2xl text-sm font-bold hover:bg-gray-50 transition-all shadow-sm">Đóng</button>
+              <button type="button" onClick={() => setSelectedDetail(null)} className="px-8 py-3 bg-white border border-gray-200 text-gray-700 rounded-2xl text-sm font-bold hover:bg-gray-50 transition-all shadow-sm">Đóng</button>
             </div>
           </div>
         </div>
