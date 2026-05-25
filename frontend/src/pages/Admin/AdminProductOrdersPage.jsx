@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Loader2, Search, Eye, Filter, CheckCircle2, Clock, Truck, XCircle, User, MapPin, Package } from 'lucide-react';
 import AdminToast from '../../components/admin/AdminToast.jsx';
 import AdminPagination from '../../components/admin/AdminPagination.jsx';
@@ -6,6 +6,7 @@ import ProductImage from '../../components/ProductImage.jsx';
 import { normalizeProductImages } from '../../utils/media.js';
 import { formatDate, formatCurrency } from '../../utils/format.js';
 import { API_V1_URL } from '../../utils/api.js';
+import { useAdminOrderRealtime } from '../../hooks/useAdminOrderRealtime.js';
 
 const statusMap = {
   pending: { label: 'Chờ xác nhận', color: 'bg-amber-100 text-amber-700', icon: Clock },
@@ -34,6 +35,8 @@ const AdminProductOrdersPage = () => {
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
+  const fetchDataRef = useRef(null);
+
   const fetchData = async ({ silent = false } = {}) => {
     try {
       if (!silent) setLoading(true);
@@ -51,74 +54,81 @@ const AdminProductOrdersPage = () => {
       if (!silent) setLoading(false);
     }
   };
+  fetchDataRef.current = fetchData;
 
-  const patchOrderFromEvent = (detail) => {
+  const ordersRef = useRef(orders);
+  ordersRef.current = orders;
+
+  const patchOrderFromEvent = useCallback((detail) => {
     if (!detail?.id) return false;
     const orderId = Number(detail.id);
-    let found = false;
+    const idx = ordersRef.current.findIndex((o) => o.id === orderId);
+    if (idx === -1) return false;
+
     setOrders((prev) => {
-      const idx = prev.findIndex((o) => o.id === orderId);
-      if (idx === -1) return prev;
-      found = true;
+      const i = prev.findIndex((o) => o.id === orderId);
+      if (i === -1) return prev;
       const next = [...prev];
-      next[idx] = {
-        ...next[idx],
+      next[i] = {
+        ...next[i],
         ...(detail.status != null ? { status: detail.status } : {}),
         ...(detail.payment_status != null ? { payment_status: detail.payment_status } : {}),
       };
       return next;
     });
-    if (found) {
-      setSelectedOrder((prev) => {
-        if (!prev || prev.id !== orderId) return prev;
-        return {
-          ...prev,
-          ...(detail.status != null ? { status: detail.status } : {}),
-          ...(detail.payment_status != null ? { payment_status: detail.payment_status } : {}),
-        };
-      });
+
+    setSelectedOrder((prev) => {
+      if (!prev || prev.id !== orderId) return prev;
+      return {
+        ...prev,
+        ...(detail.status != null ? { status: detail.status } : {}),
+        ...(detail.payment_status != null ? { payment_status: detail.payment_status } : {}),
+      };
+    });
+    return true;
+  }, []);
+
+  const handleOrderRealtime = useCallback((detail) => {
+    if (!detail) return;
+    const refresh = () => fetchDataRef.current?.({ silent: true });
+
+    if (detail.action === 'poll') {
+      refresh();
+      return;
     }
-    return found;
-  };
+
+    if (detail.action === 'create') {
+      setPage(1);
+      refresh();
+      setFeedback({
+        type: 'success',
+        message: detail.message || `Có đơn hàng mới #${detail.id}`,
+      });
+      return;
+    }
+
+    if (detail.action === 'payment') {
+      if (!patchOrderFromEvent(detail)) refresh();
+      setFeedback({
+        type: 'success',
+        message: detail.message || `Đơn #${detail.id} đã thanh toán`,
+      });
+      return;
+    }
+
+    if (detail.action === 'update') {
+      if (!patchOrderFromEvent(detail)) refresh();
+      return;
+    }
+
+    if (!patchOrderFromEvent(detail)) refresh();
+  }, [patchOrderFromEvent]);
 
   useEffect(() => {
     fetchData();
-
-    const handleGlobalUpdate = (event) => {
-      const detail = event?.detail;
-      if (detail?.type && detail.type !== 'order') return;
-
-      if (detail.action === 'create') {
-        setPage(1);
-        fetchData({ silent: true });
-        setFeedback({
-          type: 'success',
-          message: detail.message || `Có đơn hàng mới #${detail.id}`,
-        });
-        return;
-      }
-
-      if (detail.action === 'payment') {
-        const patched = patchOrderFromEvent(detail);
-        if (!patched) fetchData({ silent: true });
-        setFeedback({
-          type: 'success',
-          message: detail.message || `Đơn #${detail.id} đã thanh toán`,
-        });
-        return;
-      }
-
-      if (detail.action === 'update') {
-        if (!patchOrderFromEvent(detail)) fetchData({ silent: true });
-        return;
-      }
-
-      if (!patchOrderFromEvent(detail)) fetchData({ silent: true });
-    };
-
-    window.addEventListener('admin-data-update', handleGlobalUpdate);
-    return () => window.removeEventListener('admin-data-update', handleGlobalUpdate);
   }, []);
+
+  useAdminOrderRealtime(handleOrderRealtime);
 
   useEffect(() => {
     if (!selectedOrder) return;
