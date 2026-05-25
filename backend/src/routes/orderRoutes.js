@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { Order, OrderItem, Product, sequelize } = require('../models');
 const { jwtSecret } = require('../config/env');
+const { phonesMatch } = require('../utils/phone');
 
 const calculateShippingFee = ({ shippingAddress = '', subtotal = 0 }) => {
   const normalized = shippingAddress.toLowerCase();
@@ -329,7 +330,7 @@ router.get('/:id/payment-status', async (req, res) => {
       attributes: ['id', 'guest_phone', 'payment_method', 'payment_status', 'status', 'total_amount'],
     });
 
-    if (!order || order.guest_phone !== phone) {
+    if (!order || !phonesMatch(order.guest_phone, phone)) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
     }
 
@@ -348,7 +349,7 @@ router.get('/:id/payment-status', async (req, res) => {
   }
 });
 
-// POST /api/v1/orders/:id/claim-bank-transfer — khách báo đã CK (dự phòng khi chưa có SePay)
+// POST /api/v1/orders/:id/claim-bank-transfer — khách báo đã CK
 router.post('/:id/claim-bank-transfer', async (req, res) => {
   try {
     const phone = String(req.body.guest_phone || '').trim();
@@ -357,7 +358,7 @@ router.post('/:id/claim-bank-transfer', async (req, res) => {
     }
 
     const order = await Order.findByPk(req.params.id);
-    if (!order || order.guest_phone !== phone) {
+    if (!order || !phonesMatch(order.guest_phone, phone)) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
     }
     if (order.payment_method !== 'bank_transfer') {
@@ -365,34 +366,19 @@ router.post('/:id/claim-bank-transfer', async (req, res) => {
     }
 
     const { markOrderPaid } = require('./paymentRoutes');
-    const autoConfirm = process.env.BANK_TRANSFER_CLAIM_AUTO_PAID === 'true';
+    const skipAuto = process.env.BANK_TRANSFER_CLAIM_AUTO_PAID === 'false';
 
-    if (autoConfirm && order.payment_status !== 'paid') {
+    if (!skipAuto && order.payment_status !== 'paid') {
       await markOrderPaid(order, order.id, { source: 'customer_claim' });
-    } else {
-      try {
-        const socketConfig = require('../config/socket');
-        const io = socketConfig.getIO();
-        if (io) {
-          io.emit('data_changed', {
-            type: 'order',
-            action: 'transfer_claimed',
-            id: order.id,
-            message: `Khách báo đã CK đơn #${order.id} — cần đối soát`,
-          });
-        }
-      } catch (socketErr) {
-        console.warn('⚠️ [Socket] claim transfer:', socketErr.message);
-      }
     }
 
     await order.reload();
 
     return res.json({
       success: true,
-      message: autoConfirm
+      message: order.payment_status === 'paid'
         ? 'Đã ghi nhận thanh toán.'
-        : 'Đã ghi nhận. Hệ thống sẽ xác nhận sau khi đối soát ngân hàng.',
+        : 'Đã ghi nhận. Vui lòng đợi đối soát ngân hàng.',
       data: {
         payment_status: order.payment_status,
         status: order.status,
