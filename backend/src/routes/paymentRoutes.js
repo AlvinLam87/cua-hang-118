@@ -46,10 +46,21 @@ router.post('/webhook-sepay', async (req, res) => {
 
     // Cập nhật trạng thái đơn hàng
     order.payment_status = 'paid';
-    order.status = 'processing'; // Chuyển sang trạng thái đang xử lý
+    order.status = 'confirmed'; // Chuyển sang trạng thái đã xác nhận
     await order.save();
 
     console.log(`✅ Đã xác nhận thanh toán tự động cho đơn hàng #${orderId}`);
+
+    // Phát sự kiện cập nhật thời gian thực qua socket
+    try {
+      const socketConfig = require('../config/socket');
+      const io = socketConfig.getIO();
+      if (io) {
+        io.emit('data_changed', { type: 'order', id: orderId, payment_status: 'paid', status: 'confirmed' });
+      }
+    } catch (sErr) {
+      console.warn('⚠️ [Socket] SePay socket notify warning:', sErr.message);
+    }
 
     return res.json({ success: true, message: 'Payment confirmed' });
   } catch (error) {
