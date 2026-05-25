@@ -35,6 +35,21 @@ const AdminOrdersPage = () => {
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
+  const parseSafeDate = (dateStr) => {
+    if (!dateStr) return null;
+    if (dateStr instanceof Date) return dateStr;
+    const cleanStr = typeof dateStr === 'string' ? dateStr.trim() : String(dateStr);
+    const match = cleanStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1;
+      const day = parseInt(match[3], 10);
+      return new Date(year, month, day, 23, 59, 59);
+    }
+    const d = new Date(cleanStr);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
   // Customer warranty lookup states
   const [customerQuery, setCustomerQuery] = useState('');
   const [customerSearchLoading, setCustomerSearchLoading] = useState(false);
@@ -147,8 +162,8 @@ const AdminOrdersPage = () => {
       return;
     }
 
-    const startWarranty = order.completed_date ? new Date(order.completed_date).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN');
-    const expiryWarranty = order.warranty_expiry ? new Date(order.warranty_expiry).toLocaleDateString('vi-VN') : 'Không bảo hành';
+    const startWarranty = order.completed_date ? formatDate(order.completed_date) : formatDate(new Date());
+    const expiryWarranty = order.warranty_expiry ? formatDate(order.warranty_expiry) : 'Không bảo hành';
 
     const htmlContent = `
       <html>
@@ -476,12 +491,12 @@ const AdminOrdersPage = () => {
                   let warrantyLabel = 'Không bảo hành';
                   let isWarrantyActive = false;
                   if (rp.warranty_expiry) {
-                    const expiry = new Date(rp.warranty_expiry);
+                    const expiry = parseSafeDate(rp.warranty_expiry);
                     const now = new Date();
-                    isWarrantyActive = expiry > now;
+                    isWarrantyActive = expiry && expiry > now;
                     warrantyLabel = isWarrantyActive 
-                      ? `Còn BH: ${new Date(rp.warranty_expiry).toLocaleDateString('vi-VN')}`
-                      : `Hết BH: ${new Date(rp.warranty_expiry).toLocaleDateString('vi-VN')}`;
+                      ? `Còn BH: ${formatDate(rp.warranty_expiry)}`
+                      : `Hết BH: ${formatDate(rp.warranty_expiry)}`;
                   } else if (rp.status === 'completed' && rp.warranty_period > 0) {
                     warrantyLabel = `${rp.warranty_period} tháng`;
                   } else if (rp.status !== 'completed' && rp.status !== 'returned') {

@@ -28,6 +28,21 @@ const TechnicianDashboardPage = () => {
   const token = localStorage.getItem('token');
   const headers = { 'Authorization': `Bearer ${token}` };
 
+  const parseSafeDate = (dateStr) => {
+    if (!dateStr) return null;
+    if (dateStr instanceof Date) return dateStr;
+    const cleanStr = typeof dateStr === 'string' ? dateStr.trim() : String(dateStr);
+    const match = cleanStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1;
+      const day = parseInt(match[3], 10);
+      return new Date(year, month, day, 23, 59, 59);
+    }
+    const d = new Date(cleanStr);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
   const fetchData = async () => {
     try {
       const [tasksRes, statsRes] = await Promise.all([
@@ -623,12 +638,12 @@ const TechnicianDashboardPage = () => {
                   let warrantyLabel = 'Không bảo hành';
                   let isWarrantyActive = false;
                   if (rp.warranty_expiry) {
-                    const expiry = new Date(rp.warranty_expiry);
+                    const expiry = parseSafeDate(rp.warranty_expiry);
                     const now = new Date();
-                    isWarrantyActive = expiry > now;
+                    isWarrantyActive = expiry && expiry > now;
                     warrantyLabel = isWarrantyActive 
-                      ? `Còn BH: ${new Date(rp.warranty_expiry).toLocaleDateString('vi-VN')}`
-                      : `Hết BH: ${new Date(rp.warranty_expiry).toLocaleDateString('vi-VN')}`;
+                      ? `Còn BH: ${formatDate(rp.warranty_expiry)}`
+                      : `Hết BH: ${formatDate(rp.warranty_expiry)}`;
                   } else if (rp.status === 'completed' && rp.warranty_period > 0) {
                     warrantyLabel = `${rp.warranty_period} tháng`;
                   } else if (rp.status !== 'completed' && rp.status !== 'returned') {
@@ -890,7 +905,7 @@ const TechnicianDashboardPage = () => {
                         {selectedRepair.warranty_expiry && (
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl shadow-xs">
                             <Clock className="w-4 h-4 shrink-0" />
-                            Hết hạn: {new Date(selectedRepair.warranty_expiry).toLocaleDateString('vi-VN')}
+                            Hết hạn: {formatDate(selectedRepair.warranty_expiry)}
                           </span>
                         )}
                       </div>
