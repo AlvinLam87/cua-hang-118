@@ -487,16 +487,17 @@ const AdminOrdersPage = () => {
                 </div>
               ) : (
                 customerSearchResults.map((rp) => {
-                  // Determine warranty status
+                  const effectiveExpiry = rp.warranty_expiry_effective || rp.warranty_expiry;
+                  const canReceiveWarranty = rp.can_receive_warranty === true;
+
                   let warrantyLabel = 'Không bảo hành';
-                  let isWarrantyActive = false;
-                  if (rp.warranty_expiry) {
-                    const expiry = parseSafeDate(rp.warranty_expiry);
+                  if (effectiveExpiry) {
+                    const expiry = parseSafeDate(effectiveExpiry);
                     const now = new Date();
-                    isWarrantyActive = expiry && expiry > now;
-                    warrantyLabel = isWarrantyActive 
-                      ? `Còn BH: ${formatDate(rp.warranty_expiry)}`
-                      : `Hết BH: ${formatDate(rp.warranty_expiry)}`;
+                    const stillActive = expiry && expiry > now;
+                    warrantyLabel = stillActive
+                      ? `Còn BH: ${formatDate(effectiveExpiry)}`
+                      : `Hết BH: ${formatDate(effectiveExpiry)}`;
                   } else if (rp.status === 'completed' && rp.warranty_period > 0) {
                     warrantyLabel = `${rp.warranty_period} tháng`;
                   } else if (rp.status !== 'completed' && rp.status !== 'returned') {
@@ -532,7 +533,7 @@ const AdminOrdersPage = () => {
                         
                         <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-slate-200/50">
                           <span className={`inline-flex items-center text-[9px] font-black px-2.5 py-1 rounded-full border shadow-3xs ${
-                            isWarrantyActive 
+                            canReceiveWarranty
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
                               : rp.status === 'completed' || rp.status === 'returned'
                                 ? 'bg-red-50 text-red-600 border-red-100'
@@ -543,8 +544,9 @@ const AdminOrdersPage = () => {
                           </span>
 
                           {/* Quick Warranty Order Button */}
-                          {isWarrantyActive && (
+                          {canReceiveWarranty && (
                             <button
+                              type="button"
                               onClick={() => handleCreateWarrantyOrder(rp)}
                               className="ml-auto inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black px-2.5 py-1 rounded-xl shadow-xs transition-all active:scale-95"
                               title="Tạo nhanh đơn tiếp nhận bảo hành cho thiết bị này"

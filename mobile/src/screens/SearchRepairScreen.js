@@ -88,8 +88,8 @@ const SearchRepairScreen = ({ navigation }) => {
                 Alert.alert('Thất bại', res.data.message || 'Không thể tạo đơn bảo hành.');
               }
             } catch (err) {
-              console.log(err);
-              Alert.alert('Lỗi', 'Đã xảy ra lỗi khi tạo đơn bảo hành.');
+              const msg = err?.response?.data?.message || 'Đã xảy ra lỗi khi tạo đơn bảo hành.';
+              Alert.alert('Lỗi', msg);
             } finally {
               setLoading(false);
             }
@@ -108,7 +108,7 @@ const SearchRepairScreen = ({ navigation }) => {
       const year = parseInt(match[1], 10);
       const month = parseInt(match[2], 10) - 1;
       const day = parseInt(match[3], 10);
-      return new Date(year, month, day);
+      return new Date(year, month, day, 23, 59, 59);
     }
     const d = new Date(cleanStr);
     return isNaN(d.getTime()) ? null : d;
@@ -116,17 +116,10 @@ const SearchRepairScreen = ({ navigation }) => {
 
   const getStatusInfo = (status) => STATUS_MAP[status] || STATUS_MAP.received;
 
-  const isWarrantyActive = (item) => {
-    if (item.status !== 'completed' && item.status !== 'returned') return false;
-    if (!item.warranty_expiry) return false;
-    const expiryDate = parseDate(item.warranty_expiry);
-    if (!expiryDate) return false;
-    return expiryDate > new Date();
-  };
-
   const renderCard = ({ item }) => {
     const statusInfo  = getStatusInfo(item.status);
-    const underWarranty = isWarrantyActive(item);
+    const effectiveExpiry = item.warranty_expiry_effective || item.warranty_expiry;
+    const canReceiveWarranty = item.can_receive_warranty === true;
 
     const formatDisplayDate = (dateVal) => {
       const parsed = parseDate(dateVal);
@@ -134,11 +127,7 @@ const SearchRepairScreen = ({ navigation }) => {
     };
 
     return (
-      <TouchableOpacity
-        style={styles.card}
-        activeOpacity={0.8}
-        onPress={() => navigation.navigate('RepairDetail', { repairId: item.id, repair: item })}
-      >
+      <View style={styles.card}>
         {/* Header: Mã đơn + Badge trạng thái */}
         <View style={styles.cardHeader}>
           <View>
@@ -181,11 +170,11 @@ const SearchRepairScreen = ({ navigation }) => {
         </View>
 
         {/* Badge bảo hành */}
-        {underWarranty && (
+        {canReceiveWarranty && (
           <View style={styles.warrantyBanner}>
             <ShieldCheck color="#059669" size={16} />
             <Text style={styles.warrantyText}>
-              Còn bảo hành đến {formatDisplayDate(item.warranty_expiry)}
+              Còn bảo hành đến {formatDisplayDate(effectiveExpiry)}
             </Text>
             <TouchableOpacity
               style={styles.warrantyActionBtn}
@@ -197,21 +186,25 @@ const SearchRepairScreen = ({ navigation }) => {
           </View>
         )}
 
-        {item.status === 'completed' && !underWarranty && item.warranty_expiry && (
+        {(item.status === 'completed' || item.status === 'returned') && !canReceiveWarranty && effectiveExpiry && (
           <View style={[styles.warrantyBanner, styles.warrantyExpired]}>
             <Clock color="#DC2626" size={16} />
             <Text style={[styles.warrantyText, { color: '#DC2626' }]}>
-              Bảo hành đã hết hạn ({formatDisplayDate(item.warranty_expiry)})
+              Bảo hành đã hết hạn ({formatDisplayDate(effectiveExpiry)})
             </Text>
           </View>
         )}
 
-        {/* Arrow */}
-        <View style={styles.arrowRow}>
+        {/* Arrow — chỉ hàng này mở chi tiết đơn */}
+        <TouchableOpacity
+          style={styles.arrowRow}
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('RepairDetail', { repairId: item.id, repair: item })}
+        >
           <Text style={styles.viewDetail}>Xem chi tiết</Text>
           <ChevronRight color="#2563EB" size={18} />
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
     );
   };
 

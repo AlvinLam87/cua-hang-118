@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { RepairOrder, Booking, Customer, Product, User, sequelize } = require('../models');
 const { jwtSecret } = require('../config/env');
 const upload = require('../utils/upload');
+const { isWarrantyActive, enrichRepairWarrantyFields } = require('../utils/warranty');
 
 const STATUS_LABELS = {
   received:   'Tiếp nhận thiết bị',
@@ -409,7 +410,8 @@ router.get('/search', requireTechnician, async (req, res) => {
       limit: 20
     });
 
-    res.json({ success: true, data: repairs });
+    const enriched = repairs.map(enrichRepairWarrantyFields);
+    res.json({ success: true, data: enriched });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -424,6 +426,32 @@ router.post('/repairs/warranty', requireTechnician, async (req, res) => {
     const parentOrder = await RepairOrder.findByPk(parent_id);
     if (!parentOrder) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng gốc.' });
 
+    if (!['completed', 'returned'].includes(parentOrder.status)) {
+      return res.status(400).json({ success: false, message: 'Đơn gốc chưa hoàn thành, chưa thể tiếp nhận bảo hành.' });
+    }
+
+    if (!isWarrantyActive(parentOrder)) {
+      return res.status(400).json({ success: false, message: 'Đơn gốc đã hết hạn bảo hành hoặc không có bảo hành.' });
+    }
+
+    if (parentOrder.device_name?.startsWith('[Bảo Hành]')) {
+      return res.status(400).json({ success: false, message: 'Không thể tạo bảo hành từ một đơn bảo hành khác.' });
+    }
+
+    const { Op } = require('sequelize');
+    const openWarrantyChild = await RepairOrder.findOne({
+      where: {
+        notes: { [Op.like]: `%đơn gốc #${parentOrder.receipt_code}%` },
+        status: { [Op.in]: ['received', 'diagnosing', 'quoted', 'in_progress', 'testing'] },
+      },
+    });
+    if (openWarrantyChild) {
+      return res.status(400).json({
+        success: false,
+        message: `Đã có đơn bảo hành đang xử lý (#${openWarrantyChild.receipt_code}) cho đơn gốc này.`,
+      });
+    }
+
     // Lấy thông tin user hiện tại làm KTV phụ trách
     const userId = req.user.id;
     const { User, RepairStep } = require('../models');
@@ -435,11 +463,13 @@ router.post('/repairs/warranty', requireTechnician, async (req, res) => {
     const nextId = maxOrder ? maxOrder.id + 1 : 1;
     const receiptCode = `RCV-118${String(nextId).padStart(3, '0')}`;
 
+    const baseDeviceName = parentOrder.device_name || 'Thiết bị';
+
     // Tạo đơn bảo hành mới
     const newOrder = await RepairOrder.create({
       receipt_code: receiptCode,
       customer_id: parentOrder.customer_id,
-      device_name: parentOrder.device_name.startsWith('[Bảo Hành]') ? parentOrder.device_name : `[Bảo Hành] ${parentOrder.device_name}`,
+      device_name: `[Bảo Hành] ${baseDeviceName}`,
       issue: issue || `Yêu cầu bảo hành từ đơn cũ #${parentOrder.receipt_code}.`,
       technician_name: currentTechName,
       status: 'received',
@@ -450,22 +480,21 @@ router.post('/repairs/warranty', requireTechnician, async (req, res) => {
       warranty_period: 0, // Đơn bảo hành không gia hạn bảo hành mới mặc định
     });
 
-    // Tạo bước tiếp nhận
+    // Tạo bước tiếp nhận (luồng bảo hành)
     await RepairStep.create({
       repair_order_id: newOrder.id,
       step_order: 1,
-      label: 'Tiếp nhận thiết bị',
+      label: 'Tiếp nhận bảo hành',
       is_done: true,
       completed_date: new Date().toISOString().slice(0, 10)
     });
 
-    // Tạo các bước còn lại chưa làm
+    // Các bước còn lại theo luồng bảo hành
     const defaultSteps = [
-      'Chẩn đoán lỗi',
-      'Báo giá cho khách',
-      'Đang sửa chữa',
+      'Kiểm tra lỗi',
+      'Đang xử lý bảo hành',
       'Kiểm tra kỹ thuật',
-      'Hoàn thành'
+      'Bàn giao thiết bị',
     ];
     for (let i = 0; i < defaultSteps.length; i++) {
       await RepairStep.create({
