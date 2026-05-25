@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Alert, ActivityIndicator, SafeAreaView, Platform
@@ -9,10 +10,15 @@ import {
   KeyRound, BellRing, Info, LogOut, ChevronRight, Wrench, ShieldCheck
 } from 'lucide-react-native';
 import { technicianAPI } from '../api';
+import {
+  buildNotificationsFromTasks,
+  countUnreadNotifications,
+} from '../utils/notifications';
 
 const ProfileScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
   const [completedCount, setCompletedCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
 
   const loadData = async () => {
@@ -25,8 +31,11 @@ const ProfileScreen = ({ navigation }) => {
       // Fetch real stats
       const response = await technicianAPI.getTasks();
       if (response.data.success) {
-        const completedRepairs = response.data.data.repairs.filter(r => r.status === 'completed');
+        const { repairs = [], bookings = [] } = response.data.data;
+        const completedRepairs = repairs.filter((r) => ['completed', 'returned'].includes(r.status));
         setCompletedCount(completedRepairs.length);
+        const notifs = await buildNotificationsFromTasks(repairs, bookings);
+        setUnreadCount(countUnreadNotifications(notifs));
       }
     } catch (error) {
       console.log('Lỗi tải dữ liệu cá nhân', error);
@@ -35,9 +44,11 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   const handleLogout = async () => {
     Alert.alert(
@@ -71,7 +82,13 @@ const ProfileScreen = ({ navigation }) => {
         <Text style={styles.headerTitle}>Hồ sơ</Text>
         <TouchableOpacity style={styles.bellBtn} onPress={() => navigation.navigate('Notifications')}>
           <Bell color="#1E293B" size={24} />
-          <View style={styles.notificationDot} />
+          {unreadCount > 0 && (
+            <View style={styles.notificationDot}>
+              <Text style={styles.notificationDotText}>
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -233,14 +250,22 @@ const styles = StyleSheet.create({
   },
   notificationDot: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 4,
+    right: 4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: '#EF4444',
     borderWidth: 1.5,
     borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationDotText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
   },
   scrollContent: {
     paddingHorizontal: 20,

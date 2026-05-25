@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   ActivityIndicator, Alert, RefreshControl, Dimensions, SafeAreaView, Platform
@@ -14,6 +14,10 @@ import {
   isTerminalRepairStatus,
   isActiveBookingStatus,
 } from '../constants/statusMaps';
+import {
+  buildNotificationsFromTasks,
+  countUnreadNotifications,
+} from '../utils/notifications';
 
 const { width } = Dimensions.get('window');
 
@@ -22,9 +26,8 @@ const DashboardScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState(null);
-  const [unreadCount, setUnreadCount] = useState(2);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [toast, setToast] = useState({ visible: false, type: 'info', title: '', message: '' });
-  const isFirstLoad = useRef(true);
 
   const loadUser = async () => {
     const userData = await AsyncStorage.getItem('userData');
@@ -55,6 +58,11 @@ const DashboardScreen = ({ navigation }) => {
           );
         }
         setData(newData);
+        const notifs = await buildNotificationsFromTasks(
+          newData.repairs || [],
+          newData.bookings || []
+        );
+        setUnreadCount(countUnreadNotifications(notifs));
       }
     } catch (error) {
       console.log('Fetch error', error);
@@ -71,14 +79,6 @@ const DashboardScreen = ({ navigation }) => {
     loadUser();
     fetchData(false);
 
-    // Demo: show welcome toast on first load after 1.2s
-    const t = setTimeout(() => {
-      if (isFirstLoad.current) {
-        isFirstLoad.current = false;
-        showToast('assignment', 'Bạn có 2 thông báo mới', 'Nhấn để xem chi tiết các đơn vừa được phân công.');
-      }
-    }, 1200);
-
     // Socket.io Listener for Real-time Updates
     const socket = initSocket();
 
@@ -89,7 +89,6 @@ const DashboardScreen = ({ navigation }) => {
         'Đơn hàng mới',
         `Đơn ${newOrderData.receipt_code || 'mới'} vừa được hệ thống tự động tạo.`
       );
-      setUnreadCount(prev => prev + 1);
     };
 
     const handleDataSync = () => fetchData(true);
@@ -100,7 +99,6 @@ const DashboardScreen = ({ navigation }) => {
     socket.on('technician_update', handleDataSync);
 
     return () => {
-      clearTimeout(t);
       socket.off('new_repair_order', handleNewOrder);
       socket.off('data_changed', handleDataSync);
       socket.off('new_booking', handleDataSync);
@@ -212,10 +210,7 @@ const DashboardScreen = ({ navigation }) => {
           {/* Notification Bell */}
           <TouchableOpacity
             style={styles.bellBtn}
-            onPress={() => {
-              setUnreadCount(0);
-              navigation.navigate('Notifications');
-            }}
+            onPress={() => navigation.navigate('Notifications')}
           >
             <Bell color="#1E293B" size={22} />
             {unreadCount > 0 && (

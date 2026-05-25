@@ -1,58 +1,90 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity
+  View, Text, StyleSheet, FlatList, TouchableOpacity,
+  ActivityIndicator, RefreshControl
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Wrench, Calendar, CheckCircle, Info } from 'lucide-react-native';
+import { technicianAPI } from '../api';
+import { initSocket } from '../api/socket';
+import {
+  buildNotificationsFromTasks,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from '../utils/notifications';
 
-// Mock data for notifications
-const MOCK_NOTIFICATIONS = [
-  {
-    id: '1',
-    type: 'assignment',
-    title: 'Bạn được phân công đơn mới #RCV-118003',
-    description: 'Đơn bảo trì máy lạnh tại 123 Lê Lợi, Q1.',
-    time: '5 phút trước',
-    unread: true,
-  },
-  {
-    id: '2',
-    type: 'booking',
-    title: 'Lịch hẹn mới từ Nguyễn Văn D',
-    description: 'Khách hàng yêu cầu kiểm tra hệ thống điện vào 14:00 hôm nay.',
-    time: '1 giờ trước',
-    unread: true,
-  },
-  {
-    id: '3',
-    type: 'completed',
-    title: 'Đơn #RCV-118002 đã hoàn thành',
-    description: 'Khách hàng đã xác nhận thanh toán thành công.',
-    time: 'Hôm qua, 15:30',
-    unread: false,
-  },
-  {
-    id: '4',
-    type: 'info',
-    title: 'Cập nhật chính sách dịch vụ',
-    description: 'Vui lòng đọc các thay đổi mới trong quy trình tiếp nhận đơn hàng.',
-    time: '2 ngày trước',
-    unread: false,
-  },
-];
+const NotificationsScreen = ({ navigation }) => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-const NotificationsScreen = () => {
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const loadNotifications = async (isRefresh = false) => {
+    try {
+      const response = await technicianAPI.getTasks();
+      if (response.data.success) {
+        const { repairs = [], bookings = [] } = response.data.data;
+        const list = await buildNotificationsFromTasks(repairs, bookings);
+        setNotifications(list);
+      }
+    } catch (err) {
+      console.log('Load notifications error', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, unread: false })));
+  useFocusEffect(
+    useCallback(() => {
+      loadNotifications(false);
+
+      const socket = initSocket();
+      const refresh = () => loadNotifications(true);
+      socket.on('new_repair_order', refresh);
+      socket.on('data_changed', refresh);
+      socket.on('new_booking', refresh);
+      socket.on('technician_update', refresh);
+      return () => {
+        socket.off('new_repair_order', refresh);
+        socket.off('data_changed', refresh);
+        socket.off('new_booking', refresh);
+        socket.off('technician_update', refresh);
+      };
+    }, [])
+  );
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadNotifications(true);
+  }, []);
+
+  const markAllAsRead = async () => {
+    await markAllNotificationsRead(notifications);
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  };
+
+  const handlePress = async (item) => {
+    await markNotificationRead(item.id);
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === item.id ? { ...n, unread: false } : n))
+    );
+
+    if (item.refType === 'repair') {
+      navigation.navigate('RepairDetail', {
+        repairId: item.refId,
+        repair: item.refData,
+      });
+    } else {
+      navigation.navigate('MainTabs', { screen: 'BookingsTab' });
+    }
   };
 
   const getIconConfig = (type) => {
     switch (type) {
       case 'assignment': return { Icon: Wrench, bg: '#2563EB', color: '#FFF' };
       case 'booking': return { Icon: Calendar, bg: '#BC4800', color: '#FFF' };
-      case 'completed': return { Icon: CheckCircle, bg: '#E1E2ED', color: '#434655' };
-      case 'info': return { Icon: Info, bg: '#E1E2ED', color: '#434655' };
+      case 'completed': return { Icon: CheckCircle, bg: '#059669', color: '#FFF' };
+      case 'info': return { Icon: Info, bg: '#FEE2E2', color: '#DC2626' };
       default: return { Icon: Info, bg: '#E1E2ED', color: '#434655' };
     }
   };
@@ -61,31 +93,45 @@ const NotificationsScreen = () => {
     const { Icon, bg, color } = getIconConfig(item.type);
 
     return (
-      <View style={styles.card}>
+      <TouchableOpacity
+        style={[styles.card, item.unread && styles.cardUnread]}
+        activeOpacity={0.85}
+        onPress={() => handlePress(item)}
+      >
         {item.unread && <View style={styles.unreadDot} />}
-        
+
         <View style={styles.cardContentRow}>
           <View style={[styles.iconContainer, { backgroundColor: bg }]}>
             <Icon color={color} size={20} />
           </View>
-          
+
           <View style={styles.content}>
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.description}>{item.description}</Text>
             <Text style={styles.time}>{item.time}</Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
+
+  if (loading && notifications.length === 0) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Thông Báo</Text>
-        <TouchableOpacity onPress={markAllAsRead}>
-          <Text style={styles.markReadText}>Đánh dấu tất cả đã đọc</Text>
-        </TouchableOpacity>
+        {notifications.length > 0 && (
+          <TouchableOpacity onPress={markAllAsRead}>
+            <Text style={styles.markReadText}>Đánh dấu tất cả đã đọc</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <FlatList
@@ -94,6 +140,22 @@ const NotificationsScreen = () => {
         renderItem={renderNotificationCard}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#2563EB']}
+            tintColor="#2563EB"
+          />
+        }
+        ListEmptyComponent={() => (
+          <View style={styles.emptyBox}>
+            <Text style={styles.emptyTitle}>Chưa có thông báo</Text>
+            <Text style={styles.emptyText}>
+              Thông báo sẽ hiển thị khi có đơn sửa chữa hoặc lịch hẹn mới được phân công cho bạn.
+            </Text>
+          </View>
+        )}
       />
     </View>
   );
@@ -103,6 +165,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAF8FF',
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -129,6 +195,7 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
     paddingBottom: 80,
+    flexGrow: 1,
   },
   card: {
     backgroundColor: '#FFF',
@@ -143,6 +210,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
+  },
+  cardUnread: {
+    borderColor: '#93C5FD',
+    backgroundColor: '#F8FAFF',
   },
   unreadDot: {
     position: 'absolute',
@@ -188,6 +259,24 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter',
     fontSize: 12,
     color: '#737686',
+  },
+  emptyBox: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyTitle: {
+    fontFamily: 'Inter',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1E293B',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontFamily: 'Inter',
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 22,
   },
 });
 
