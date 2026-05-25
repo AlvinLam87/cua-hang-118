@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Package, Loader2, Eye, Calendar, MapPin, CreditCard, Clock, ChevronRight, ShoppingBag } from 'lucide-react';
 import ProfileSidebar from '../Profile/ProfileSidebar';
 import { API_V1_URL } from '../../utils/api.js';
+import { createAppSocket } from '../../utils/socket.js';
 
 const statusColors = {
   pending: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -57,6 +58,27 @@ const OrderHistoryPage = () => {
       }
     };
     fetchOrders();
+
+    const socket = createAppSocket();
+    const onOrderUpdate = (data) => {
+      if (data?.type !== 'order' || !data.id) return;
+      const orderId = Number(data.id);
+      setOrders((prev) => {
+        const idx = prev.findIndex((o) => o.id === orderId);
+        if (idx === -1) return prev;
+        const next = [...prev];
+        next[idx] = {
+          ...next[idx],
+          ...(data.status != null ? { status: data.status } : {}),
+          ...(data.payment_status != null ? { payment_status: data.payment_status } : {}),
+        };
+        return next;
+      });
+    };
+
+    socket.on('data_changed', onOrderUpdate);
+    socket.on('new_product_order', onOrderUpdate);
+    return () => socket.disconnect();
   }, [navigate]);
 
   if (loading) return <div className="min-h-screen flex justify-center items-center bg-[#f6f8ff]"><Loader2 className="w-12 h-12 text-blue-600 animate-spin" /></div>;

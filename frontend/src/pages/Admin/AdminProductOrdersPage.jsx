@@ -34,32 +34,97 @@ const AdminProductOrdersPage = () => {
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
-  const fetchData = async () => {
+  const fetchData = async ({ silent = false } = {}) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const res = await fetch(`${API_V1_URL}/admin/product-orders`, { headers });
       const data = await res.json();
-      
+
       if (data.success) {
         setOrders(data.data || []);
-      } else {
+      } else if (!silent) {
         setFeedback({ type: 'error', message: data.message || 'Lỗi từ server' });
       }
     } catch (error) {
-      setFeedback({ type: 'error', message: 'Không thể kết nối đến máy chủ.' });
+      if (!silent) setFeedback({ type: 'error', message: 'Không thể kết nối đến máy chủ.' });
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
+  };
+
+  const patchOrderFromEvent = (detail) => {
+    if (!detail?.id) return false;
+    const orderId = Number(detail.id);
+    let found = false;
+    setOrders((prev) => {
+      const idx = prev.findIndex((o) => o.id === orderId);
+      if (idx === -1) return prev;
+      found = true;
+      const next = [...prev];
+      next[idx] = {
+        ...next[idx],
+        ...(detail.status != null ? { status: detail.status } : {}),
+        ...(detail.payment_status != null ? { payment_status: detail.payment_status } : {}),
+      };
+      return next;
+    });
+    if (found) {
+      setSelectedOrder((prev) => {
+        if (!prev || prev.id !== orderId) return prev;
+        return {
+          ...prev,
+          ...(detail.status != null ? { status: detail.status } : {}),
+          ...(detail.payment_status != null ? { payment_status: detail.payment_status } : {}),
+        };
+      });
+    }
+    return found;
   };
 
   useEffect(() => {
     fetchData();
 
-    const handleGlobalUpdate = () => fetchData();
+    const handleGlobalUpdate = (event) => {
+      const detail = event?.detail;
+      if (detail?.type && detail.type !== 'order') return;
+
+      if (detail.action === 'create') {
+        setPage(1);
+        fetchData({ silent: true });
+        setFeedback({
+          type: 'success',
+          message: detail.message || `Có đơn hàng mới #${detail.id}`,
+        });
+        return;
+      }
+
+      if (detail.action === 'payment') {
+        const patched = patchOrderFromEvent(detail);
+        if (!patched) fetchData({ silent: true });
+        setFeedback({
+          type: 'success',
+          message: detail.message || `Đơn #${detail.id} đã thanh toán`,
+        });
+        return;
+      }
+
+      if (detail.action === 'update') {
+        if (!patchOrderFromEvent(detail)) fetchData({ silent: true });
+        return;
+      }
+
+      if (!patchOrderFromEvent(detail)) fetchData({ silent: true });
+    };
 
     window.addEventListener('admin-data-update', handleGlobalUpdate);
     return () => window.removeEventListener('admin-data-update', handleGlobalUpdate);
   }, []);
+
+  useEffect(() => {
+    if (!selectedOrder) return;
+    const updated = orders.find((o) => o.id === selectedOrder.id);
+    if (updated) setSelectedOrder(updated);
+  }, [orders]);
 
   const handleUpdateStatus = async (orderId, field, value) => {
     try {

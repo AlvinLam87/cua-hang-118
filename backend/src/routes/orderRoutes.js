@@ -118,6 +118,29 @@ router.post('/', async (req, res) => {
 
     await t.commit();
 
+    try {
+      const socketConfig = require('../config/socket');
+      const io = socketConfig.getIO();
+      if (io) {
+        const payload = {
+          type: 'order',
+          action: 'create',
+          id: order.id,
+          guest_name,
+          guest_phone,
+          total_amount,
+          payment_method,
+          payment_status: 'unpaid',
+          status: 'pending',
+          message: `Đơn hàng mới #${order.id} từ ${guest_name}`,
+        };
+        io.emit('new_product_order', payload);
+        io.emit('data_changed', payload);
+      }
+    } catch (socketErr) {
+      console.warn('⚠️ [Socket] Không thể gửi thông báo đơn hàng mới:', socketErr.message);
+    }
+
     // Fire email asynchronously if user is logged in
     if (customer_id) {
       const { User } = require('../models');

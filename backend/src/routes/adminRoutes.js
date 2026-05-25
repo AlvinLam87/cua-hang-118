@@ -590,6 +590,23 @@ router.put('/product-orders/:id', requireAdmin, async (req, res) => {
       }
     }
 
+    try {
+      const socketConfig = require('../config/socket');
+      const io = socketConfig.getIO();
+      if (io) {
+        const payload = {
+          type: 'order',
+          action: 'update',
+          id: order.id,
+          payment_status: order.payment_status,
+          status: order.status,
+        };
+        io.emit('data_changed', payload);
+      }
+    } catch (socketErr) {
+      console.warn('⚠️ [Socket] Admin product order update:', socketErr.message);
+    }
+
     res.json({ success: true, data: order });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 });

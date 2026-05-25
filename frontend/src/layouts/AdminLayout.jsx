@@ -4,8 +4,8 @@ import {
   LayoutDashboard, Package, Settings, ClipboardList, Calendar,
   Users, LogOut, Menu, X, Wrench, ChevronRight, FolderOpen, Star, Ticket, ShoppingBag
 } from 'lucide-react';
-import { io } from 'socket.io-client';
-import { API_V1_URL, API_BASE_URL } from '../utils/api.js';
+import { API_V1_URL } from '../utils/api.js';
+import { createAppSocket } from '../utils/socket.js';
 
 const sidebarLinks = [
   { to: '/admin', label: 'Tổng Quan', icon: <LayoutDashboard className="w-5 h-5" />, exact: true },
@@ -68,26 +68,7 @@ const AdminLayout = () => {
     fetchStats();
 
     // ── Socket.io: Re-fetch stats on any change ──────────────────
-    const getSocketUrl = () => {
-      const envUrl = import.meta.env.VITE_SOCKET_URL;
-      // If envUrl is set and is a production/external URL, respect it first
-      if (envUrl && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
-        return envUrl;
-      }
-      if (typeof window !== 'undefined') {
-        const hostname = window.location.hostname;
-        if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('172.')) {
-          return `http://${hostname}:3001`;
-        }
-      }
-      return envUrl || API_BASE_URL;
-    };
-    const socketUrl = getSocketUrl();
-    const socket = io(socketUrl, {
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 10
-    });
+    const socket = createAppSocket();
 
     socket.on('connect', () => {
       console.log('✅ [Socket] Admin Layout connected:', socket.id);
@@ -105,6 +86,7 @@ const AdminLayout = () => {
     };
 
     socket.on('new_booking', handleUpdate);
+    socket.on('new_product_order', handleUpdate);
     socket.on('technician_update', handleUpdate);
     socket.on('new_repair_order', handleUpdate);
     socket.on('data_changed', handleUpdate);

@@ -54,7 +54,16 @@ router.post('/webhook-sepay', async (req, res) => {
       const socketConfig = require('../config/socket');
       const io = socketConfig.getIO();
       if (io) {
-        io.emit('data_changed', { type: 'order', id: Number(orderId), payment_status: 'paid', status: 'confirmed' });
+        const payload = {
+          type: 'order',
+          action: 'payment',
+          id: Number(orderId),
+          payment_status: 'paid',
+          status: 'confirmed',
+          message: `Đơn #${orderId} đã thanh toán`,
+        };
+        io.emit('new_product_order', payload);
+        io.emit('data_changed', payload);
       }
     } catch (sErr) {
       console.warn('⚠️ [Socket] SePay socket notify warning:', sErr.message);

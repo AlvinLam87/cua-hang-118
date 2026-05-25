@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { CheckCircle2, Package, ArrowRight, Home, QrCode } from 'lucide-react';
+import { CheckCircle2, Package, ArrowRight, Home, QrCode, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { createAppSocket } from '../../utils/socket.js';
 
 const OrderSuccessPage = () => {
   const location = useLocation();
@@ -9,6 +10,7 @@ const OrderSuccessPage = () => {
   const paymentMethod = location.state?.paymentMethod;
   const totalAmount = location.state?.totalAmount;
   const [mounted, setMounted] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -33,6 +35,23 @@ const OrderSuccessPage = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (paymentMethod !== 'bank_transfer' || !orderId) return;
+
+    const socket = createAppSocket();
+    const onPaid = (data) => {
+      if (data?.type !== 'order') return;
+      if (Number(data.id) !== Number(orderId)) return;
+      if (data.payment_status === 'paid' || data.action === 'payment') {
+        setPaymentConfirmed(true);
+      }
+    };
+
+    socket.on('data_changed', onPaid);
+    socket.on('new_product_order', onPaid);
+    return () => socket.disconnect();
+  }, [paymentMethod, orderId]);
 
   return (
     <div className="min-h-screen bg-transparent flex items-center justify-center p-4">
@@ -74,9 +93,16 @@ const OrderSuccessPage = () => {
               <p className="flex justify-between"><span className="text-gray-500">Số tiền:</span> <span className="font-bold text-red-600">{totalAmount?.toLocaleString('vi-VN')}đ</span></p>
               <p className="flex justify-between"><span className="text-gray-500">Nội dung CK:</span> <span className="font-bold bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded">DH{orderId} Thanh toan</span></p>
             </div>
-            <p className="text-xs text-center text-gray-500 mt-4">
-              Hệ thống sẽ tự nhận diện chuyển khoản sau 1-3 phút.
-            </p>
+            {paymentConfirmed ? (
+              <div className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold flex items-center justify-center gap-2">
+                <CheckCircle2 className="w-5 h-5" /> Đã nhận thanh toán — đơn hàng đang được xử lý
+              </div>
+            ) : (
+              <p className="text-xs text-center text-gray-500 mt-4 flex items-center justify-center gap-1.5">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Đang chờ xác nhận chuyển khoản (thường 1–3 phút)...
+              </p>
+            )}
           </div>
         )}
 
