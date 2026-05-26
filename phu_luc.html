@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Phụ lục - Cửa Hàng 118</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      margin: 0; 
+      padding: 30px 50px; 
+      background: #f8fafc; 
+      font-family: 'Times New Roman', Times, serif; 
+      color: #0f172a; 
+      font-size: 16px;
+      line-height: 1.8;
+    }
+    
+    .page-container { 
+      background: #fff; 
+      padding: 50px; 
+      border-radius: 12px; 
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); 
+      max-width: 1000px; 
+      margin: auto; 
+    }
+    
+    .btn-bar { text-align: center; margin-bottom: 26px; }
+    .btn-bar button { 
+      background: #2563EB; 
+      color: #fff; 
+      border: none; 
+      padding: 10px 28px; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      cursor: pointer; 
+      font-weight: 600; 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      transition: all 0.2s; 
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+    }
+    .btn-bar button:hover { background: #1d4ed8; }
+    
+    h1.chapter-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: #1e3a8a;
+      text-align: center;
+      text-transform: uppercase;
+      margin: 10px 0 5px 0;
+      letter-spacing: 0.5px;
+    }
+    
+    h2.section-title { 
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 19px; 
+      font-weight: 700; 
+      color: #0f172a; 
+      margin: 40px 0 15px 0; 
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+    }
+    
+    h3.subsection-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 16.5px;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 25px 0 12px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    h3.subsection-title::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 16px;
+      background: #2563EB;
+      margin-right: 10px;
+      border-radius: 2px;
+    }
+    
+    p.desc { 
+      text-align: center; 
+      color: #64748b; 
+      font-size: 15px; 
+      margin-bottom: 40px; 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+    }
+    
+    p {
+      text-align: justify;
+      text-indent: 30px;
+      margin: 12px 0;
+    }
+
+    p.no-indent {
+      text-indent: 0;
+    }
+
+    .table-container {
+      margin: 20px 0;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    table, th, td {
+      border: 1px solid #cbd5e1;
+    }
+
+    th {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      font-weight: bold;
+      padding: 8px 10px;
+      text-align: left;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13.5px;
+    }
+
+    td {
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .table-caption {
+      text-align: center;
+      font-style: italic;
+      font-size: 13.5px;
+      color: #475569;
+      margin-top: 6px;
+      margin-bottom: 22px;
+    }
+
+    code {
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+      background: #f1f5f9;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 13.5px;
+      color: #b91c1c;
+    }
+
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 14px 18px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 15px 0;
+      border: 1px solid #1e293b;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: #38bdf8;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .bullet-list {
+      margin: 12px 0 12px 30px;
+      padding-left: 0;
+    }
+
+    .bullet-list li {
+      margin-bottom: 8px;
+      text-align: justify;
+    }
+
+    .bullet-list strong {
+      color: #0f172a;
+    }
+
+    @media print { 
+      body { background: #fff; padding: 0; }
+      .page-container { box-shadow: none; padding: 0; max-width: 100%; }
+      .btn-bar { display: none; } 
+      h2.section-title { page-break-before: always; }
+      h2.section-title:first-of-type { page-break-before: avoid; }
+      .table-container { page-break-inside: avoid; }
+      pre { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="btn-bar">
+  💡 Nhấn <strong>Ctrl+P</strong> → chọn <strong>"Save as PDF"</strong> để lưu báo cáo chất lượng cao →
+  <button onclick="window.print()">🖨️ Xuất PDF / In ấn phụ lục</button>
+</div>
+
+<div class="page-container">
+  <h1 class="chapter-title">PHỤ LỤC BÁO CÁO HỆ THỐNG</h1>
+  <p class="desc">Từ điển cơ sở dữ liệu chi tiết, danh mục mã lỗi API và danh sách giao diện phân hệ - Cửa Hàng 118</p>
+
+  <p>Tài liệu phụ lục này cung cấp các thông tin kỹ thuật bổ trợ chi tiết nhằm làm sáng tỏ kiến trúc hạ tầng cơ sở dữ liệu và cách thức giao tiếp dữ liệu trong hệ thống quản lý <strong>Cửa Hàng 118</strong>. Nội dung phụ lục bao gồm: Từ điển dữ liệu chi tiết của các bảng cơ sở dữ liệu cốt lõi giúp các lập trình viên dễ dàng nắm bắt quan hệ thực thể, Đặc tả cấu trúc mã phản hồi API kết hợp mã trạng thái lỗi HTTP tiêu chuẩn để làm tài liệu tích hợp và Danh mục hệ thống các màn hình giao diện hoạt động thực tế trên cả phân hệ Web và Mobile.</p>
+
+  <!-- ==================== PHỤ LỤC A ==================== -->
+  <h2 class="section-title">PHỤ LỤC A: Từ điển Cơ sở dữ liệu cốt lõi (Database Schema Dictionary)</h2>
+  <p>Hệ quản trị cơ sở dữ liệu đám mây Supabase PostgreSQL lưu trữ toàn bộ các bảng thực thể nghiệp vụ dưới cấu trúc quan hệ chuẩn hóa. Dưới đây là đặc tả chi tiết các trường dữ liệu của 4 bảng quan trọng nhất trong hệ thống:</p>
+
+  <h3 class="subsection-title">A.1. Cấu trúc bảng người dùng chung (Bảng: users)</h3>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Tên trường</th>
+          <th style="width: 25%;">Kiểu dữ liệu</th>
+          <th style="width: 10%;">Null?</th>
+          <th style="width: 10%;">Khóa</th>
+          <th style="width: 40%;">Mô tả chi tiết</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>id</strong></td>
+          <td>INTEGER (SERIAL)</td>
+          <td>No</td>
+          <td>PK</td>
+          <td>Định danh tự tăng, duy nhất cho mỗi người dùng.</td>
+        </tr>
+        <tr>
+          <td><strong>email</strong></td>
+          <td>VARCHAR(150)</td>
+          <td>No</td>
+          <td>Unique</td>
+          <td>Địa chỉ email, dùng để đăng nhập và nhận thông báo điện tử.</td>
+        </tr>
+        <tr>
+          <td><strong>phone</strong></td>
+          <td>VARCHAR(20)</td>
+          <td>No</td>
+          <td>Unique</td>
+          <td>Số điện thoại liên lạc của tài khoản.</td>
+        </tr>
+        <tr>
+          <td><strong>full_name</strong></td>
+          <td>VARCHAR(150)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Họ và tên đầy đủ của người dùng.</td>
+        </tr>
+        <tr>
+          <td><strong>password</strong></td>
+          <td>VARCHAR(255)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Mật khẩu đã được mã hóa bằng thuật toán <strong>bcryptjs</strong>.</td>
+        </tr>
+        <tr>
+          <td><strong>role</strong></td>
+          <td>ENUM('customer', 'tech', 'admin')</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Vai trò phân quyền: Khách hàng, Kỹ thuật viên, Quản trị viên.</td>
+        </tr>
+        <tr>
+          <td><strong>points</strong></td>
+          <td>INTEGER</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Điểm tích lũy thành viên khi thanh toán đơn linh kiện/dịch vụ (Mặc định: 0).</td>
+        </tr>
+        <tr>
+          <td><strong>address</strong></td>
+          <td>VARCHAR(300)</td>
+          <td>Yes</td>
+          <td>-</td>
+          <td>Địa chỉ mặc định của người dùng phục vụ giao hàng.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-caption">Bảng A.1. Từ điển dữ liệu bảng users</div>
+  </div>
+
+  <h3 class="subsection-title">A.2. Cấu trúc bảng linh kiện &amp; sản phẩm (Bảng: products)</h3>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Tên trường</th>
+          <th style="width: 25%;">Kiểu dữ liệu</th>
+          <th style="width: 10%;">Null?</th>
+          <th style="width: 10%;">Khóa</th>
+          <th style="width: 40%;">Mô tả chi tiết</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>id</strong></td>
+          <td>INTEGER (SERIAL)</td>
+          <td>No</td>
+          <td>PK</td>
+          <td>Định danh tự tăng, duy nhất cho mỗi linh kiện.</td>
+        </tr>
+        <tr>
+          <td><strong>name</strong></td>
+          <td>VARCHAR(200)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Tên linh kiện điện tử/sản phẩm (ví dụ: CPU Ryzen 5, SSD 512GB).</td>
+        </tr>
+        <tr>
+          <td><strong>price</strong></td>
+          <td>DECIMAL(15, 2)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Giá bán lẻ chính thức (Đơn vị tính: VNĐ).</td>
+        </tr>
+        <tr>
+          <td><strong>stock_quantity</strong></td>
+          <td>INTEGER</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Số lượng tồn kho khả dụng hiện hành. Tự động trừ khi đặt hàng và cộng khi hủy đơn.</td>
+        </tr>
+        <tr>
+          <td><strong>in_stock</strong></td>
+          <td>BOOLEAN</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Trạng thái còn hàng (True: còn hàng, False: hết hàng).</td>
+        </tr>
+        <tr>
+          <td><strong>is_active</strong></td>
+          <td>BOOLEAN</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Trạng thái kinh doanh (True: đang bán, False: ngừng bán).</td>
+        </tr>
+        <tr>
+          <td><strong>category_id</strong></td>
+          <td>INTEGER</td>
+          <td>No</td>
+          <td>FK</td>
+          <td>Khóa ngoại liên kết tới bảng Danh mục sản phẩm (categories).</td>
+        </tr>
+        <tr>
+          <td><strong>image_url</strong></td>
+          <td>VARCHAR(255)</td>
+          <td>Yes</td>
+          <td>-</td>
+          <td>Đường dẫn ảnh tĩnh lưu trong thư mục hoặc Cloud Object Storage.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-caption">Bảng A.2. Từ điển dữ liệu bảng products</div>
+  </div>
+
+  <h3 class="subsection-title">A.3. Cấu trúc bảng đơn đặt hàng mua linh kiện (Bảng: orders)</h3>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Tên trường</th>
+          <th style="width: 25%;">Kiểu dữ liệu</th>
+          <th style="width: 10%;">Null?</th>
+          <th style="width: 10%;">Khóa</th>
+          <th style="width: 40%;">Mô tả chi tiết</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>id</strong></td>
+          <td>INTEGER (SERIAL)</td>
+          <td>No</td>
+          <td>PK</td>
+          <td>Định danh tự tăng, duy nhất cho mỗi đơn đặt hàng mua sắm.</td>
+        </tr>
+        <tr>
+          <td><strong>customer_id</strong></td>
+          <td>INTEGER</td>
+          <td>Yes</td>
+          <td>FK</td>
+          <td>Khóa ngoại liên kết tới người mua hàng nếu là thành viên (users).</td>
+        </tr>
+        <tr>
+          <td><strong>guest_name</strong></td>
+          <td>VARCHAR(150)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Họ tên người nhận hàng.</td>
+        </tr>
+        <tr>
+          <td><strong>guest_phone</strong></td>
+          <td>VARCHAR(20)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Số điện thoại liên lạc nhận hàng.</td>
+        </tr>
+        <tr>
+          <td><strong>shipping_address</strong></td>
+          <td>VARCHAR(300)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Địa chỉ cụ thể chuyển giao hàng hóa (bao gồm Tỉnh, Huyện, Xã).</td>
+        </tr>
+        <tr>
+          <td><strong>total_amount</strong></td>
+          <td>DECIMAL(15, 2)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Tổng giá trị đơn hàng sau khi cộng phí ship và trừ giảm giá.</td>
+        </tr>
+        <tr>
+          <td><strong>payment_method</strong></td>
+          <td>ENUM('cod', 'bank_transfer')</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Hình thức thanh toán: COD tiền mặt hoặc Chuyển khoản (VietQR).</td>
+        </tr>
+        <tr>
+          <td><strong>payment_status</strong></td>
+          <td>ENUM('unpaid', 'paid', 'refunded')</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Trạng thái thanh toán: Chưa thanh toán, Đã thanh toán, Đã hoàn tiền.</td>
+        </tr>
+        <tr>
+          <td><strong>status</strong></td>
+          <td>ENUM('pending', 'confirmed', 'shipping', 'completed', 'cancelled')</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Trạng thái đơn hàng: Chờ duyệt, Đã xác nhận, Đang giao, Hoàn thành, Đã hủy.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-caption">Bảng A.3. Từ điển dữ liệu bảng orders</div>
+  </div>
+
+  <h3 class="subsection-title">A.4. Cấu trúc bảng phiếu sửa chữa &amp; tiếp nhận bảo hành (Bảng: repair_orders)</h3>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%;">Tên trường</th>
+          <th style="width: 25%;">Kiểu dữ liệu</th>
+          <th style="width: 10%;">Null?</th>
+          <th style="width: 10%;">Khóa</th>
+          <th style="width: 40%;">Mô tả chi tiết</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>id</strong></td>
+          <td>INTEGER (SERIAL)</td>
+          <td>No</td>
+          <td>PK</td>
+          <td>Định danh duy nhất của phiếu dịch vụ kỹ thuật.</td>
+        </tr>
+        <tr>
+          <td><strong>receipt_code</strong></td>
+          <td>VARCHAR(50)</td>
+          <td>No</td>
+          <td>Unique</td>
+          <td>Mã biên nhận phục vụ tra cứu bảo hành (ví dụ: RCV-118005).</td>
+        </tr>
+        <tr>
+          <td><strong>customer_name</strong></td>
+          <td>VARCHAR(150)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Họ tên chủ sở hữu thiết bị mang sửa/bảo hành.</td>
+        </tr>
+        <tr>
+          <td><strong>customer_phone</strong></td>
+          <td>VARCHAR(20)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Số điện thoại liên lạc báo giá và trạng thái.</td>
+        </tr>
+        <tr>
+          <td><strong>device_model</strong></td>
+          <td>VARCHAR(150)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Model thiết bị (ví dụ: Dell Vostro 5490, Asus TUF).</td>
+        </tr>
+        <tr>
+          <td><strong>diagnosis</strong></td>
+          <td>TEXT</td>
+          <td>Yes</td>
+          <td>-</td>
+          <td>Chẩn đoán lỗi chi tiết do Kỹ thuật viên nhập sau khi kiểm tra máy.</td>
+        </tr>
+        <tr>
+          <td><strong>repair_cost</strong></td>
+          <td>DECIMAL(15, 2)</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Tổng chi phí báo giá (tiền công sửa + giá linh kiện thay thế).</td>
+        </tr>
+        <tr>
+          <td><strong>status</strong></td>
+          <td>ENUM('received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed', 'returned', 'cancelled')</td>
+          <td>No</td>
+          <td>-</td>
+          <td>Các bước xử lý kỹ thuật khép kín từ tiếp nhận, chẩn đoán, báo giá, sửa, kiểm thử, hoàn thành, trả máy và hủy.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-caption">Bảng A.4. Từ điển dữ liệu bảng repair_orders</div>
+  </div>
+
+  <!-- ==================== PHỤ LỤC B ==================== -->
+  <h2 class="section-title">PHỤ LỤC B: Định dạng phản hồi API &amp; Danh mục Mã lỗi (API Protocols &amp; Errors)</h2>
+  <p>Toàn bộ quá trình giao tiếp dữ liệu giữa Frontend Web/Mobile App và Backend Express Server được chuẩn hóa nghiêm ngặt theo định dạng JSON (JavaScript Object Notation). Dưới đây là đặc tả các giao thức phản hồi tiêu chuẩn:</p>
+
+  <h3 class="subsection-title">B.1. Cấu trúc phản hồi thành công tiêu chuẩn (HTTP 200 OK / 201 Created)</h3>
+  <pre><code>{
+  <span class="keyword">"success"</span>: <span class="keyword">true</span>,
+  <span class="keyword">"message"</span>: <span class="string">"Xử lý thành công!"</span>,
+  <span class="keyword">"data"</span>: {
+    <span class="keyword">"order_id"</span>: <span class="number">5</span>,
+    <span class="keyword">"total_amount"</span>: <span class="number">25000.00</span>,
+    <span class="keyword">"payment_status"</span>: <span class="string">"paid"</span>
+  }
+}</code></pre>
+
+  <h3 class="subsection-title">B.2. Cấu trúc phản hồi thất bại / lỗi hệ thống</h3>
+  <pre><code>{
+  <span class="keyword">"success"</span>: <span class="keyword">false</span>,
+  <span class="keyword">"message"</span>: <span class="string">"Mô tả nguyên nhân chi tiết gây lỗi hệ thống (ví dụ: Số lượng sản phẩm trong kho không đủ)"</span>,
+  <span class="keyword">"error_code"</span>: <span class="string">"INSUFFICIENT_STOCK"</span> <span class="comment">// Mã định danh lỗi tiện tích hợp</span>
+}</code></pre>
+
+  <h3 class="subsection-title">B.3. Danh mục mã trạng thái mạng HTTP (HTTP Status Codes) được thực thi</h3>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 15%; text-align: center;">Mã HTTP</th>
+          <th style="width: 25%;">Tên mã tiêu chuẩn</th>
+          <th style="width: 60%;">Ngữ cảnh áp dụng thực tế trong Cửa Hàng 118</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: center; font-weight: bold; color: #059669;">200</td>
+          <td>OK</td>
+          <td>Truy vấn thông tin sản phẩm, lịch hẹn, danh sách đơn hàng thành công.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center; font-weight: bold; color: #059669;">201</td>
+          <td>Created</td>
+          <td>Khởi tạo thành công tài khoản mới, tạo đơn đặt hàng mới, tạo lịch hẹn thành công.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center; font-weight: bold; color: #d97706;">400</td>
+          <td>Bad Request</td>
+          <td>Dữ liệu đầu vào sai định dạng, đặt hàng khi giỏ hàng trống, áp dụng voucher hết hạn.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center; font-weight: bold; color: #d97706;">401</td>
+          <td>Unauthorized</td>
+          <td>Chưa đăng nhập hệ thống, mã Token JWT bị hết hạn hoặc không khớp chữ ký bảo mật.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center; font-weight: bold; color: #d97706;">403</td>
+          <td>Forbidden</td>
+          <td>Khách hàng thông thường cố tình truy cập vào các API chỉ dành riêng cho Admin hoặc KTV.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center; font-weight: bold; color: #d97706;">404</td>
+          <td>Not Found</td>
+          <td>Không tìm thấy sản phẩm theo ID, mã đơn hàng không tồn tại khi đối soát SePay Webhook.</td>
+        </tr>
+        <tr>
+          <td style="text-align: center; font-weight: bold; color: #dc2626;">500</td>
+          <td>Internal Server Error</td>
+          <td>Lỗi kết nối cơ sở dữ liệu Supabase, lỗi logic chương trình, lỗi đồng bộ luồng thư viện Mailer.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-caption">Bảng B.1. Ý nghĩa các mã phản hồi HTTP của hệ thống</div>
+  </div>
+
+  <!-- ==================== PHỤ LỤC C ==================== -->
+  <h2 class="section-title">PHỤ LỤC C: Danh mục các Màn hình Giao diện Hệ thống (Application View Index)</h2>
+  <p>Hệ thống Cửa Hàng 118 bao gồm một tập hợp đa dạng các màn hình nghiệp vụ được thiết kế trực quan, tối ưu hóa trải nghiệm responsive trên cả thiết bị di động và máy tính. Danh mục các màn hình hoạt động chính bao gồm:</p>
+
+  <h3 class="subsection-title">C.1. Phân hệ Web giao diện Khách hàng (Client Portal)</h3>
+  <div class="bullet-list">
+    <ul style="list-style-type: disc; padding-left: 20px;">
+      <li><strong>Trang chủ (Homepage):</strong> Giới thiệu dịch vụ lắp đặt camera chuyên nghiệp, linh kiện laptop chính hãng, chính sách hỗ trợ và các ưu đãi thành viên nổi bật.</li>
+      <li><strong>Cửa hàng (Store Page):</strong> Hiển thị danh mục sản phẩm, bộ lọc linh kiện theo phân loại và thanh tìm kiếm sản phẩm nhanh.</li>
+      <li><strong>Trang Chi tiết sản phẩm (Product Detail):</strong> Cung cấp thông số kỹ thuật chi tiết, giá tiền, mô tả tính năng, nút thêm vào giỏ hàng và xem đánh giá từ người mua trước.</li>
+      <li><strong>Màn hình Đặt lịch hẹn sửa chữa (Booking Page):</strong> Form thu thập thông tin đặt lịch hẹn (Tên, SĐT, dòng máy, mô tả sự cố, lựa chọn KTV ưu tiên và khung giờ hẹn rảnh).</li>
+      <li><strong>Màn hình Giỏ hàng &amp; Thanh toán (Checkout Page):</strong> Xem giỏ hàng, áp dụng Voucher giảm giá, chọn phương thức thanh toán (COD hoặc chuyển khoản VietQR kèm mã QR động thông minh).</li>
+      <li><strong>Trang Đặt hàng thành công &amp; Tra cứu tiến độ (Order Tracking):</strong> Tra cứu thời gian thực trạng thái xử lý đơn mua sản phẩm hoặc tiến độ xử lý kỹ thuật của máy sửa chữa.</li>
+    </ul>
+  </div>
+
+  <h3 class="subsection-title">C.2. Phân hệ Web quản trị Admin (Admin Panel Dashboard)</h3>
+  <div class="bullet-list">
+    <ul style="list-style-type: disc; padding-left: 20px;">
+      <li><strong>Bảng tổng quan kinh doanh (Dashboard Overview):</strong> Thống kê trực quan số liệu doanh thu bán hàng, doanh thu sửa chữa, biểu đồ tăng trưởng và cảnh báo hàng hóa sắp hết trong kho.</li>
+      <li><strong>Quản lý đơn bán hàng (Admin Orders):</strong> Danh sách đơn mua linh kiện, lọc theo trạng thái duyệt đơn và trạng thái thanh toán, đối soát trạng thái chuyển khoản tự động ngân hàng.</li>
+      <li><strong>Quản lý Lịch hẹn &amp; Điều phối (Bookings Management):</strong> Tiếp nhận yêu cầu sửa chữa trực tuyến từ khách hàng, phê duyệt lịch hẹn và thực hiện phân phối phân công kỹ thuật viên đảm nhận.</li>
+      <li><strong>Quản lý Sản phẩm &amp; Danh mục (Products Management):</strong> Quản lý danh mục linh kiện laptop/camera, thêm mới thông số kỹ thuật, cập nhật giá bán và số lượng xuất nhập kho hàng.</li>
+      <li><strong>Quản lý Người dùng &amp; Phân quyền (Users Management):</strong> Cấp tài khoản nhân viên mới, phân quyền vai trò (Admin, KTV, Customer), theo dõi điểm tích lũy thành viên.</li>
+    </ul>
+  </div>
+
+  <h3 class="subsection-title">C.3. Phân hệ Mobile App dành cho Kỹ thuật viên (Technician Mobile App)</h3>
+  <div class="bullet-list">
+    <ul style="list-style-type: disc; padding-left: 20px;">
+      <li><strong>Màn hình Đăng nhập (Tech Login):</strong> Kỹ thuật viên đăng nhập tài khoản nội bộ do Admin cấp để truy cập phân hệ làm việc.</li>
+      <li><strong>Danh sách Nhiệm vụ (Technician Tasklist):</strong> Hiển thị tất cả các đơn sửa chữa/tiếp nhận bảo hành đang được phân công đảm nhận, phân biệt rõ các đơn "Đang xử lý", "Chờ báo giá", "Chờ khách duyệt chi phí" và "Đã hoàn thành".</li>
+      <li><strong>Chi tiết đơn sửa chữa (Task Details):</strong> Xem mô tả sự cố của khách, thông tin thiết bị lỗi, tiến hành nhập chẩn đoán lỗi phần cứng chính xác và chụp ảnh linh kiện lỗi làm kiểm chứng.</li>
+      <li><strong>Màn hình Báo giá &amp; Thay thế (Quoting View):</strong> Lựa chọn linh kiện thay thế từ kho của cửa hàng và nhập tiền công kỹ thuật để tự động đẩy báo giá lên hệ thống thời gian thực cho khách duyệt.</li>
+    </ul>
+  </div>
+
+  <p>Tóm lại, toàn bộ cấu trúc cơ sở dữ liệu quan hệ chặt chẽ, các giao thức kết nối API chuẩn hóa bảo mật và hệ thống giao tiếp đa màn hình Web/Mobile đồng bộ đã tạo nên một giải pháp công nghệ toàn diện, an toàn và tối ưu cho **Cửa Hàng 118**.</p>
+</div>
+
+</body>
+</html>
