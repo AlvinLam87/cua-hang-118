@@ -52,7 +52,7 @@ const AdminInventoryPage = () => {
     try {
       const [pRes, cRes, mRes] = await Promise.all([
         fetch(`${API_V1_URL}/admin/products`, { headers }),
-        fetch(`${API_V1_URL}/categories`),
+        fetch(`${API_V1_URL}/categories?type=product`),
         fetch(`${API_V1_URL}/admin/inventory/movements`, { headers })
       ]);
       

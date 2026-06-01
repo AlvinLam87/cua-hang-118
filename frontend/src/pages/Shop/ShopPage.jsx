@@ -122,7 +122,7 @@ const ShopPage = () => {
     const fetchData = async () => {
       try {
         const [catRes, prodRes] = await Promise.all([
-          fetch(`${API_V1_URL}/categories`),
+          fetch(`${API_V1_URL}/categories?type=product`),
           fetch(`${API_V1_URL}/products`)
         ]);
         const catData = await catRes.json();
