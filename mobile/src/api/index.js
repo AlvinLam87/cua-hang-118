@@ -20,12 +20,16 @@ const getBaseUrl = () => {
     return 'http://10.0.2.2:3001/api/v1';
   }
   
-  // Nếu là điện thoại thật, lấy IP tĩnh của máy tính phát WiFi từ Expo
-  const debuggerHost = Constants.expoConfig?.hostUri;
-  let pcIp = '172.20.10.5'; // Fallback tĩnh (IP của máy tính)
+  // Lấy IP từ hostUri của Expo
+  let pcIp = '192.168.1.89'; // IP Wi-Fi hiện tại của máy tính
+  
+  const debuggerHost = Constants.expoConfig?.hostUri || 
+                       Constants.expoConfig?.debuggerHost || 
+                       Constants.manifest2?.extra?.expoGoProjectConfigs?.debuggerHost;
   
   if (debuggerHost) {
-    pcIp = debuggerHost.split(':')[0];
+    const ip = debuggerHost.split(':')[0];
+    if (ip) pcIp = ip;
   }
   
   return `http://${pcIp}:3001/api/v1`;
