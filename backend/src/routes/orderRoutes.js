@@ -407,8 +407,8 @@ router.post('/:id/warranty', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng hoặc sản phẩm tương ứng trong đơn hàng của bạn.' });
     }
 
-    if (order.status !== 'completed') {
-      return res.status(400).json({ success: false, message: 'Chỉ đơn hàng đã giao (hoàn thành) mới được gửi yêu cầu bảo hành.' });
+    if (!['confirmed', 'shipping', 'completed'].includes(order.status)) {
+      return res.status(400).json({ success: false, message: 'Đơn hàng chưa được xác nhận, chưa thể gửi yêu cầu bảo hành.' });
     }
 
     const orderItem = order.items[0];

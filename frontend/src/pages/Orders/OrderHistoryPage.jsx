@@ -397,7 +397,7 @@ const OrderHistoryPage = () => {
                                         <span className="text-sm font-extrabold text-gray-900">
                                           {(item.quantity * parseFloat(item.price_at_purchase)).toLocaleString('vi-VN')}đ
                                         </span>
-                                        {order.status === 'completed' && (
+                                        {['confirmed', 'shipping', 'completed'].includes(order.status) && (
                                           <button
                                             type="button"
                                             onClick={() => {
