@@ -17,6 +17,7 @@
       "bundleIdentifier": "com.cuahang118.technician"
     },
     "android": {
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#2563EB"

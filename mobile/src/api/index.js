@@ -1,41 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getApiBaseUrl, getServerOrigin } from './config';
 
-import { Platform } from 'react-native';
-
-import Constants from 'expo-constants';
-
-// ĐỔI THÀNH true để kết nối với server ONLINE (cuahang118.online), ĐỔI THÀNH false để test ở máy tính LOCAL
-const IS_PRODUCTION = false;
-
-const getBaseUrl = () => {
-  if (IS_PRODUCTION) {
-    return 'https://cua-hang-118.onrender.com/api/v1';
-  }
-
-  if (Platform.OS === 'web') return 'http://localhost:3001/api/v1';
-  
-  // Nếu là máy ảo (Emulator), bắt buộc dùng 10.0.2.2 để không bị vướng tường lửa Windows
-  if (!Constants.isDevice && Platform.OS === 'android') {
-    return 'http://10.0.2.2:3001/api/v1';
-  }
-  
-  // Lấy IP từ hostUri của Expo
-  let pcIp = '192.168.1.89'; // IP Wi-Fi hiện tại của máy tính
-  
-  const debuggerHost = Constants.expoConfig?.hostUri || 
-                       Constants.expoConfig?.debuggerHost || 
-                       Constants.manifest2?.extra?.expoGoProjectConfigs?.debuggerHost;
-  
-  if (debuggerHost) {
-    const ip = debuggerHost.split(':')[0];
-    if (ip) pcIp = ip;
-  }
-  
-  return `http://${pcIp}:3001/api/v1`;
-};
-
-const API_URL = getBaseUrl();
+const API_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: API_URL,
@@ -63,7 +30,7 @@ export const authAPI = {
   changePassword: (data) => api.put('/auth/change-password', data),
 };
 
-export const API_URL_BASE = getBaseUrl().replace('/api/v1', ''); // Used for image prefixes
+export const API_URL_BASE = getServerOrigin(); // Used for image prefixes
 
 export const technicianAPI = {
   getTasks:      ()             => api.get('/technician/tasks'),
