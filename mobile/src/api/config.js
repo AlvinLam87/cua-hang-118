@@ -41,3 +41,6 @@ export const getServerOrigin = () => {
 };
 
 export const getApiBaseUrl = () => `${getServerOrigin()}/api/v1`;
+
+/** Alias giữ tương thích — tránh lỗi "getBaseUrl doesn't exist" khi cache bundle cũ */
+export const getBaseUrl = getApiBaseUrl;
