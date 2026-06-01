@@ -8,10 +8,15 @@ export { getApiBaseUrl, getServerOrigin, getBaseUrl };
 
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 45000, // Render free tier có thể cold-start vài chục giây
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+if (__DEV__) {
+  console.log('[API] baseURL:', API_URL);
+}
 
 // Interceptor to attach token
 api.interceptors.request.use(

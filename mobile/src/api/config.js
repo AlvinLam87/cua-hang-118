@@ -2,10 +2,14 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 /**
- * true  → server online (Render)
- * false → backend chạy trên máy tính (LAN / emulator)
+ * null  → tự động: máy thật = Render, simulator/emulator = LAN
+ * true  → luôn dùng Render
+ * false → luôn dùng backend trên máy tính (cùng Wi‑Fi)
  */
-export const IS_PRODUCTION = false;
+const FORCE_PRODUCTION = null;
+
+export const IS_PRODUCTION =
+  FORCE_PRODUCTION !== null ? FORCE_PRODUCTION : Boolean(Constants.isDevice);
 
 const getLanIp = () => {
   let pcIp = '192.168.1.89';
