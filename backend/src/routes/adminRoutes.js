@@ -809,12 +809,80 @@ router.put('/customers/:id/adjust-points', requireAdmin, async (req, res) => {
 });
 
 router.delete('/customers/:id', requireAdmin, async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
-    const customer = await Customer.findByPk(req.params.id);
-    if (!customer) return res.status(404).json({ success: false, message: 'Không tìm thấy.' });
-    await customer.destroy();
-    res.json({ success: true, message: 'Đã xóa khách hàng.' });
-  } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+    const customer = await Customer.findByPk(req.params.id, { transaction });
+    if (!customer) {
+      await transaction.rollback();
+      return res.status(404).json({ success: false, message: 'Không tìm thấy.' });
+    }
+
+    // 1. Tìm User liên kết (qua phone hoặc email)
+    const user = await User.findOne({
+      where: {
+        [Op.or]: [
+          { phone: customer.phone },
+          ...(customer.email ? [{ email: customer.email }] : [])
+        ]
+      },
+      transaction
+    });
+
+    if (user) {
+      // Tìm tất cả đơn hàng của User
+      const orders = await Order.findAll({ where: { customer_id: user.id }, transaction });
+      const orderIds = orders.map(o => o.id);
+      
+      // Xóa sản phẩm trong đơn hàng
+      if (orderIds.length > 0) {
+        await OrderItem.destroy({ where: { order_id: { [Op.in]: orderIds } }, transaction });
+      }
+      
+      // Xóa đơn hàng
+      await Order.destroy({ where: { customer_id: user.id }, transaction });
+      
+      // Xóa đánh giá (reviews)
+      await Review.destroy({ where: { user_id: user.id }, transaction });
+      
+      // Xóa mã giảm giá sở hữu (vouchers)
+      await Voucher.destroy({ where: { user_id: user.id }, transaction });
+      
+      // Xóa User liên kết
+      await user.destroy({ transaction });
+    }
+
+    // 2. Tìm tất cả đơn sửa chữa của Customer
+    const repairOrders = await RepairOrder.findAll({ where: { customer_id: customer.id }, transaction });
+    const repairOrderIds = repairOrders.map(ro => ro.id);
+
+    // Xóa các bước sửa chữa
+    if (repairOrderIds.length > 0) {
+      await RepairStep.destroy({ where: { repair_order_id: { [Op.in]: repairOrderIds } }, transaction });
+    }
+
+    // Xóa đơn sửa chữa
+    await RepairOrder.destroy({ where: { customer_id: customer.id }, transaction });
+
+    // 3. Xóa các lịch hẹn (bookings) liên quan tới khách hàng (qua SĐT hoặc Email)
+    await Booking.destroy({
+      where: {
+        [Op.or]: [
+          { phone: customer.phone },
+          ...(customer.email ? [{ email: customer.email }] : [])
+        ]
+      },
+      transaction
+    });
+
+    // 4. Xóa Customer
+    await customer.destroy({ transaction });
+
+    await transaction.commit();
+    res.json({ success: true, message: 'Đã xóa khách hàng và toàn bộ dữ liệu liên quan.' });
+  } catch (err) {
+    await transaction.rollback();
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // ── CATEGORIES ───────────────────────────────────────────
