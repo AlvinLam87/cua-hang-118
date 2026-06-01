@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "mobile:install": "npm install --prefix mobile",
+    "mobile:start": "npm run start --prefix mobile"
+  },
   "dependencies": {
     "docx": "^9.6.1"
   }

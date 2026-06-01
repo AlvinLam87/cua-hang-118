@@ -20,7 +20,7 @@ import NotificationSettingsScreen from './src/screens/NotificationSettingsScreen
 import AppInfoScreen from './src/screens/AppInfoScreen';
 import {
   clearAuthSession,
-  isAuthServerMismatch,
+  shouldClearStoredAuth,
   setOnLoginSuccess,
   setOnSessionExpired,
 } from './src/api/authSession';
@@ -96,7 +96,7 @@ export default function App() {
     const bootstrapAsync = async () => {
       let token;
       try {
-        if (await isAuthServerMismatch()) {
+        if (await shouldClearStoredAuth()) {
           await clearAuthSession();
         }
         token = await AsyncStorage.getItem('userToken');

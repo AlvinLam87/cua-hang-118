@@ -4,6 +4,7 @@ const AUTH_KEYS = ['userToken', 'userData', 'authServerOrigin'];
 
 let onSessionExpired = null;
 let onLoginSuccess = null;
+let clearingSession = false;
 
 export function setOnSessionExpired(handler) {
   onSessionExpired = handler;
@@ -14,8 +15,14 @@ export function setOnLoginSuccess(handler) {
 }
 
 export async function clearAuthSession() {
-  await AsyncStorage.multiRemove(AUTH_KEYS);
-  onSessionExpired?.();
+  if (clearingSession) return;
+  clearingSession = true;
+  try {
+    await AsyncStorage.multiRemove(AUTH_KEYS);
+    onSessionExpired?.();
+  } finally {
+    clearingSession = false;
+  }
 }
 
 export async function saveAuthSession(token, user) {
@@ -28,10 +35,13 @@ export async function saveAuthSession(token, user) {
   onLoginSuccess?.(token);
 }
 
-/** Token lưu từ server khác (local vs Render) → không dùng được */
-export async function isAuthServerMismatch() {
+/** Token cũ hoặc đăng nhập server khác → cần đăng nhập lại */
+export async function shouldClearStoredAuth() {
+  const token = await AsyncStorage.getItem('userToken');
+  if (!token) return false;
+
   const { getServerOrigin } = require('./config');
   const saved = await AsyncStorage.getItem('authServerOrigin');
-  if (!saved) return false;
+  if (!saved) return true;
   return saved !== getServerOrigin();
 }
