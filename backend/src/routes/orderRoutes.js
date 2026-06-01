@@ -377,24 +377,100 @@ router.post('/:id/claim-bank-transfer', async (req, res) => {
           id: order.id,
           message: `Khách báo đã CK đơn #${order.id} — cần đối soát`,
         });
-      }
-    } catch (socketErr) {
-      console.warn('⚠️ [Socket] claim transfer:', socketErr.message);
+// POST /api/v1/orders/:id/warranty — Khách gửi yêu cầu bảo hành cho linh kiện của đơn hàng
+router.post('/:id/warranty', async (req, res) => {
+  try {
+    const jwt = require('jsonwebtoken');
+    const { Op } = require('sequelize');
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, jwtSecret);
+
+    const { productId, issue } = req.body;
+    if (!productId) {
+      return res.status(400).json({ success: false, message: 'Thiếu thông tin sản phẩm cần bảo hành.' });
     }
 
-    await order.reload();
+    const order = await Order.findByPk(req.params.id, {
+      include: [{
+        model: OrderItem,
+        as: 'items',
+        where: { product_id: productId },
+        include: [{ model: Product, as: 'product' }]
+      }]
+    });
+
+    if (!order || order.customer_id !== decoded.id) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng hoặc sản phẩm tương ứng trong đơn hàng của bạn.' });
+    }
+
+    if (order.status !== 'completed') {
+      return res.status(400).json({ success: false, message: 'Chỉ đơn hàng đã giao (hoàn thành) mới được gửi yêu cầu bảo hành.' });
+    }
+
+    const orderItem = order.items[0];
+    const productName = orderItem?.product?.name || 'Linh kiện';
+
+    // Kiểm tra xem đã có đơn bảo hành nào đang xử lý cho linh kiện này thuộc đơn hàng này chưa
+    const { RepairOrder } = require('../models');
+    const existingWarranty = await RepairOrder.findOne({
+      where: {
+        customer_id: decoded.id,
+        device_name: `[Bảo Hành Đơn Hàng] ${productName}`,
+        status: { [Op.ne]: 'cancelled' }
+      }
+    });
+
+    if (existingWarranty && !['completed', 'returned'].includes(existingWarranty.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Đã có yêu cầu bảo hành đang xử lý (#${existingWarranty.receipt_code}) cho linh kiện này.`
+      });
+    }
+
+    // Tạo mã biên nhận tiếp theo
+    const maxOrder = await RepairOrder.findOne({ order: [['id', 'DESC']] });
+    const nextId = maxOrder ? maxOrder.id + 1 : 1;
+    const receiptCode = `RCV-118${String(nextId).padStart(3, '0')}`;
+
+    const newRepair = await RepairOrder.create({
+      receipt_code: receiptCode,
+      customer_id: decoded.id,
+      device_name: `[Bảo Hành Đơn Hàng] ${productName}`,
+      issue: (issue && String(issue).trim()) || `Yêu cầu bảo hành linh kiện từ đơn hàng #${order.id}.`,
+      status: 'received',
+      received_date: new Date().toISOString().slice(0, 10),
+    });
+
+    // Gửi thông báo socket
+    try {
+      const socketConfig = require('../config/socket');
+      const io = socketConfig.getIO();
+      if (io) {
+        io.emit('data_changed', {
+          type: 'repair',
+          action: 'create',
+          id: newRepair.id,
+          message: `Khách yêu cầu bảo hành linh kiện đơn hàng #${order.id}`,
+        });
+      }
+    } catch (socketErr) {
+      console.warn('⚠️ [Socket] order warranty:', socketErr.message);
+    }
 
     return res.json({
       success: true,
-      message: order.payment_status === 'paid'
-        ? 'Đơn đã được xác nhận thanh toán trước đó.'
-        : 'Đã ghi nhận báo chuyển khoản. Cửa hàng sẽ đối soát — chưa xác nhận tự động.',
+      message: 'Gửi yêu cầu bảo hành thành công! Cửa hàng đã tiếp nhận và sẽ liên hệ sớm.',
       data: {
-        payment_status: order.payment_status,
-        status: order.status,
-      },
+        receipt_code: newRepair.receipt_code,
+        repair_id: newRepair.id
+      }
     });
   } catch (err) {
+    console.error('❌ Lỗi gửi bảo hành đơn hàng:', err.message);
     return res.status(500).json({ success: false, message: err.message });
   }
 });
