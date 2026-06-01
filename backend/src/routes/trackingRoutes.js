@@ -1,20 +1,83 @@
 const express = require('express');
 const router = express.Router();
-const { RepairOrder, RepairStep, Customer } = require('../models');
+const { RepairOrder, RepairStep, Customer, Order, OrderItem, Product } = require('../models');
 const { Op } = require('sequelize');
 const { isWarrantyActive } = require('../utils/warranty');
 
-// GET /api/v1/tracking?q=RCV-118001 hoặc ?q=0704818118
+// GET /api/v1/tracking?q=RCV-118001 hoặc ?q=0704818118 hoặc ?q=DH123
 router.get('/', async (req, res) => {
   try {
     const { q } = req.query;
     if (!q) {
-      return res.status(400).json({ success: false, message: 'Vui lòng nhập mã biên nhận hoặc số điện thoại.' });
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập mã biên nhận, mã đơn hàng hoặc số điện thoại.' });
     }
 
     const trimmed = q.trim();
 
-    // Tìm theo mã biên nhận
+    // ── Kiểm tra nếu là mã đơn hàng linh kiện (DH123 hoặc #123) ──
+    const orderIdMatch = trimmed.match(/^(?:DH|dh|#)(\d+)$/);
+    if (orderIdMatch) {
+      const orderId = parseInt(orderIdMatch[1], 10);
+      const productOrder = await Order.findByPk(orderId, {
+        include: [{ model: OrderItem, as: 'items', include: [{ model: Product, as: 'product', attributes: ['name', 'image_url'] }] }],
+      });
+
+      if (productOrder) {
+        const orderStatusLabels = {
+          pending: 'Chờ xác nhận',
+          confirmed: 'Đã xác nhận',
+          shipping: 'Đang giao hàng',
+          completed: 'Hoàn thành',
+          cancelled: 'Đã hủy',
+        };
+
+        const orderSteps = [
+          { label: 'Đặt hàng', key: 'pending' },
+          { label: 'Xác nhận đơn', key: 'confirmed' },
+          { label: 'Đang giao hàng', key: 'shipping' },
+          { label: 'Hoàn thành', key: 'completed' },
+        ];
+        const orderWeight = { pending: 1, confirmed: 2, shipping: 3, completed: 4, cancelled: 0 };
+        const currentWeight = orderWeight[productOrder.status] || 0;
+
+        const steps = orderSteps.map((s, idx) => ({
+          label: s.label,
+          done: currentWeight >= (idx + 1),
+          date: currentWeight >= (idx + 1) ? (productOrder.created_at || productOrder.createdAt) : null,
+        }));
+
+        const items = (productOrder.items || []).map(item => ({
+          name: item.product?.name || 'Sản phẩm',
+          image: item.product?.image_url || null,
+          quantity: item.quantity,
+          price: parseFloat(item.price_at_purchase),
+        }));
+
+        return res.json({
+          success: true,
+          data: {
+            type: 'product_order',
+            orderId: productOrder.id,
+            orderCode: `DH${productOrder.id}`,
+            customer: productOrder.guest_name,
+            phone: productOrder.guest_phone,
+            shippingAddress: productOrder.shipping_address,
+            totalAmount: parseFloat(productOrder.total_amount),
+            discountAmount: parseFloat(productOrder.discount_amount || 0),
+            status: productOrder.status,
+            statusLabel: orderStatusLabels[productOrder.status] || productOrder.status,
+            paymentMethod: productOrder.payment_method === 'cod' ? 'COD' : 'Chuyển khoản',
+            paymentStatus: productOrder.payment_status,
+            note: productOrder.note,
+            orderDate: productOrder.created_at || productOrder.createdAt,
+            items,
+            steps,
+          },
+        });
+      }
+    }
+
+    // ── Tìm đơn sửa chữa theo mã biên nhận ──
     let order = await RepairOrder.findOne({
       where: { receipt_code: trimmed.toUpperCase() },
       include: [
@@ -39,7 +102,7 @@ router.get('/', async (req, res) => {
     }
 
     if (!order) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn sửa chữa phù hợp.' });
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng hoặc đơn sửa chữa phù hợp.' });
     }
 
     const statusLabels = {
@@ -108,6 +171,7 @@ router.get('/', async (req, res) => {
     res.json({
       success: true,
       data: {
+        type: 'repair',
         repairId: order.id,
         receiptCode: order.receipt_code,
         device: order.device_name,
@@ -136,3 +200,4 @@ router.get('/', async (req, res) => {
 });
 
 module.exports = router;
+

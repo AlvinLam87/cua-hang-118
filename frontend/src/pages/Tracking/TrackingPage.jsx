@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, Package, Clock, CheckCircle2, Wrench, AlertCircle, Loader2, Calendar, User, Smartphone, Tag, ShieldCheck, PhoneCall, ArrowRight, ClipboardList, Info, Send } from 'lucide-react';
+import { Search, Package, Clock, CheckCircle2, Wrench, AlertCircle, Loader2, Calendar, User, Smartphone, Tag, ShieldCheck, PhoneCall, ArrowRight, ClipboardList, Info, Send, MapPin, ShoppingBag, CreditCard, Truck } from 'lucide-react';
 import { API_V1_URL } from '../../utils/api.js';
 
 const statusStyles = {
@@ -11,6 +11,14 @@ const statusStyles = {
   testing: { color: 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20', label: 'Đang kiểm tra', icon: <ShieldCheck className="w-5 h-5" /> },
   completed: { color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20', label: 'Hoàn thành', icon: <CheckCircle2 className="w-5 h-5" /> },
   returned: { color: 'text-indigo-400 bg-indigo-400/10 border-indigo-400/20', label: 'Đã bàn giao', icon: <CheckCircle2 className="w-5 h-5" /> },
+  cancelled: { color: 'text-rose-500 bg-rose-500/10 border-rose-500/20', label: 'Đã hủy', icon: <AlertCircle className="w-5 h-5" /> },
+};
+
+const productOrderStatusStyles = {
+  pending: { color: 'text-amber-500 bg-amber-500/10 border-amber-500/20', label: 'Chờ xác nhận', icon: <Clock className="w-5 h-5" /> },
+  confirmed: { color: 'text-blue-500 bg-blue-500/10 border-blue-500/20', label: 'Đã xác nhận', icon: <CheckCircle2 className="w-5 h-5" /> },
+  shipping: { color: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20', label: 'Đang giao hàng', icon: <Truck className="w-5 h-5" /> },
+  completed: { color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20', label: 'Hoàn thành', icon: <CheckCircle2 className="w-5 h-5" /> },
   cancelled: { color: 'text-rose-500 bg-rose-500/10 border-rose-500/20', label: 'Đã hủy', icon: <AlertCircle className="w-5 h-5" /> },
 };
 
@@ -155,11 +163,11 @@ const TrackingPage = () => {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter leading-tight animate-in fade-in slide-in-from-bottom-6 duration-700">
-            Kiểm Tra <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-cyan-400">Tiến Độ</span><br/>Sửa Chữa
+            Tra Cứu <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-cyan-400">Đơn Hàng</span><br/>& Sửa Chữa
           </h1>
           
           <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-16 font-medium leading-relaxed opacity-80 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            Nhập mã biên nhận để theo dõi minh bạch từng giai đoạn xử lý thiết bị của bạn tại Cửa Hàng 118.
+            Nhập mã biên nhận sửa chữa hoặc mã đơn hàng linh kiện để theo dõi minh bạch tại Cửa Hàng 118.
           </p>
 
           {/* Futuristic Search Bar */}
@@ -173,7 +181,7 @@ const TrackingPage = () => {
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="RCV-118... hoặc Số điện thoại"
+                    placeholder="RCV-118... / DH123 / Số điện thoại"
                     className="w-full pl-14 pr-6 py-5 bg-transparent text-white placeholder-slate-500 outline-none font-bold text-lg"
                   />
                 </div>
@@ -187,8 +195,9 @@ const TrackingPage = () => {
               </div>
             </form>
             <div className="mt-6 flex flex-wrap justify-center gap-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/5">Ví dụ: <span className="text-slate-300">RCV-118001</span></div>
-              <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/5">Ví dụ: <span className="text-slate-300">0704818118</span></div>
+              <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/5">Sửa chữa: <span className="text-slate-300">RCV-118001</span></div>
+              <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/5">Đơn hàng: <span className="text-slate-300">DH1</span></div>
+              <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-lg border border-white/5">SĐT: <span className="text-slate-300">0704818118</span></div>
             </div>
           </div>
         </div>
@@ -209,8 +218,159 @@ const TrackingPage = () => {
           </div>
         )}
 
-        {/* Result UI */}
-        {result && !loading && (
+        {/* Product Order Result UI */}
+        {result && !loading && result.type === 'product_order' && (
+          <div className="animate-in fade-in slide-in-from-bottom-12 duration-1000">
+            <div className="bg-[#161f35]/80 backdrop-blur-3xl rounded-[48px] shadow-3xl border border-white/10 overflow-hidden">
+              {/* Status Banner */}
+              {(() => {
+                const pStatus = productOrderStatusStyles[result.status] || productOrderStatusStyles.pending;
+                return (
+                  <div className={`p-10 flex flex-col md:flex-row items-center justify-between gap-8 border-b border-white/5 ${pStatus.color.split(' ')[1]}`}>
+                    <div className="flex items-center gap-6">
+                      <div className={`w-20 h-20 rounded-[28px] flex items-center justify-center shadow-2xl bg-slate-900 border ${pStatus.color.split(' ')[2]} ${pStatus.color.split(' ')[0]}`}>
+                        {pStatus.icon}
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Trạng thái đơn hàng</p>
+                        <h2 className="text-4xl font-black text-white tracking-tight">{pStatus.label}</h2>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 bg-white/5 px-6 py-4 rounded-3xl border border-white/5">
+                      <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                        <ShoppingBag className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Đơn hàng linh kiện</p>
+                        <p className="text-base font-black text-white">{result.orderCode}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="p-10 md:p-14">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                  {/* Order Info */}
+                  <div className="lg:col-span-7 space-y-12">
+                    <div>
+                      <h3 className="text-lg font-black text-white mb-8 flex items-center gap-3">
+                        <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
+                        Thông tin đơn hàng
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
+                        <ResultItem icon={<Tag className="w-5 h-5" />} label="Mã đơn hàng" value={result.orderCode} highlight />
+                        <ResultItem icon={<User className="w-5 h-5" />} label="Khách hàng" value={result.customer} />
+                        <ResultItem icon={<Calendar className="w-5 h-5" />} label="Ngày đặt" value={result.orderDate ? new Date(result.orderDate).toLocaleDateString('vi-VN') : '—'} />
+                        <ResultItem icon={<CreditCard className="w-5 h-5" />} label="Thanh toán" value={`${result.paymentMethod} · ${result.paymentStatus === 'paid' ? 'Đã TT' : 'Chưa TT'}`} />
+                        
+                        <div className="sm:col-span-2 p-6 bg-white/5 rounded-3xl border border-white/5 group hover:border-blue-500/30 transition-colors">
+                          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <MapPin className="w-3.5 h-3.5 text-blue-400" /> Địa chỉ giao hàng
+                          </p>
+                          <p className="text-slate-200 font-bold leading-relaxed text-lg">{result.shippingAddress || '—'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Product Items */}
+                    {result.items && result.items.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-black text-white mb-6 flex items-center gap-3">
+                          <div className="w-1.5 h-6 bg-indigo-500 rounded-full" />
+                          Sản phẩm ({result.items.length})
+                        </h3>
+                        <div className="space-y-3">
+                          {result.items.map((item, idx) => (
+                            <div key={idx} className="flex items-center gap-5 bg-white/5 rounded-2xl p-4 border border-white/5 hover:border-blue-500/20 transition-colors group">
+                              {item.image ? (
+                                <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover border border-white/10 shrink-0" />
+                              ) : (
+                                <div className="w-16 h-16 rounded-xl bg-slate-800 flex items-center justify-center border border-white/10 shrink-0">
+                                  <Package className="w-6 h-6 text-slate-600" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-white font-bold text-base truncate">{item.name}</p>
+                                <p className="text-slate-400 text-sm font-medium">SL: {item.quantity} × {item.price.toLocaleString('vi-VN')}đ</p>
+                              </div>
+                              <p className="text-blue-400 font-black text-lg whitespace-nowrap">
+                                {(item.quantity * item.price).toLocaleString('vi-VN')}đ
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Financial Summary */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {result.discountAmount > 0 && (
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-[32px] p-8">
+                          <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2">Giảm giá</p>
+                          <p className="text-3xl font-black text-amber-400">-{result.discountAmount.toLocaleString('vi-VN')}đ</p>
+                        </div>
+                      )}
+                      <div className={`bg-emerald-500/10 border border-emerald-500/20 rounded-[32px] p-8 ${result.discountAmount > 0 ? '' : 'sm:col-span-2'}`}>
+                        <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-2">Tổng thanh toán</p>
+                        <p className="text-3xl font-black text-emerald-400">{result.totalAmount.toLocaleString('vi-VN')}đ</p>
+                      </div>
+                    </div>
+
+                    {result.note && (
+                      <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                          <Info className="w-3.5 h-3.5 text-blue-400" /> Ghi chú
+                        </p>
+                        <p className="text-slate-200 font-bold leading-relaxed">{result.note}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Order Timeline */}
+                  <div className="lg:col-span-5 bg-black/20 rounded-[40px] p-10 border border-white/5">
+                    <h3 className="text-lg font-black text-white mb-10 flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-indigo-400" /> Tiến trình đơn hàng
+                    </h3>
+                    <div className="space-y-0 relative">
+                      <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-white/5" />
+                      {result.steps?.map((step, idx) => (
+                        <div key={idx} className="flex gap-6 relative group mb-10 last:mb-0">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 z-10 transition-all duration-500 shadow-xl ${
+                            step.done ? 'bg-blue-500 text-white scale-110 rotate-3' : 'bg-slate-800 text-slate-600 border border-white/5'
+                          }`}>
+                            {step.done ? <CheckCircle2 className="w-6 h-6" /> : <div className="w-2 h-2 rounded-full bg-slate-600 group-hover:bg-indigo-400 transition-colors" />}
+                          </div>
+                          <div className="pt-1.5">
+                            <p className={`font-black text-lg leading-none mb-2 ${step.done ? 'text-white' : 'text-slate-600'}`}>{step.label}</p>
+                            <p className="text-xs font-bold text-slate-500 tracking-wide uppercase">
+                              {step.date ? new Date(step.date).toLocaleDateString('vi-VN') : 'Đang chờ...'}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="bg-gradient-to-r from-blue-600/10 to-indigo-600/10 p-10 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="text-center md:text-left">
+                  <h4 className="text-xl font-black text-white mb-2">Cần hỗ trợ về đơn hàng?</h4>
+                  <p className="text-slate-400 font-medium italic">Liên hệ Cửa Hàng 118 để được hỗ trợ nhanh chóng.</p>
+                </div>
+                <a href="tel:0704818118" className="group flex items-center gap-4 bg-white text-slate-950 px-10 py-5 rounded-2xl font-black text-lg hover:bg-blue-50 transition-all shadow-2xl hover:scale-105 active:scale-95">
+                  <PhoneCall className="w-6 h-6 text-blue-600 group-hover:animate-bounce" />
+                  0704.818.118
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Repair Result UI */}
+        {result && !loading && result.type !== 'product_order' && (
           <div className="animate-in fade-in slide-in-from-bottom-12 duration-1000">
             <div className="bg-[#161f35]/80 backdrop-blur-3xl rounded-[48px] shadow-3xl border border-white/10 overflow-hidden">
               {/* Status Banner */}
