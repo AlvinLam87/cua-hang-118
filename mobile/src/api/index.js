@@ -6,7 +6,7 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 // ĐỔI THÀNH true để kết nối với server ONLINE (cuahang118.online), ĐỔI THÀNH false để test ở máy tính LOCAL
-const IS_PRODUCTION = true;
+const IS_PRODUCTION = false;
 
 const getBaseUrl = () => {
   if (IS_PRODUCTION) {
