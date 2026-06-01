@@ -149,14 +149,36 @@ const AdminOrdersPage = () => {
   useEffect(() => { 
     fetchData(); 
 
-    // ── Listen for global updates from AdminLayout ──────────────
-    const handleGlobalUpdate = () => {
-      console.log('⚡ [GlobalUpdate] Refreshing Orders Page...');
+    const patchRepairStatus = (payload) => {
+      if (!payload?.status) return;
+      const repairId = Number(payload.repair_id ?? payload.id);
+      if (!repairId) return;
+      setOrders((prev) =>
+        prev.map((o) => (o.id === repairId ? { ...o, status: payload.status } : o))
+      );
+    };
+
+    // ── Listen for global updates from AdminLayout (socket) ─────
+    const handleGlobalUpdate = (event) => {
+      const payload = event?.detail;
+      if (payload?.type === 'repair_order' || payload?.repair_id != null || payload?.status) {
+        patchRepairStatus(payload);
+      }
+      console.log('⚡ [GlobalUpdate] Refreshing Orders Page...', payload);
       fetchData();
     };
 
     window.addEventListener('admin-data-update', handleGlobalUpdate);
-    return () => window.removeEventListener('admin-data-update', handleGlobalUpdate);
+
+    const pollTimer = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      fetchData();
+    }, 10000);
+
+    return () => {
+      window.removeEventListener('admin-data-update', handleGlobalUpdate);
+      window.clearInterval(pollTimer);
+    };
   }, []);
 
   // Sync selectedDetail when orders data changes

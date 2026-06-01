@@ -286,20 +286,26 @@ router.patch('/repairs/:id/next-step', requireTechnician, async (req, res) => {
     }
 
     await repair.update(updateData);
+    await repair.reload({
+      include: [
+        { model: Customer, as: 'customer', attributes: ['id', 'name', 'phone'] },
+      ],
+    });
 
     // ── Gửi thông báo Socket cho Admin ─────────────────────────────
     try {
       const socketConfig = require('../config/socket');
       const io = socketConfig.getIO();
       io.emit('technician_update', {
-        repair_id: id,
+        repair_id: Number(id),
+        id: Number(id),
         receipt_code: repair.receipt_code,
         device_name: repair.device_name,
         technician_name: user.full_name,
         status: nextStatus,
         message: `KTV ${user.full_name} đã chuyển đơn ${repair.receipt_code} sang bước: ${STATUS_LABELS[nextStatus]}`
       });
-      io.emit('data_changed', { type: 'repair_order', id: id, status: nextStatus });
+      io.emit('data_changed', { type: 'repair_order', id: Number(id), status: nextStatus });
     } catch (socketErr) {
       console.warn('⚠️ [Socket] Không thể gửi thông báo cho Admin:', socketErr.message);
     }
@@ -353,7 +359,7 @@ router.patch('/repairs/:id/next-step', requireTechnician, async (req, res) => {
     res.json({
       success: true,
       message: `Đã chuyển sang: ${STATUS_LABELS[nextStatus]}`,
-      data: { status: nextStatus, label: STATUS_LABELS[nextStatus] }
+      data: repair,
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

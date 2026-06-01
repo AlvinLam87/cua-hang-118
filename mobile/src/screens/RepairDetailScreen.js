@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Alert, Linking, TextInput, KeyboardAvoidingView, Platform, Image
@@ -78,6 +79,24 @@ const RepairDetailScreen = ({ route, navigation }) => {
         { id: 6, title: 'Hoàn thành',           subtitle: data?.completed_date ? `Ngày: ${parseDate(data.completed_date) ? parseDate(data.completed_date).toLocaleDateString('vi-VN') : data.completed_date}` : 'Chờ hoàn thành' },
       ];
 
+  const refreshFromServer = useCallback(async () => {
+    try {
+      const res = await technicianAPI.getTasks();
+      if (res.data.success) {
+        const found = (res.data.data.repairs || []).find((r) => r.id === repairId);
+        if (found) setData(found);
+      }
+    } catch (err) {
+      console.log('Refresh repair error', err);
+    }
+  }, [repairId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshFromServer();
+    }, [refreshFromServer])
+  );
+
   // Sync currentStep whenever data.status changes
   useEffect(() => {
     if (data?.status) {
@@ -141,8 +160,13 @@ const RepairDetailScreen = ({ route, navigation }) => {
               setStepping(true);
               const res = await technicianAPI.nextStep(data.id);
               if (res.data.success) {
-                const newStatus = res.data.data.status;
-                setData(prev => ({ ...prev, status: newStatus }));
+                const updated = res.data.data;
+                if (updated?.id) {
+                  setData(updated);
+                } else if (updated?.status) {
+                  setData((prev) => ({ ...prev, status: updated.status }));
+                }
+                navigation.setParams({ repair: updated?.id ? updated : { ...data, status: updated?.status } });
                 Alert.alert('✅ Thành công', res.data.message);
               }
             } catch (err) {

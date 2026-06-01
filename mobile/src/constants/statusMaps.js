@@ -2,7 +2,7 @@
 
 export const REPAIR_STATUS_MAP = {
   received:    { label: 'Tiếp nhận',    bg: '#EEF2FF', color: '#4F46E5', borderColor: '#C7D2FE' },
-  diagnosing:  { label: 'Chẩn đoán',    bg: '#FFF7ED', color: '#EA580C', borderColor: '#FED7AA' },
+  diagnosing:  { label: 'Đang chẩn đoán', bg: '#FFF7ED', color: '#EA580C', borderColor: '#FED7AA' },
   quoted:      { label: 'Đã báo giá',   bg: '#FFFBEB', color: '#D97706', borderColor: '#FDE68A' },
   in_progress: { label: 'Đang sửa',     bg: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
   testing:     { label: 'Kiểm tra',     bg: '#F0FDF4', color: '#16A34A', borderColor: '#BBF7D0' },
