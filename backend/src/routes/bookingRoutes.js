@@ -508,9 +508,17 @@ router.post('/my-repairs/:id/warranty', async (req, res) => {
 
     try {
       const socketConfig = require('../config/socket');
+      const { emitRepairSync } = require('../utils/realtime');
       const io = socketConfig.getIO();
       if (io) {
-        io.emit('data_changed', { type: 'repair_order', action: 'create', id: newOrder.id });
+        emitRepairSync(io, {
+          repair_id: newOrder.id,
+          id: newOrder.id,
+          status: newOrder.status,
+          receipt_code: newOrder.receipt_code,
+          source: 'customer',
+          action: 'create',
+        });
         io.emit('new_repair_order', {
           id: newOrder.id,
           receipt_code: newOrder.receipt_code,

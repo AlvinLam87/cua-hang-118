@@ -4,9 +4,10 @@ import {
   CheckCircle2, Clock, MapPin, Search, TrendingUp, Package, 
   Camera, ArrowRight, DollarSign, Star, Info, X, ChevronRight, ShieldCheck
 } from 'lucide-react';
-import { io } from 'socket.io-client';
 import { formatDate, formatDateTime } from '../../utils/format.js';
-import { API_V1_URL, API_BASE_URL } from '../../utils/api.js';
+import { API_V1_URL } from '../../utils/api.js';
+import { createAppSocket } from '../../utils/socket.js';
+import { getRepairId } from '../../hooks/useAdminRealtime.js';
 
 const TechnicianDashboardPage = () => {
   const [data, setData] = useState({ repairs: [], bookings: [] });
@@ -100,38 +101,56 @@ const TechnicianDashboardPage = () => {
   useEffect(() => {
     fetchData();
 
-    // ── Socket.io: Real-time update ──────────────────────────────
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || API_BASE_URL;
-    const socket = io(socketUrl, {
-      transports: ['websocket', 'polling'],
-      reconnection: true
-    });
-    
-    socket.on('connect', () => {
-      console.log('✅ [Socket] KTV Dashboard connected');
-    });
+    const socket = createAppSocket();
+    let refreshTimer = null;
 
-    socket.on('new_repair_order', (data) => {
-      console.log('📡 [Socket] New repair order detected:', data);
-      fetchData();
-    });
+    const scheduleFetch = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        fetchData();
+      }, 250);
+    };
 
-    socket.on('technician_update', (data) => {
-      console.log('📡 [Socket] Update from admin/other tech:', data);
-      fetchData();
-    });
+    const onSync = (payload) => {
+      const repairId = getRepairId(payload);
+      if (repairId && payload?.status) {
+        setData((prev) => ({
+          ...prev,
+          repairs: (prev.repairs || []).map((r) =>
+            r.id === repairId ? { ...r, status: payload.status } : r
+          ),
+        }));
+        setSelectedRepair((prev) =>
+          prev?.id === repairId ? { ...prev, status: payload.status } : prev
+        );
+      }
+      if (payload?.type === 'booking' && payload?.id != null && payload?.status) {
+        const bookingId = Number(payload.id);
+        setData((prev) => ({
+          ...prev,
+          bookings: (prev.bookings || []).map((b) =>
+            b.id === bookingId ? { ...b, status: payload.status } : b
+          ),
+        }));
+      }
+      scheduleFetch();
+    };
 
-    socket.on('data_changed', (data) => {
-      console.log('📡 [Socket] System data changed:', data);
-      fetchData();
-    });
-
-    socket.on('new_booking', () => {
-      fetchData();
-    });
+    const syncEvents = [
+      'repair_sync',
+      'booking_sync',
+      'data_changed',
+      'technician_update',
+      'new_repair_order',
+      'new_booking',
+    ];
+    syncEvents.forEach((event) => socket.on(event, onSync));
+    socket.on('connect', scheduleFetch);
 
     return () => {
-      console.log('🔌 [Socket] KTV Dashboard disconnecting');
+      if (refreshTimer) clearTimeout(refreshTimer);
+      syncEvents.forEach((event) => socket.off(event, onSync));
       socket.disconnect();
     };
   }, []);

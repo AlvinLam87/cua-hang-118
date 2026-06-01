@@ -122,10 +122,15 @@ router.patch('/bookings/:id', requireTechnician, async (req, res) => {
 
     try {
       const socketConfig = require('../config/socket');
+      const { emitBookingSync } = require('../utils/realtime');
       const io = socketConfig.getIO();
       if (io) {
-        io.emit('data_changed', { type: 'booking', id: booking.id, status: booking.status });
-        io.emit('new_booking', { id: booking.id, status: booking.status });
+        emitBookingSync(io, {
+          id: booking.id,
+          status: booking.status,
+          source: 'technician',
+          action: 'update',
+        });
       }
     } catch (socketErr) {
       console.warn('⚠️ [Socket] booking update:', socketErr.message);
@@ -172,15 +177,17 @@ router.put('/repairs/:id', requireTechnician, async (req, res) => {
     // ── Gửi thông báo Socket cho Admin ─────────────────────────────
     try {
       const socketConfig = require('../config/socket');
+      const { emitRepairSync } = require('../utils/realtime');
       const io = socketConfig.getIO();
-      io.emit('technician_update', {
+      emitRepairSync(io, {
         repair_id: id,
+        id,
+        status: repair.status,
         receipt_code: repair.receipt_code,
-        device_name: repair.device_name,
-        technician_name: user.full_name,
-        diagnosis: diagnosis || repair.diagnosis,
-        estimated_cost: estimated_cost || repair.estimated_cost,
-        message: `KTV ${user.full_name} đã cập nhật chẩn đoán/báo giá cho đơn ${repair.receipt_code}`
+        booking_id: repair.booking_id,
+        source: 'technician',
+        action: 'update',
+        message: `KTV ${user.full_name} đã cập nhật chẩn đoán/báo giá cho đơn ${repair.receipt_code}`,
       });
     } catch (socketErr) {
       console.warn('⚠️ [Socket] Không thể gửi thông báo cho Admin:', socketErr.message);
@@ -295,17 +302,26 @@ router.patch('/repairs/:id/next-step', requireTechnician, async (req, res) => {
     // ── Gửi thông báo Socket cho Admin ─────────────────────────────
     try {
       const socketConfig = require('../config/socket');
+      const { emitRepairSync, emitBookingSync } = require('../utils/realtime');
       const io = socketConfig.getIO();
-      io.emit('technician_update', {
+      emitRepairSync(io, {
         repair_id: Number(id),
         id: Number(id),
-        receipt_code: repair.receipt_code,
-        device_name: repair.device_name,
-        technician_name: user.full_name,
         status: nextStatus,
-        message: `KTV ${user.full_name} đã chuyển đơn ${repair.receipt_code} sang bước: ${STATUS_LABELS[nextStatus]}`
+        receipt_code: repair.receipt_code,
+        booking_id: repair.booking_id,
+        source: 'technician',
+        action: 'status',
+        message: `KTV ${user.full_name} đã chuyển đơn ${repair.receipt_code} sang: ${STATUS_LABELS[nextStatus]}`,
       });
-      io.emit('data_changed', { type: 'repair_order', id: Number(id), status: nextStatus });
+      if (nextStatus === 'completed' && repair.booking_id) {
+        emitBookingSync(io, {
+          id: repair.booking_id,
+          status: 'completed',
+          source: 'technician',
+          action: 'update',
+        });
+      }
     } catch (socketErr) {
       console.warn('⚠️ [Socket] Không thể gửi thông báo cho Admin:', socketErr.message);
     }

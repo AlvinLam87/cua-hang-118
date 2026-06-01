@@ -25,5 +25,6 @@ export const createAppSocket = () =>
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
     timeout: 20000,
   });

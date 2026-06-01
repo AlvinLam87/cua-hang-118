@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { patchBookingInList } from '../../hooks/useAdminRealtime.js';
 import { Loader2, Trash2, CheckCircle2, Clock, XCircle, Search } from 'lucide-react';
 import AdminToast from '../../components/admin/AdminToast.jsx';
 import AdminConfirmDialog from '../../components/admin/AdminConfirmDialog.jsx';
@@ -12,10 +13,6 @@ const statusMap = {
   completed: { label: 'Hoàn thành', color: 'bg-green-100 text-green-700', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
   cancelled: { label: 'Đã hủy', color: 'bg-red-100 text-red-700', icon: <XCircle className="w-3.5 h-3.5" /> },
 };
-
-import { io } from 'socket.io-client';
-
-
 
 const AdminBookingsPage = () => {
   const [bookings, setBookings] = useState([]);
@@ -48,17 +45,41 @@ const AdminBookingsPage = () => {
     }
   };
 
-  useEffect(() => { 
-    fetchData(); 
+  const fetchDataRef = useRef(fetchData);
+  fetchDataRef.current = fetchData;
 
-    // ── Listen for global updates from AdminLayout ──────────────
-    const handleGlobalUpdate = () => {
-      console.log('⚡ [GlobalUpdate] Refreshing Bookings Page...');
-      fetchData();
+  useEffect(() => { 
+    fetchData();
+
+    let refreshTimer = null;
+    const scheduleFetch = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        fetchDataRef.current();
+      }, 250);
+    };
+
+    const handleGlobalUpdate = (event) => {
+      const payload = event?.detail;
+      if (payload?.type === 'booking' || payload?.type === 'booking_sync') {
+        patchBookingInList(setBookings, payload);
+      }
+      scheduleFetch();
     };
 
     window.addEventListener('admin-data-update', handleGlobalUpdate);
-    return () => window.removeEventListener('admin-data-update', handleGlobalUpdate);
+
+    const pollTimer = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      fetchDataRef.current();
+    }, 3000);
+
+    return () => {
+      window.removeEventListener('admin-data-update', handleGlobalUpdate);
+      window.clearInterval(pollTimer);
+      if (refreshTimer) clearTimeout(refreshTimer);
+    };
   }, []);
 
   const showMessage = (type, message) => {

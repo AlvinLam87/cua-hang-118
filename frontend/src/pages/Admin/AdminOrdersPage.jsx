@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { patchRepairInList } from '../../hooks/useAdminRealtime.js';
 import { 
   Loader2, Pencil, X, Save, Activity, UserRound, Stethoscope, Wallet, Search,
   Info, Camera, CheckCircle2, Clock, CalendarDays, Phone, DollarSign, TrendingUp, ChevronRight, ShieldCheck, Send
@@ -146,38 +147,40 @@ const AdminOrdersPage = () => {
     }
   };
 
-  useEffect(() => { 
-    fetchData(); 
+  const fetchDataRef = useRef(fetchData);
+  fetchDataRef.current = fetchData;
 
-    const patchRepairStatus = (payload) => {
-      if (!payload?.status) return;
-      const repairId = Number(payload.repair_id ?? payload.id);
-      if (!repairId) return;
-      setOrders((prev) =>
-        prev.map((o) => (o.id === repairId ? { ...o, status: payload.status } : o))
-      );
+  useEffect(() => { 
+    fetchData();
+
+    let refreshTimer = null;
+    const scheduleFetch = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        refreshTimer = null;
+        fetchDataRef.current();
+      }, 250);
     };
 
-    // ── Listen for global updates from AdminLayout (socket) ─────
     const handleGlobalUpdate = (event) => {
       const payload = event?.detail;
-      if (payload?.type === 'repair_order' || payload?.repair_id != null || payload?.status) {
-        patchRepairStatus(payload);
+      if (payload && (payload.type === 'repair_order' || payload.repair_id != null || payload.status)) {
+        patchRepairInList(setOrders, payload);
       }
-      console.log('⚡ [GlobalUpdate] Refreshing Orders Page...', payload);
-      fetchData();
+      scheduleFetch();
     };
 
     window.addEventListener('admin-data-update', handleGlobalUpdate);
 
     const pollTimer = window.setInterval(() => {
       if (document.visibilityState !== 'visible') return;
-      fetchData();
-    }, 10000);
+      fetchDataRef.current();
+    }, 3000);
 
     return () => {
       window.removeEventListener('admin-data-update', handleGlobalUpdate);
       window.clearInterval(pollTimer);
+      if (refreshTimer) clearTimeout(refreshTimer);
     };
   }, []);
 

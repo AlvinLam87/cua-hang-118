@@ -6,7 +6,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { Wrench, Calendar, CheckCircle, Info } from 'lucide-react-native';
 import { technicianAPI } from '../api';
-import { initSocket } from '../api/socket';
+import { useTechnicianRealtime } from '../hooks/useTechnicianRealtime';
 import {
   buildNotificationsFromTasks,
   markAllNotificationsRead,
@@ -34,22 +34,13 @@ const NotificationsScreen = ({ navigation }) => {
     }
   };
 
+  useTechnicianRealtime({
+    onRefresh: () => loadNotifications(true),
+  });
+
   useFocusEffect(
     useCallback(() => {
       loadNotifications(false);
-
-      const socket = initSocket();
-      const refresh = () => loadNotifications(true);
-      socket.on('new_repair_order', refresh);
-      socket.on('data_changed', refresh);
-      socket.on('new_booking', refresh);
-      socket.on('technician_update', refresh);
-      return () => {
-        socket.off('new_repair_order', refresh);
-        socket.off('data_changed', refresh);
-        socket.off('new_booking', refresh);
-        socket.off('technician_update', refresh);
-      };
     }, [])
   );
 

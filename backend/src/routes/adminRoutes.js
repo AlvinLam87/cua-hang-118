@@ -353,8 +353,16 @@ router.put('/orders/:id', requireAdmin, async (req, res) => {
     try {
       const io = socketConfig.getIO();
       if (io) {
-        io.emit('technician_update', { id: order.id, status: newStatus });
-        io.emit('data_changed', { type: 'repair_order', id: order.id, status: newStatus });
+        const { emitRepairSync } = require('../utils/realtime');
+        emitRepairSync(io, {
+          repair_id: order.id,
+          id: order.id,
+          status: newStatus,
+          receipt_code: order.receipt_code,
+          booking_id: order.booking_id,
+          source: 'admin',
+          action: 'status',
+        });
       }
     } catch (sErr) {
       console.warn('⚠️ [Socket] Admin update error:', sErr.message);

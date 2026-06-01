@@ -8,8 +8,8 @@ import { Wrench, Calendar, CheckCircle, User, CalendarDays, LogOut, ChevronRight
 import { useFocusEffect } from '@react-navigation/native';
 import { technicianAPI } from '../api';
 import { clearAuthSession } from '../api/authSession';
-import { initSocket } from '../api/socket';
 import ToastNotification from '../components/ToastNotification';
+import { useTechnicianRealtime, getRepairId } from '../hooks/useTechnicianRealtime';
 import {
   getRepairStatusInfo,
   isTerminalRepairStatus,
@@ -79,33 +79,29 @@ const DashboardScreen = ({ navigation }) => {
   useEffect(() => {
     loadUser();
     fetchData(false);
-
-    // Socket.io Listener for Real-time Updates
-    const socket = initSocket();
-
-    const handleNewOrder = (newOrderData) => {
-      fetchData(true);
-      showToast(
-        'assignment',
-        'Đơn hàng mới',
-        `Đơn ${newOrderData.receipt_code || 'mới'} vừa được hệ thống tự động tạo.`
-      );
-    };
-
-    const handleDataSync = () => fetchData(true);
-
-    socket.on('new_repair_order', handleNewOrder);
-    socket.on('data_changed', handleDataSync);
-    socket.on('new_booking', handleDataSync);
-    socket.on('technician_update', handleDataSync);
-
-    return () => {
-      socket.off('new_repair_order', handleNewOrder);
-      socket.off('data_changed', handleDataSync);
-      socket.off('new_booking', handleDataSync);
-      socket.off('technician_update', handleDataSync);
-    };
   }, []);
+
+  useTechnicianRealtime({
+    onRefresh: () => fetchData(true),
+    onPayload: (payload) => {
+      const repairId = getRepairId(payload);
+      if (repairId && payload?.status) {
+        setData((prev) => ({
+          ...prev,
+          repairs: (prev.repairs || []).map((r) =>
+            r.id === repairId ? { ...r, status: payload.status } : r
+          ),
+        }));
+      }
+      if (payload?.action === 'create' || payload?.type === 'new_repair_order') {
+        showToast(
+          'assignment',
+          'Đơn hàng mới',
+          `Đơn ${payload.receipt_code || 'mới'} vừa được cập nhật.`
+        );
+      }
+    },
+  });
 
   useFocusEffect(
     useCallback(() => {

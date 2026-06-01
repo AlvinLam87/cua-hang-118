@@ -24,6 +24,7 @@ import {
   setOnLoginSuccess,
   setOnSessionExpired,
 } from './src/api/authSession';
+import { initSocket, disconnectSocket } from './src/api/socket';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -90,8 +91,14 @@ export default function App() {
   const [userToken, setUserToken] = useState(null);
 
   useEffect(() => {
-    setOnSessionExpired(() => setUserToken(null));
-    setOnLoginSuccess((token) => setUserToken(token));
+    setOnSessionExpired(() => {
+      disconnectSocket();
+      setUserToken(null);
+    });
+    setOnLoginSuccess((token) => {
+      initSocket();
+      setUserToken(token);
+    });
 
     const bootstrapAsync = async () => {
       let token;
@@ -104,6 +111,7 @@ export default function App() {
         // Restoring token failed
       }
       setUserToken(token);
+      if (token) initSocket();
       setIsLoading(false);
     };
 

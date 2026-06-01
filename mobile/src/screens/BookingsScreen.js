@@ -6,8 +6,8 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { User, Wrench, MapPin, Phone, Navigation, Clock, Calendar, Camera, ChevronRight } from 'lucide-react-native';
 import { technicianAPI } from '../api';
-import { initSocket } from '../api/socket';
 import { getBookingStatusInfo, isActiveBookingStatus } from '../constants/statusMaps';
+import { useTechnicianRealtime, isBookingEvent } from '../hooks/useTechnicianRealtime';
 import { isCameraJob } from '../utils/bookingTypes';
 
 const BookingsScreen = ({ navigation }) => {
@@ -30,22 +30,17 @@ const BookingsScreen = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-    const socket = initSocket();
-    const onDataChanged = (payload) => {
-      if (!payload?.type || payload.type === 'booking' || payload.type === 'repair_order') {
-        fetchData();
+  useTechnicianRealtime({
+    onRefresh: () => fetchData(),
+    onPayload: (payload) => {
+      if (isBookingEvent(payload) && payload?.id != null && payload?.status) {
+        const bookingId = Number(payload.id);
+        setBookings((prev) =>
+          prev.map((b) => (b.id === bookingId ? { ...b, status: payload.status } : b))
+        );
       }
-    };
-    const onBookingUpdate = () => fetchData();
-    socket.on('data_changed', onDataChanged);
-    socket.on('new_booking', onBookingUpdate);
-    return () => {
-      socket.off('data_changed', onDataChanged);
-      socket.off('new_booking', onBookingUpdate);
-    };
-  }, []);
+    },
+  });
 
   useFocusEffect(
     useCallback(() => {

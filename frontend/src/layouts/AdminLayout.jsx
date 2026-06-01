@@ -109,21 +109,30 @@ const AdminLayout = () => {
       console.warn('⚠️ [Socket] Connection error:', err.message);
     });
 
+    let notifyTimer = null;
     const handleUpdate = (data) => {
-      console.log('🔄 [Socket] Data change detected, notifying all pages:', data);
-      fetchStats();
-      // Dispatch a global event for sub-pages to refresh
-      window.dispatchEvent(new CustomEvent('admin-data-update', { detail: data }));
+      if (notifyTimer) clearTimeout(notifyTimer);
+      notifyTimer = setTimeout(() => {
+        notifyTimer = null;
+        fetchStats();
+        window.dispatchEvent(new CustomEvent('admin-data-update', { detail: data }));
+      }, 200);
     };
 
-    socket.on('new_booking', handleUpdate);
-    socket.on('new_product_order', handleUpdate);
-    socket.on('technician_update', handleUpdate);
-    socket.on('new_repair_order', handleUpdate);
-    socket.on('data_changed', handleUpdate);
+    const syncEvents = [
+      'repair_sync',
+      'booking_sync',
+      'data_changed',
+      'technician_update',
+      'new_repair_order',
+      'new_booking',
+      'new_product_order',
+    ];
+    syncEvents.forEach((event) => socket.on(event, handleUpdate));
 
     return () => {
-      console.log('🔌 [Socket] Admin Layout disconnecting');
+      if (notifyTimer) clearTimeout(notifyTimer);
+      syncEvents.forEach((event) => socket.off(event, handleUpdate));
       socket.disconnect();
     };
   }, []);

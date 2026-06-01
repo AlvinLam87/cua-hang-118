@@ -10,6 +10,7 @@ import {
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { technicianAPI, API_URL_BASE } from '../api';
+import { useTechnicianRealtime, getRepairId } from '../hooks/useTechnicianRealtime';
 
 const STATUS_FLOW = ['received', 'diagnosing', 'quoted', 'in_progress', 'testing', 'completed'];
 const STATUS_TO_STEP = {
@@ -96,6 +97,16 @@ const RepairDetailScreen = ({ route, navigation }) => {
       refreshFromServer();
     }, [refreshFromServer])
   );
+
+  useTechnicianRealtime({
+    onRefresh: refreshFromServer,
+    onPayload: (payload) => {
+      const rid = getRepairId(payload);
+      if (rid === repairId && payload?.status) {
+        setData((prev) => (prev ? { ...prev, status: payload.status } : prev));
+      }
+    },
+  });
 
   // Sync currentStep whenever data.status changes
   useEffect(() => {
