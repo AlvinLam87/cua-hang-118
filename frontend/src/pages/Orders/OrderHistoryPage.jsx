@@ -268,7 +268,7 @@ const OrderHistoryPage = () => {
                             </div>
                             <div>
                               <p className="font-extrabold text-lg text-gray-900">
-                                Đơn hàng <span className="text-blue-600">#{order.id}</span>
+                                Đơn hàng <span className="text-blue-600">DH{order.id}</span>
                               </p>
                               <p className="text-xs font-semibold text-gray-400 flex items-center gap-1.5 mt-1">
                                 <Calendar className="w-3.5 h-3.5" />
