@@ -415,6 +415,31 @@ router.post('/:id/warranty', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Thiếu thông tin sản phẩm cần bảo hành.' });
     }
 
+    const { User, Customer, RepairOrder } = require('../models');
+    const user = await User.findByPk(decoded.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản người dùng.' });
+    }
+
+    // Tìm hoặc tự động tạo Customer tương ứng với User (qua phone hoặc email)
+    let customer = await Customer.findOne({
+      where: {
+        [Op.or]: [
+          { phone: user.phone },
+          ...(user.email ? [{ email: user.email }] : [])
+        ]
+      }
+    });
+
+    if (!customer) {
+      customer = await Customer.create({
+        name: user.name || 'Khách hàng',
+        phone: user.phone,
+        email: user.email,
+        address: user.address || ''
+      });
+    }
+
     const order = await Order.findByPk(req.params.id, {
       include: [{
         model: OrderItem,
@@ -424,7 +449,7 @@ router.post('/:id/warranty', async (req, res) => {
       }]
     });
 
-    if (!order || order.customer_id !== decoded.id) {
+    if (!order || order.customer_id !== user.id) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng hoặc sản phẩm tương ứng trong đơn hàng của bạn.' });
     }
 
@@ -436,10 +461,9 @@ router.post('/:id/warranty', async (req, res) => {
     const productName = orderItem?.product?.name || 'Linh kiện';
 
     // Kiểm tra xem đã có đơn bảo hành nào đang xử lý cho linh kiện này thuộc đơn hàng này chưa
-    const { RepairOrder } = require('../models');
     const existingWarranty = await RepairOrder.findOne({
       where: {
-        customer_id: decoded.id,
+        customer_id: customer.id,
         device_name: `[Bảo Hành Đơn Hàng] ${productName}`,
         status: { [Op.ne]: 'cancelled' }
       }
@@ -459,7 +483,7 @@ router.post('/:id/warranty', async (req, res) => {
 
     const newRepair = await RepairOrder.create({
       receipt_code: receiptCode,
-      customer_id: decoded.id,
+      customer_id: customer.id,
       device_name: `[Bảo Hành Đơn Hàng] ${productName}`,
       issue: (issue && String(issue).trim()) || `Yêu cầu bảo hành linh kiện từ đơn hàng #${order.id}.`,
       status: 'received',
