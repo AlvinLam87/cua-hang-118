@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+import { API_BASE_URL } from './api.js';
 
 export const resolveMediaUrl = (rawUrl) => {
   if (!rawUrl) return null;
