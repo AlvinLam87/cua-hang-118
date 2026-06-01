@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { RepairOrder, RepairStep, Customer } = require('../models');
 const { Op } = require('sequelize');
+const { isWarrantyActive } = require('../utils/warranty');
 
 // GET /api/v1/tracking?q=RCV-118001 hoặc ?q=0704818118
 router.get('/', async (req, res) => {
@@ -89,9 +90,25 @@ router.get('/', async (req, res) => {
       }));
     }
 
+    // Check if warranty is active and no open warranty child exists
+    const warrantyActive = isWarrantyActive(order);
+    const isWarrantyOrder = order.device_name?.startsWith('[Bảo Hành]');
+    let openWarrantyOrder = null;
+    if (warrantyActive && !isWarrantyOrder && ['completed', 'returned'].includes(order.status)) {
+      openWarrantyOrder = await RepairOrder.findOne({
+        where: {
+          notes: { [Op.like]: `%đơn gốc #${order.receipt_code}%` },
+          status: { [Op.in]: ['received', 'diagnosing', 'quoted', 'in_progress', 'testing'] },
+        },
+        attributes: ['id', 'receipt_code', 'status'],
+      });
+    }
+    const canReceiveWarranty = warrantyActive && !isWarrantyOrder && !openWarrantyOrder && ['completed', 'returned'].includes(order.status);
+
     res.json({
       success: true,
       data: {
+        repairId: order.id,
         receiptCode: order.receipt_code,
         device: order.device_name,
         customer: order.customer?.name,
@@ -108,6 +125,8 @@ router.get('/', async (req, res) => {
         warrantyPeriod: order.warranty_period,
         warrantyExpiry: order.warranty_expiry,
         warrantyTerms: order.warranty_terms,
+        canReceiveWarranty,
+        openWarrantyOrder: openWarrantyOrder ? { id: openWarrantyOrder.id, receipt_code: openWarrantyOrder.receipt_code, status: openWarrantyOrder.status } : null,
         steps: steps,
       },
     });

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, Package, Clock, CheckCircle2, Wrench, AlertCircle, Loader2, Calendar, User, Smartphone, Tag, ShieldCheck, PhoneCall, ArrowRight, ClipboardList, Info } from 'lucide-react';
+import { Search, Package, Clock, CheckCircle2, Wrench, AlertCircle, Loader2, Calendar, User, Smartphone, Tag, ShieldCheck, PhoneCall, ArrowRight, ClipboardList, Info, Send } from 'lucide-react';
 import { API_V1_URL } from '../../utils/api.js';
 
 const statusStyles = {
@@ -20,6 +20,9 @@ const TrackingPage = () => {
   const [notFound, setNotFound] = useState(false);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [warrantyIssue, setWarrantyIssue] = useState('');
+  const [warrantySubmitting, setWarrantySubmitting] = useState(false);
+  const [warrantyMsg, setWarrantyMsg] = useState({ type: '', text: '' });
 
   const getWarrantyStatus = useCallback(() => {
     if (!result || !result.warrantyExpiry) return { active: false, text: 'Không bảo hành', daysLeft: 0 };
@@ -62,6 +65,40 @@ const TrackingPage = () => {
       setLoading(false);
     }
   }, [query]);
+
+  const handleWarrantySubmit = async () => {
+    if (!result?.repairId) return;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setWarrantyMsg({ type: 'error', text: 'Bạn cần đăng nhập để gửi yêu cầu bảo hành.' });
+      return;
+    }
+    setWarrantySubmitting(true);
+    setWarrantyMsg({ type: '', text: '' });
+    try {
+      const res = await fetch(`${API_V1_URL}/bookings/my-repairs/${result.repairId}/warranty`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ issue: warrantyIssue.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWarrantyMsg({ type: 'success', text: data.message });
+        setWarrantyIssue('');
+        // Refresh results
+        handleSearch();
+      } else {
+        setWarrantyMsg({ type: 'error', text: data.message || 'Không thể gửi yêu cầu bảo hành.' });
+      }
+    } catch {
+      setWarrantyMsg({ type: 'error', text: 'Lỗi kết nối. Vui lòng thử lại.' });
+    } finally {
+      setWarrantySubmitting(false);
+    }
+  };
 
   // Handle URL query parameters (?q=...)
   const location = useLocation();
@@ -310,6 +347,57 @@ const TrackingPage = () => {
                               <p className="text-slate-300 text-sm font-medium leading-relaxed italic">
                                 {result.warrantyTerms}
                               </p>
+                            </div>
+                          )}
+
+                          {/* Thông báo đơn bảo hành đang xử lý */}
+                          {result.openWarrantyOrder && (
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 flex items-center gap-4">
+                              <div className="w-10 h-10 bg-blue-500/15 text-blue-400 rounded-xl flex items-center justify-center shrink-0">
+                                <Wrench className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-slate-400">Yêu cầu bảo hành đang xử lý</p>
+                                <p className="text-base font-black text-blue-400 mt-0.5">#{result.openWarrantyOrder.receipt_code}</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Nút gửi bảo hành */}
+                          {result.canReceiveWarranty && (
+                            <div className="bg-emerald-500/5 border border-emerald-500/15 rounded-2xl p-6 space-y-4">
+                              <div className="flex items-center gap-3">
+                                <Send className="w-5 h-5 text-emerald-400" />
+                                <p className="text-base font-black text-white">Gửi yêu cầu bảo hành</p>
+                              </div>
+                              <p className="text-sm text-slate-400 font-medium">
+                                Thiết bị đang trong thời hạn bảo hành. Mô tả lỗi để kỹ thuật viên tiếp nhận xử lý.
+                              </p>
+                              <textarea
+                                value={warrantyIssue}
+                                onChange={(e) => setWarrantyIssue(e.target.value)}
+                                rows={3}
+                                placeholder="Mô tả lỗi cần bảo hành (tuỳ chọn)..."
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400/50 transition-all font-medium resize-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleWarrantySubmit}
+                                disabled={warrantySubmitting}
+                                className="px-8 py-4 bg-gradient-to-br from-emerald-500 to-emerald-700 hover:from-emerald-400 hover:to-emerald-600 disabled:opacity-50 text-white font-black text-sm rounded-2xl flex items-center gap-3 shadow-xl shadow-emerald-900/30 active:scale-95 transition-all"
+                              >
+                                {warrantySubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                                Gửi bảo hành
+                              </button>
+                              {warrantyMsg.text && (
+                                <div className={`rounded-xl px-4 py-3 text-sm font-bold ${
+                                  warrantyMsg.type === 'success'
+                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                    : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                }`}>
+                                  {warrantyMsg.text}
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
