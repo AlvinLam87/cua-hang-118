@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Wrench, Calendar, CheckCircle, User, CalendarDays, LogOut, ChevronRight, Bell, Search } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { technicianAPI } from '../api';
+import { clearAuthSession } from '../api/authSession';
 import { initSocket } from '../api/socket';
 import ToastNotification from '../components/ToastNotification';
 import {
@@ -118,9 +119,7 @@ const DashboardScreen = ({ navigation }) => {
   }, []);
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('userToken');
-    await AsyncStorage.removeItem('userData');
-    navigation.getParent()?.replace('Login') || navigation.replace('Login');
+    await clearAuthSession();
   };
 
   const activeRepairs = data.repairs.filter((r) => !isTerminalRepairStatus(r.status));

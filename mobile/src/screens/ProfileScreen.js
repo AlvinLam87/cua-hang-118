@@ -10,6 +10,7 @@ import {
   KeyRound, BellRing, Info, LogOut, ChevronRight, Wrench, ShieldCheck
 } from 'lucide-react-native';
 import { technicianAPI } from '../api';
+import { clearAuthSession } from '../api/authSession';
 import {
   buildNotificationsFromTasks,
   countUnreadNotifications,
@@ -60,9 +61,7 @@ const ProfileScreen = ({ navigation }) => {
           text: 'Đăng xuất', 
           style: 'destructive',
           onPress: async () => {
-            await AsyncStorage.removeItem('userToken');
-            await AsyncStorage.removeItem('userData');
-            navigation.getParent()?.replace('Login') || navigation.replace('Login');
+            await clearAuthSession();
           }
         }
       ]

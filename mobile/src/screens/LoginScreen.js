@@ -5,8 +5,8 @@ import {
   Linking
 } from 'react-native';
 import { Mail, Lock, Eye, EyeOff, Wrench } from 'lucide-react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authAPI } from '../api';
+import { saveAuthSession } from '../api/authSession';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -29,8 +29,7 @@ const LoginScreen = ({ navigation }) => {
         if (data.data.user.role !== 'technician') {
           Alert.alert('Từ chối truy cập', 'Ứng dụng này chỉ dành cho kỹ thuật viên.');
         } else {
-          await AsyncStorage.setItem('userToken', data.data.token);
-          await AsyncStorage.setItem('userData', JSON.stringify(data.data.user));
+          await saveAuthSession(data.data.token, data.data.user);
           navigation.replace('MainTabs');
         }
       } else {

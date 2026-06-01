@@ -1,6 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getApiBaseUrl, getServerOrigin, getBaseUrl } from './config';
+import { clearAuthSession } from './authSession';
 
 const API_URL = getApiBaseUrl();
 
@@ -28,6 +29,16 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      await clearAuthSession();
+    }
     return Promise.reject(error);
   }
 );

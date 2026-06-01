@@ -18,6 +18,12 @@ import SearchRepairScreen from './src/screens/SearchRepairScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import NotificationSettingsScreen from './src/screens/NotificationSettingsScreen';
 import AppInfoScreen from './src/screens/AppInfoScreen';
+import {
+  clearAuthSession,
+  isAuthServerMismatch,
+  setOnLoginSuccess,
+  setOnSessionExpired,
+} from './src/api/authSession';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -84,9 +90,15 @@ export default function App() {
   const [userToken, setUserToken] = useState(null);
 
   useEffect(() => {
+    setOnSessionExpired(() => setUserToken(null));
+    setOnLoginSuccess((token) => setUserToken(token));
+
     const bootstrapAsync = async () => {
       let token;
       try {
+        if (await isAuthServerMismatch()) {
+          await clearAuthSession();
+        }
         token = await AsyncStorage.getItem('userToken');
       } catch (e) {
         // Restoring token failed
@@ -96,6 +108,10 @@ export default function App() {
     };
 
     bootstrapAsync();
+    return () => {
+      setOnSessionExpired(null);
+      setOnLoginSuccess(null);
+    };
   }, []);
 
   if (isLoading) {
@@ -108,7 +124,11 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={userToken ? "MainTabs" : "Login"}>
+      <Stack.Navigator
+        key={userToken ? 'authenticated' : 'guest'}
+        screenOptions={{ headerShown: false }}
+        initialRouteName={userToken ? 'MainTabs' : 'Login'}
+      >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="RepairDetail" component={RepairDetailScreen} />
