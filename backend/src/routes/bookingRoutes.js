@@ -2,6 +2,88 @@ const express = require('express');
 const router = express.Router();
 const { Booking } = require('../models');
 const { jwtSecret } = require('../config/env');
+const { isCameraBookingService } = require('../utils/bookingKind');
+const { isWarrantyActive, enrichRepairWarrantyFields } = require('../utils/warranty');
+
+const REPAIR_STATUS_LABELS = {
+  received: 'Đã tiếp nhận',
+  diagnosing: 'Đang chẩn đoán',
+  quoted: 'Đã báo giá',
+  in_progress: 'Đang sửa chữa',
+  testing: 'Đang kiểm tra',
+  completed: 'Hoàn thành',
+  returned: 'Đã bàn giao',
+  cancelled: 'Đã hủy',
+};
+
+async function requireAuthUser(req, res) {
+  const jwt = require('jsonwebtoken');
+  const { User } = require('../models');
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+    return null;
+  }
+  try {
+    const decoded = jwt.verify(authHeader.split(' ')[1], jwtSecret);
+    const user = await User.findByPk(decoded.id);
+    if (!user) {
+      res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản.' });
+      return null;
+    }
+    return user;
+  } catch {
+    res.status(401).json({ success: false, message: 'Phiên đăng nhập không hợp lệ.' });
+    return null;
+  }
+}
+
+function userOwnsBooking(booking, user) {
+  if (!booking || !user) return false;
+  if (user.phone && booking.phone === user.phone) return true;
+  if (user.email && booking.email && booking.email.toLowerCase() === user.email.toLowerCase()) return true;
+  return false;
+}
+
+async function attachRepairsToBookings(bookings) {
+  const { RepairOrder, RepairStep } = require('../models');
+  const { Op } = require('sequelize');
+  if (!bookings.length) return [];
+
+  const bookingIds = bookings.map((b) => b.id);
+  const repairs = await RepairOrder.findAll({
+    where: { booking_id: { [Op.in]: bookingIds } },
+    include: [{ model: RepairStep, as: 'steps' }],
+    order: [[{ model: RepairStep, as: 'steps' }, 'step_order', 'ASC']],
+  });
+
+  const repairByBooking = new Map(
+    repairs.map((r) => [r.booking_id, enrichRepairWarrantyFields(r)])
+  );
+
+  return bookings.map((b) => {
+    const json = b.toJSON ? b.toJSON() : { ...b };
+    json.job_kind = isCameraBookingService(json.service) ? 'camera' : 'repair';
+    const repair = repairByBooking.get(json.id) || null;
+    json.repair_order = repair;
+    if (repair?.status) {
+      json.repair_status_label = REPAIR_STATUS_LABELS[repair.status] || repair.status;
+    }
+    return json;
+  });
+}
+
+async function findOpenWarrantyChild(parentOrder) {
+  const { RepairOrder } = require('../models');
+  const { Op } = require('sequelize');
+  if (!parentOrder?.receipt_code) return null;
+  return RepairOrder.findOne({
+    where: {
+      notes: { [Op.like]: `%đơn gốc #${parentOrder.receipt_code}%` },
+      status: { [Op.in]: ['received', 'diagnosing', 'quoted', 'in_progress', 'testing'] },
+    },
+  });
+}
 
 // POST /api/v1/bookings
 router.post('/', async (req, res) => {
@@ -266,18 +348,9 @@ router.get('/', async (req, res) => {
 // GET /api/v1/bookings/my-bookings
 router.get('/my-bookings', async (req, res) => {
   try {
-    const jwt = require('jsonwebtoken');
-    const { User } = require('../models');
-    
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
-    }
-    const decoded = jwt.verify(authHeader.split(' ')[1], jwtSecret);
-    const user = await User.findByPk(decoded.id);
-    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    const user = await requireAuthUser(req, res);
+    if (!user) return;
 
-    // Match bookings by phone or email
     const { Op } = require('sequelize');
     const conditions = [];
     if (user.phone) conditions.push({ phone: user.phone });
@@ -288,7 +361,171 @@ router.get('/my-bookings', async (req, res) => {
       order: [['created_at', 'DESC']],
     });
 
-    res.json({ success: true, data: bookings });
+    const data = await attachRepairsToBookings(bookings);
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/v1/bookings/my-bookings/:id — Chi tiết lịch hẹn + đơn sửa chữa
+router.get('/my-bookings/:id', async (req, res) => {
+  try {
+    const user = await requireAuthUser(req, res);
+    if (!user) return;
+
+    const booking = await Booking.findByPk(req.params.id);
+    if (!booking || !userOwnsBooking(booking, user)) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy lịch hẹn.' });
+    }
+
+    const { RepairOrder, RepairStep, Customer } = require('../models');
+    let repair = await RepairOrder.findOne({
+      where: { booking_id: booking.id },
+      include: [
+        { model: Customer, as: 'customer', attributes: ['id', 'name', 'phone'] },
+        { model: RepairStep, as: 'steps' },
+      ],
+      order: [[{ model: RepairStep, as: 'steps' }, 'step_order', 'ASC']],
+    });
+
+    const payload = booking.toJSON();
+    payload.job_kind = isCameraBookingService(payload.service) ? 'camera' : 'repair';
+
+    if (repair) {
+      repair = enrichRepairWarrantyFields(repair);
+      const openWarranty = await findOpenWarrantyChild(repair);
+      payload.repair_order = {
+        ...repair,
+        status_label: REPAIR_STATUS_LABELS[repair.status] || repair.status,
+        open_warranty_order: openWarranty
+          ? { id: openWarranty.id, receipt_code: openWarranty.receipt_code, status: openWarranty.status }
+          : null,
+      };
+    } else {
+      payload.repair_order = null;
+    }
+
+    res.json({ success: true, data: payload });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// POST /api/v1/bookings/my-repairs/:id/warranty — Khách gửi yêu cầu bảo hành
+router.post('/my-repairs/:id/warranty', async (req, res) => {
+  try {
+    const user = await requireAuthUser(req, res);
+    if (!user) return;
+
+    const { issue } = req.body;
+    const { RepairOrder, RepairStep, Customer, Booking } = require('../models');
+    const { Op } = require('sequelize');
+
+    const parentOrder = await RepairOrder.findByPk(req.params.id, {
+      include: [{ model: Customer, as: 'customer' }],
+    });
+    if (!parentOrder) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy đơn sửa chữa.' });
+    }
+
+    if (parentOrder.booking_id) {
+      const booking = await Booking.findByPk(parentOrder.booking_id);
+      if (!booking || !userOwnsBooking(booking, user)) {
+        return res.status(403).json({ success: false, message: 'Bạn không có quyền với đơn này.' });
+      }
+    } else if (parentOrder.customer) {
+      const matchPhone = user.phone && parentOrder.customer.phone === user.phone;
+      const matchEmail =
+        user.email &&
+        parentOrder.customer.email &&
+        parentOrder.customer.email.toLowerCase() === user.email.toLowerCase();
+      if (!matchPhone && !matchEmail) {
+        return res.status(403).json({ success: false, message: 'Bạn không có quyền với đơn này.' });
+      }
+    } else {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền với đơn này.' });
+    }
+
+    if (!['completed', 'returned'].includes(parentOrder.status)) {
+      return res.status(400).json({ success: false, message: 'Đơn chưa hoàn thành, chưa thể gửi yêu cầu bảo hành.' });
+    }
+
+    if (!isWarrantyActive(parentOrder)) {
+      return res.status(400).json({ success: false, message: 'Đơn đã hết hạn bảo hành hoặc không có bảo hành.' });
+    }
+
+    if (parentOrder.device_name?.startsWith('[Bảo Hành]')) {
+      return res.status(400).json({ success: false, message: 'Không thể gửi bảo hành từ đơn bảo hành khác.' });
+    }
+
+    const openWarrantyChild = await findOpenWarrantyChild(parentOrder);
+    if (openWarrantyChild) {
+      return res.status(400).json({
+        success: false,
+        message: `Đã có yêu cầu bảo hành đang xử lý (#${openWarrantyChild.receipt_code}).`,
+      });
+    }
+
+    const maxOrder = await RepairOrder.findOne({ order: [['id', 'DESC']] });
+    const nextId = maxOrder ? maxOrder.id + 1 : 1;
+    const receiptCode = `RCV-118${String(nextId).padStart(3, '0')}`;
+    const baseDeviceName = parentOrder.device_name || 'Thiết bị';
+    const techName = parentOrder.technician_name || 'Cửa hàng 118';
+
+    const newOrder = await RepairOrder.create({
+      receipt_code: receiptCode,
+      customer_id: parentOrder.customer_id,
+      device_name: `[Bảo Hành] ${baseDeviceName}`,
+      issue: (issue && String(issue).trim()) || `Khách gửi yêu cầu bảo hành từ đơn #${parentOrder.receipt_code}.`,
+      technician_name: techName,
+      status: 'received',
+      received_date: new Date().toISOString().slice(0, 10),
+      estimated_cost: 0,
+      final_cost: 0,
+      notes: `Đơn bảo hành liên kết với đơn gốc #${parentOrder.receipt_code}. Khách: ${user.full_name || user.email}.`,
+      warranty_period: 0,
+    });
+
+    await RepairStep.create({
+      repair_order_id: newOrder.id,
+      step_order: 1,
+      label: 'Tiếp nhận bảo hành',
+      is_done: true,
+      completed_date: new Date().toISOString().slice(0, 10),
+    });
+
+    const defaultSteps = ['Kiểm tra lỗi', 'Đang xử lý bảo hành', 'Kiểm tra kỹ thuật', 'Bàn giao thiết bị'];
+    for (let i = 0; i < defaultSteps.length; i++) {
+      await RepairStep.create({
+        repair_order_id: newOrder.id,
+        step_order: i + 2,
+        label: defaultSteps[i],
+        is_done: false,
+        completed_date: null,
+      });
+    }
+
+    try {
+      const socketConfig = require('../config/socket');
+      const io = socketConfig.getIO();
+      if (io) {
+        io.emit('data_changed', { type: 'repair_order', action: 'create', id: newOrder.id });
+        io.emit('new_repair_order', {
+          id: newOrder.id,
+          receipt_code: newOrder.receipt_code,
+          device_name: newOrder.device_name,
+        });
+      }
+    } catch (socketErr) {
+      console.warn('⚠️ [Socket] warranty request:', socketErr.message);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: `Đã gửi yêu cầu bảo hành. Mã đơn: ${receiptCode}. KTV sẽ liên hệ bạn sớm.`,
+      data: newOrder,
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
