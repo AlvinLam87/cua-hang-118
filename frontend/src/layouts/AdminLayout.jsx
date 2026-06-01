@@ -34,6 +34,20 @@ const AdminLayout = () => {
       navigate('/dang-nhap');
       return;
     }
+
+    // Kiểm tra JWT expiry phía client (decode payload, không cần secret)
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/dang-nhap');
+        return;
+      }
+    } catch {
+      // Token bị hỏng — xử lý bên dưới
+    }
+
     try {
       const parsed = JSON.parse(userData);
       if (parsed.role !== 'admin') {
@@ -46,6 +60,17 @@ const AdminLayout = () => {
     }
   }, [navigate]);
 
+  // Lắng nghe global event khi bất kỳ API nào trả về 401
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/dang-nhap');
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, [navigate]);
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -53,6 +78,12 @@ const AdminLayout = () => {
         const res = await fetch(`${API_V1_URL}/admin/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+
+        if (res.status === 401) {
+          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+          return;
+        }
+
         const data = await res.json();
         if (data.success) {
           setNotifications({

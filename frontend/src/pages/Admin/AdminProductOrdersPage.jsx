@@ -37,10 +37,22 @@ const AdminProductOrdersPage = () => {
 
   const fetchDataRef = useRef(null);
 
+  const handleUnauthorized = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+  };
+
   const fetchData = async ({ silent = false } = {}) => {
     try {
       if (!silent) setLoading(true);
       const res = await fetch(`${API_V1_URL}/admin/product-orders`, { headers });
+
+      if (res.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
       const data = await res.json();
 
       if (data.success) {
@@ -149,6 +161,12 @@ const AdminProductOrdersPage = () => {
         headers,
         body: JSON.stringify({ [field]: value })
       });
+
+      if (res.status === 401) {
+        handleUnauthorized();
+        return;
+      }
+
       const data = await res.json();
       if (data.success) {
         setFeedback({ type: 'success', message: 'Cập nhật trạng thái thành công.' });
