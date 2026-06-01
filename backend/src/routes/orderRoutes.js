@@ -366,7 +366,6 @@ router.post('/:id/claim-bank-transfer', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Đơn này không dùng chuyển khoản.' });
     }
 
-    // Không tự đổi paid khi khách bấm nút — chỉ SePay webhook hoặc admin mới xác nhận tiền thật.
     try {
       const socketConfig = require('../config/socket');
       const io = socketConfig.getIO();
@@ -377,6 +376,28 @@ router.post('/:id/claim-bank-transfer', async (req, res) => {
           id: order.id,
           message: `Khách báo đã CK đơn #${order.id} — cần đối soát`,
         });
+      }
+    } catch (socketErr) {
+      console.warn('⚠️ [Socket] claim transfer:', socketErr.message);
+    }
+
+    await order.reload();
+
+    return res.json({
+      success: true,
+      message: order.payment_status === 'paid'
+        ? 'Đơn đã được xác nhận thanh toán trước đó.'
+        : 'Đã ghi nhận báo chuyển khoản. Cửa hàng sẽ đối soát — chưa xác nhận tự động.',
+      data: {
+        payment_status: order.payment_status,
+        status: order.status,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // POST /api/v1/orders/:id/warranty — Khách gửi yêu cầu bảo hành cho linh kiện của đơn hàng
 router.post('/:id/warranty', async (req, res) => {
   try {
