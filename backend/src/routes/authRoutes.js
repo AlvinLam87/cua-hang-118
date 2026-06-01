@@ -67,32 +67,51 @@ router.post('/register/request-otp', async (req, res) => {
       html: `
 <!DOCTYPE html>
 <html lang="vi">
-<head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background-color:#f8fafc;font-family:sans-serif;">
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding:40px 10px;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:40px 10px;">
     <tr>
       <td align="center">
-        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width:500px;background-color:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 10px 25px rgba(0,0,0,0.05);">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width:540px;background-color:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 10px 30px rgba(15,23,42,0.05);">
+          <!-- Header -->
           <tr>
-            <td style="background-color:#2563eb;padding:30px;text-align:center;">
-              <h1 style="color:#ffffff;font-size:24px;margin:0;letter-spacing:1px;">Xác Thực Tài Khoản</h1>
+            <td style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);padding:40px;text-align:center;">
+              <div style="background:rgba(255,255,255,0.1);display:inline-block;padding:6px 14px;border-radius:10px;margin-bottom:16px;">
+                <span style="color:#60a5fa;font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;">Cửa Hàng 118</span>
+              </div>
+              <h1 style="color:#ffffff;font-size:26px;font-weight:900;margin:0;letter-spacing:0.5px;">Xác Thực Tài Khoản</h1>
+              <p style="color:#94a3b8;margin:8px 0 0;font-size:14px;">Bảo mật thông tin của bạn là ưu tiên hàng đầu của chúng tôi</p>
             </td>
           </tr>
+
+          <!-- Content Body -->
           <tr>
-            <td style="padding:40px;text-align:center;">
-              <p style="color:#475569;font-size:16px;margin:0 0 24px;">Xin chào,</p>
-              <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 30px;">Bạn đang thực hiện đăng ký tài khoản tại <strong>Cửa Hàng 118</strong>. Vui lòng sử dụng mã xác nhận dưới đây để hoàn tất:</p>
+            <td style="padding:40px;background-color:#ffffff;">
+              <p style="color:#475569;font-size:15px;margin:0 0 16px;line-height:1.6;">Xin chào,</p>
+              <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 30px;">Bạn đang thực hiện đăng ký tài khoản tại <strong>Cửa Hàng 118</strong>. Vui lòng nhập mã OTP xác nhận dưới đây để hoàn tất thủ tục đăng ký:</p>
               
-              <div style="background-color:#f1f5f9;border-radius:16px;padding:24px;margin-bottom:30px;border:2px dashed #cbd5e1;">
-                <span style="font-size:36px;font-weight:900;color:#0f172a;letter-spacing:12px;margin-left:12px;">${otp}</span>
+              <!-- OTP Box -->
+              <div style="background-color:#f8fafc;border-radius:20px;padding:30px;text-align:center;margin-bottom:30px;border:2px dashed #cbd5e1;">
+                <p style="margin:0 0 10px;font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:2px;">Mã xác thực OTP của bạn</p>
+                <span style="font-size:42px;font-weight:900;color:#2563eb;letter-spacing:10px;margin-left:10px;font-family:Consolas,monaco,monospace;">${otp}</span>
               </div>
               
-              <p style="color:#94a3b8;font-size:13px;margin:0;">Mã có hiệu lực trong <strong>5 phút</strong>. Vui lòng không chia sẻ mã này cho bất kỳ ai.</p>
+              <div style="background-color:#fffbeb;border-radius:12px;padding:12px 18px;border:1px solid #fef3c7;margin-bottom:30px;">
+                <p style="margin:0;font-size:13px;color:#b45309;line-height:1.5;font-weight:500;">⚠️ Mã xác thực có hiệu lực trong <strong>5 phút</strong>. Tuyệt đối không chia sẻ mã này cho bất kỳ ai để tránh mất an toàn thông tin.</p>
+              </div>
+
+              <p style="color:#64748b;font-size:13px;line-height:1.6;margin:0;">Nếu bạn không thực hiện đăng ký tài khoản này, vui lòng bỏ qua email này hoặc liên hệ với bộ phận CSKH của chúng tôi.</p>
             </td>
           </tr>
+
+          <!-- Footer -->
           <tr>
-            <td style="background-color:#f8fafc;padding:20px;text-align:center;border-top:1px solid #e2e8f0;">
-              <p style="color:#94a3b8;font-size:11px;margin:0;">Cửa Hàng 118 — Uy Tín Tận Tâm<br>© 2026 Cửa Hàng 118</p>
+            <td style="background-color:#0f172a;padding:30px;text-align:center;">
+              <p style="color:#94a3b8;font-size:13px;margin:0 0 6px;font-weight:600;">Cửa Hàng 118 — Uy Tín Tận Tâm</p>
+              <p style="color:#64748b;font-size:11px;margin:0;">📍 Bạc Liêu &nbsp;|&nbsp; 📞 0704.818.118 &nbsp;|&nbsp; 🌐 cuahang118.online</p>
             </td>
           </tr>
         </table>
@@ -325,37 +344,53 @@ router.post('/forgot-password', async (req, res) => {
       html: `
 <!DOCTYPE html>
 <html lang="vi">
-<head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:sans-serif;">
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="padding:40px 10px;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:40px 10px;">
     <tr>
       <td align="center">
-        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 10px 25px rgba(0,0,0,0.05);">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width:540px;background-color:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 10px 30px rgba(15,23,42,0.05);">
+          <!-- Header -->
           <tr>
-            <td style="background-color:#0f172a;padding:30px;text-align:center;">
-              <h1 style="color:#ffffff;font-size:22px;margin:0;">🔐 Đặt Lại Mật Khẩu</h1>
+            <td style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);padding:40px;text-align:center;">
+              <div style="background:rgba(255,255,255,0.1);display:inline-block;padding:6px 14px;border-radius:10px;margin-bottom:16px;">
+                <span style="color:#60a5fa;font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;">Cửa Hàng 118</span>
+              </div>
+              <h1 style="color:#ffffff;font-size:26px;font-weight:900;margin:0;letter-spacing:0.5px;">🔐 Khôi Phục Mật Khẩu</h1>
+              <p style="color:#94a3b8;margin:8px 0 0;font-size:14px;">Bảo vệ tài khoản của bạn an toàn</p>
             </td>
           </tr>
+
+          <!-- Content Body -->
           <tr>
-            <td style="padding:40px;">
-              <p style="color:#1e293b;font-size:16px;margin:0 0 16px;">Xin chào <strong>${user.full_name}</strong>,</p>
-              <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 30px;">Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Vui lòng nhấn vào nút bên dưới để tiến hành:</p>
+            <td style="padding:40px;background-color:#ffffff;">
+              <p style="color:#475569;font-size:15px;margin:0 0 16px;line-height:1.6;">Xin chào <strong>${user.full_name || 'Quý khách'}</strong>,</p>
+              <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 30px;">Hệ thống nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Vui lòng bấm vào nút liên kết dưới đây để thiết lập mật khẩu mới:</p>
               
+              <!-- CTA Button -->
               <div style="text-align:center;margin-bottom:35px;">
-                <a href="${resetUrl}" style="background-color:#2563eb;color:#ffffff;padding:16px 32px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;display:inline-block;box-shadow:0 8px 15px rgba(37,99,235,0.2);">Đặt lại mật khẩu mới</a>
+                <a href="${resetUrl}" style="background-color:#2563eb;color:#ffffff;padding:16px 32.5px;border-radius:14px;text-decoration:none;font-weight:800;font-size:15px;display:inline-block;box-shadow:0 8px 20px rgba(37,99,235,0.25);transition:transform 0.2s ease;">Đặt Lại Mật Khẩu Mới</a>
               </div>
               
-              <p style="color:#64748b;font-size:13px;margin:0 0 10px;">Nếu bạn không thể nhấn vào nút, hãy sử dụng mã xác nhận bên dưới:</p>
-              <div style="background-color:#f8fafc;padding:15px;border-radius:10px;font-family:monospace;word-break:break-all;color:#0f172a;font-size:14px;border:1px solid #e2e8f0;">
+              <p style="color:#64748b;font-size:13px;margin:0 0 10px;">Nếu nút trên không hoạt động, bạn cũng có thể sử dụng mã token bí mật dưới đây hoặc copy link dán vào trình duyệt:</p>
+              <div style="background-color:#f8fafc;padding:18px;border-radius:12px;font-family:Consolas,monaco,monospace;word-break:break-all;color:#0f172a;font-size:14px;border:1px solid #cbd5e1;line-height:1.4;">
                 ${resetToken}
               </div>
               
-              <p style="color:#94a3b8;font-size:12px;margin:30px 0 0;line-height:1.5;">Nếu bạn không yêu cầu thay đổi mật khẩu, vui lòng bỏ qua email này. Tài khoản của bạn vẫn được an toàn.</p>
+              <div style="background-color:#fffbeb;border-radius:12px;padding:12px 18px;border:1px solid #fef3c7;margin-top:30px;margin-bottom:10px;">
+                <p style="margin:0;font-size:12px;color:#b45309;line-height:1.5;">⚠️ Mã token có hiệu lực trong vòng <strong>30 phút</strong>. Nếu bạn không yêu cầu hành động này, vui lòng bỏ qua email này để tài khoản được an toàn.</p>
+              </div>
             </td>
           </tr>
+
+          <!-- Footer -->
           <tr>
-            <td style="background-color:#f8fafc;padding:20px;text-align:center;border-top:1px solid #e2e8f0;">
-              <p style="color:#94a3b8;font-size:11px;margin:0;">Hệ thống bảo mật Cửa Hàng 118</p>
+            <td style="background-color:#0f172a;padding:30px;text-align:center;">
+              <p style="color:#94a3b8;font-size:13px;margin:0 0 6px;font-weight:600;">Cửa Hàng 118 — Uy Tín Tận Tâm</p>
+              <p style="color:#64748b;font-size:11px;margin:0;">📍 Bạc Liêu &nbsp;|&nbsp; 📞 0704.818.118 &nbsp;|&nbsp; 🌐 cuahang118.online</p>
             </td>
           </tr>
         </table>
